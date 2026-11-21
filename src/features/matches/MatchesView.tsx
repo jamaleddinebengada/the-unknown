@@ -1,11 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withTiming, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Aurora } from '@/components/Effects';
 import { AvatarStack, EmojiAvatar, GlassShard, GoldTitle, IsoCubes, Sparkle, Star3D, StarRating, StatusPill, Vortex } from '@/components/Illustrations3D';
 import { useToast } from '@/components/Overlay';
 import { ErrorState, GradientButton, PremiumBadge, PremiumButton, T } from '@/components/ui';
@@ -114,7 +113,8 @@ function MatchCard({ m, onAccept, onPass, busy }: { m: MysteryMatch; onAccept: (
   );
 }
 
-export default function Matches() {
+/** Mystery Match — now shown inside the Discover page ("Match" view). `top` is the shared page header. */
+export function MatchesView({ top }: { top?: ReactNode }) {
   const router = useRouter();
   const toast = useToast();
   const { profile } = useAuth();
@@ -167,10 +167,10 @@ export default function Matches() {
   const titleSize = Math.min(34, (width - 40) / 9.2);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Aurora variant="warm" stars={30} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.md, gap: spacing.md, paddingBottom: 140 }}
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: top ? 0 : insets.top + spacing.sm, paddingHorizontal: spacing.md, gap: spacing.md, paddingBottom: 140 }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={colors.violet} />}>
+        {top && <View style={{ marginHorizontal: -spacing.md }}>{top}</View>}
         <View style={{ alignItems: 'center', gap: 6 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <StatusPill label={searching ? 'SEARCHING THE WORLD…' : 'PROTECTION MODE ACTIVE'} />

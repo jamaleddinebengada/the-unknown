@@ -103,7 +103,7 @@ export default function Messages() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.violet} />}>
             {requestCount === 0 && <EmptyState icon="mail-open-outline" title="No requests" body="When someone is interested in your post or discovers you through a Mystery Match, it appears here." />}
             {matches.map((m) => (
-              <Pressable key={m.match_id} onPress={() => router.push('/matches')} style={s.request}>
+              <Pressable key={m.match_id} onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })} style={s.request}>
                 <AnonymousAvatar seed={m.other_avatar_seed} size={44} />
                 <View style={{ flex: 1 }}>
                   <T v="bodyStrong">Someone discovered you</T>

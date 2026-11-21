@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter , useFocusEffect } from 'expo-router';
-import { useState , useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +16,8 @@ import { useBadges } from '@/hooks/useBadges';
 import { usePaged } from '@/hooks/usePaged';
 import { getFeed, getMyChallenges } from '@/services/api';
 import { XpBadge } from '@/features/challenges/Challenges';
+import { MatchesView } from '@/features/matches/MatchesView';
+import { haptic } from '@/utils/format';
 import type { ChallengeState , FeedPost } from '@/types/models';
 import { unknownName } from '@/utils/format';
 
@@ -23,6 +26,31 @@ const greeting = () => {
   return h < 5 ? 'The night is full of strangers' : h < 12 ? 'Good morning, stranger' : h < 18 ? 'Good afternoon, stranger' : 'Good evening, stranger';
 };
 
+type View_ = 'feed' | 'match';
+
+/** Two-way switch at the top of Discover: the anonymous feed, or Mystery Match. */
+function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
+  const opts: { key: View_; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'feed', label: 'Feed', icon: 'albums' },
+    { key: 'match', label: 'Mystery Match', icon: 'planet' },
+  ];
+  return (
+    <View style={styles.switch}>
+      {opts.map((o) => {
+        const on = value === o.key;
+        return (
+          <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={o.label}
+            onPress={() => { if (!on) { haptic.tap(); onChange(o.key); } }} style={styles.switchItem}>
+            {on && <LinearGradient colors={o.key === 'match' ? ['#FF9A3D', '#F0520C'] : ['#8B7BFF', '#5B4BF0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} />}
+            <Ionicons name={o.icon} size={16} color={on ? colors.white : colors.textSecondary} />
+            <T style={{ fontFamily: fonts.display, fontSize: 15 }} color={on ? colors.white : colors.textSecondary}>{o.label}</T>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function Discover() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -30,6 +58,9 @@ export default function Discover() {
   const titleSize = Math.min(32, (width - 32) / 11);
   const { profile } = useAuth();
   const { notifications } = useBadges();
+  const params = useLocalSearchParams<{ view?: string }>();
+  const [view, setView] = useState<View_>(params.view === 'match' ? 'match' : 'feed');
+  useEffect(() => { if (params.view === 'match' || params.view === 'feed') setView(params.view); }, [params.view]);
   const [category, setCategory] = useState<FeedCategory>('for_you');
   const feed = usePaged<FeedPost>((offset) => getFeed(category, offset), category);
   const [xp, setXp] = useState<ChallengeState | null>(null);
@@ -46,8 +77,8 @@ export default function Discover() {
     transform: [{ translateY: interpolate(y.value, [-80, 0, 140], [30, 0, -40], Extrapolation.CLAMP) }, { scale: interpolate(y.value, [-80, 0], [1.08, 1], Extrapolation.CLAMP) }],
   }));
 
-  const header = (
-    <View style={{ gap: spacing.md, paddingBottom: spacing.md, paddingTop: insets.top + spacing.sm }}>
+  const topBar = (
+    <View style={{ gap: spacing.md, paddingTop: insets.top + spacing.sm }}>
       <View style={styles.top}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
           <PortalMark size={36} />
@@ -60,6 +91,13 @@ export default function Discover() {
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
       </View>
+      <ViewSwitch value={view} onChange={(v) => { setView(v); router.setParams({ view: v }); }} />
+    </View>
+  );
+
+  const header = (
+    <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
+      {topBar}
       <Animated.View style={[{ paddingHorizontal: spacing.md, gap: 4 }, hero]}>
         <T v="overline" color={colors.violetSoft}>{greeting().toUpperCase()}</T>
         <GradientText text="Discover something" size={titleSize} width={width - 32} />
@@ -76,7 +114,8 @@ export default function Discover() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Aurora />
+      <Aurora variant={view === 'match' ? 'warm' : undefined} />
+      {view === 'match' ? <MatchesView top={topBar} /> : (<>
       <Animated.FlatList
         data={feed.items}
         keyExtractor={(p) => p.id}
@@ -123,6 +162,7 @@ export default function Discover() {
           <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
         </View>
       </Animated.View>
+      </>)}
     </View>
   );
 }
@@ -130,4 +170,6 @@ export default function Discover() {
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md },
   compact: { position: 'absolute', left: 0, right: 0, top: 0 },
+  switch: { flexDirection: 'row', marginHorizontal: spacing.md, padding: 4, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#1E2540', shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  switchItem: { flex: 1, height: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderRadius: 999, overflow: 'hidden' },
 });

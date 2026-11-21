@@ -12,7 +12,7 @@ import { haptic } from '@/utils/format';
 
 type IconName = keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
 
-const ROUTE: Record<string, string> = { match: '/matches', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
+const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
 const CARD_COLORS: [string, string][] = [['#7C6CFF', '#5B4BF0'], ['#38BDF8', '#2563EB'], ['#A855F7', '#7C3AED'], ['#F472B6', '#DB2777'], ['#34D399', '#059669'], ['#FBBF24', '#D97706']];
 
 /** Small "Lv 3 · 240 XP" pill for headers. */

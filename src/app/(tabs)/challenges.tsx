@@ -7,7 +7,7 @@ import Animated, { Easing, FadeInDown, FadeInUp, useAnimatedStyle, useSharedValu
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aurora } from '@/components/Effects';
 import { AvatarStack, EmojiAvatar, GoldTitle, Sparkle, Star3D, StatusPill, Trophy } from '@/components/Illustrations3D';
-import { ErrorState, IconButton, T } from '@/components/ui';
+import { ErrorState, T } from '@/components/ui';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { friendlyError } from '@/lib/supabase';
@@ -16,7 +16,7 @@ import type { ChallengeState, Message } from '@/types/models';
 import { haptic } from '@/utils/format';
 
 type IconName = keyof typeof Ionicons.glyphMap;
-const ROUTE: Record<string, string> = { match: '/matches', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
+const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
 
 function resetIn() {
   const n = new Date();
@@ -71,13 +71,9 @@ export default function Challenges() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Aurora variant="warm" stars={24} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.xs, paddingHorizontal: spacing.md, paddingBottom: insets.bottom + 40, gap: spacing.md }}
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.xs, paddingHorizontal: spacing.md, paddingBottom: 140, gap: spacing.md }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={colors.violet} />}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <IconButton label="Back" name="chevron-back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/discover'))} />
-          <View style={{ flex: 1, alignItems: 'center' }}><StatusPill label="THE UNKNOWN" live={false} /></View>
-          <View style={{ width: 42 }} />
-        </View>
+        <View style={{ alignItems: 'center' }}><StatusPill label="DAILY CHALLENGES" /></View>
 
         <View style={{ alignItems: 'center' }}>
           <Star3D size={34} style={{ position: 'absolute', right: 4, top: -6 }} />
@@ -106,7 +102,7 @@ export default function Challenges() {
 
             {/* chat preview + bonus */}
             <Animated.View entering={FadeInDown.delay(80).springify().damping(18)}>
-              <Pressable onPress={() => router.push(chatId ? { pathname: '/conversation/[id]', params: { id: chatId } } : '/matches')} style={[s.card, { flexDirection: 'column', alignItems: 'stretch', gap: 10 }]}>
+              <Pressable onPress={() => router.push(chatId ? { pathname: '/conversation/[id]', params: { id: chatId } } : { pathname: '/discover', params: { view: 'match' } })} style={[s.card, { flexDirection: 'column', alignItems: 'stretch', gap: 10 }]}>
                 {preview.length ? preview.map((m) => (
                   <View key={m.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: m.is_mine ? 'flex-end' : 'flex-start' }}>
                     {!m.is_mine && <EmojiAvatar seed={m.sender_avatar_seed ?? 'x'} size={32} />}
@@ -139,7 +135,7 @@ export default function Challenges() {
             {/* two-card grid */}
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <Animated.View entering={FadeInUp.delay(180).springify()} style={{ flex: 1 }}>
-                <Pressable onPress={() => router.push('/matches')} style={{ flex: 1 }}>
+                <Pressable onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })} style={{ flex: 1 }}>
                   <LinearGradient colors={['#ECFEFF', '#E0F2FE']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
                     <T v="caption" color="#0E7490" style={{ fontFamily: fonts.display, letterSpacing: 0.6 }}>QUICK CHALLENGE</T>
                     <T style={{ fontFamily: fonts.display, fontSize: 17 }}>Discover{'\n'}a stranger</T>
@@ -183,7 +179,7 @@ export default function Challenges() {
                 <T>⭐ 👥</T>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-                <Pressable onPress={() => router.push('/matches')}>
+                <Pressable onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })}>
                   <LinearGradient colors={['#FF8A3D', '#F0520C']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>Join</T></LinearGradient>
                 </Pressable>
                 {active.length ? active.map((a, i) => (

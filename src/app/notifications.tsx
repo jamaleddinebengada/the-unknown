@@ -42,7 +42,7 @@ export default function Notifications() {
     if (d.conversation_id) router.push({ pathname: '/conversation/[id]', params: { id: d.conversation_id } });
     else if (n.type === 'interested' && d.post_id) router.push({ pathname: '/post/[id]/interested', params: { id: d.post_id } });
     else if (d.post_id) router.push({ pathname: '/post/[id]', params: { id: d.post_id } });
-    else if (n.type === 'match') router.push('/matches');
+    else if (n.type === 'match') router.navigate({ pathname: '/discover', params: { view: 'match' } });
   };
 
   return (

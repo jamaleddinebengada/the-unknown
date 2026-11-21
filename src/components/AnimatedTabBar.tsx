@@ -14,7 +14,7 @@ import { NotificationBadge } from './ui';
 type IconName = keyof typeof Ionicons.glyphMap;
 const META: Record<string, { label: string; icon: IconName; iconOn: IconName }> = {
   discover: { label: 'Discover', icon: 'planet-outline', iconOn: 'planet' },
-  matches: { label: 'Matches', icon: 'sparkles-outline', iconOn: 'sparkles' },
+  challenges: { label: 'Challenges', icon: 'trophy-outline', iconOn: 'trophy' },
   messages: { label: 'Messages', icon: 'chatbubbles-outline', iconOn: 'chatbubbles' },
   profile: { label: 'Profile', icon: 'person-circle-outline', iconOn: 'person-circle' },
 };

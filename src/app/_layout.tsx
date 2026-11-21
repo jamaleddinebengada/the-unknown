@@ -37,7 +37,7 @@ function RootNavigator() {
         <Stack.Screen name="search" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="edit-profile" />
-        <Stack.Screen name="challenges" />
+        <Stack.Screen name="matches" options={{ animation: 'none' }} />
         <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack.Protected>
     </Stack>
