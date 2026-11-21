@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useRouter , useFocusEffect } from 'expo-router';
+import { useState , useCallback } from 'react';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aurora, GradientText } from '@/components/Effects';
@@ -15,10 +15,7 @@ import { useBadges } from '@/hooks/useBadges';
 import { usePaged } from '@/hooks/usePaged';
 import { getFeed, getMyChallenges } from '@/services/api';
 import { XpBadge } from '@/features/challenges/Challenges';
-import type { ChallengeState } from '@/types/models';
-import { useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
-import type { FeedPost } from '@/types/models';
+import type { ChallengeState , FeedPost } from '@/types/models';
 import { unknownName } from '@/utils/format';
 
 const greeting = () => {
@@ -56,7 +53,7 @@ export default function Discover() {
           <PortalMark size={36} />
           <View style={{ gap: 3 }}>
             <T style={{ fontFamily: fonts.display, fontSize: 16, letterSpacing: 2.6 }}>THE UNKNOWN</T>
-            <View style={{ flexDirection: 'row' }}><XpBadge state={xp} /></View>
+            <Pressable accessibilityRole="button" accessibilityLabel="Open challenges" onPress={() => router.push('/challenges')} style={{ flexDirection: 'row' }}><XpBadge state={xp} /></Pressable>
           </View>
         </View>
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />

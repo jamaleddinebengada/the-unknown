@@ -37,6 +37,7 @@ function RootNavigator() {
         <Stack.Screen name="search" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="edit-profile" />
+        <Stack.Screen name="challenges" />
       </Stack.Protected>
     </Stack>
   );

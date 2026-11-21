@@ -5,13 +5,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withTiming, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Aurora, GradientText } from '@/components/Effects';
-import { AvatarStack, EmojiAvatar, IsoCubes, Sparkle, Star3D, StarRating, StatusPill, Vortex } from '@/components/Illustrations3D';
+import { Aurora } from '@/components/Effects';
+import { AvatarStack, EmojiAvatar, GlassShard, GoldTitle, IsoCubes, Sparkle, Star3D, StarRating, StatusPill, Vortex } from '@/components/Illustrations3D';
 import { useToast } from '@/components/Overlay';
 import { ErrorState, GradientButton, PremiumBadge, PremiumButton, T } from '@/components/ui';
 import { interestLabel, MATCH_MODES } from '@/constants/content';
 import { countryName, flagOf } from '@/constants/countries';
-import { colors, fonts, gradients, radius, spacing } from '@/constants/theme';
+import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { friendlyError } from '@/lib/supabase';
 import { findMysteryMatch, getMyChallenges, getMyMatches, respondMatch } from '@/services/api';
@@ -47,6 +47,13 @@ function Hero({ size, searching }: { size: number; searching: boolean }) {
       <Star3D size={18} tone="blue" delay={900} style={{ position: 'absolute', left: '22%', bottom: size * 0.16 }} />
       <Sparkle size={18} delay={200} style={{ position: 'absolute', right: '17%', bottom: size * 0.22 }} />
       <Sparkle size={12} color="#C4B5FD" delay={700} style={{ position: 'absolute', left: '30%', top: size * 0.02 }} />
+      <GlassShard w={14} h={26} rotate={-25} style={{ left: '27%', top: size * 0.08 }} />
+      <GlassShard w={12} h={22} rotate={35} delay={600} style={{ right: '28%', top: size * 0.14 }} />
+      <GlassShard w={18} h={12} rotate={10} delay={1200} style={{ left: '20%', top: size * 0.62 }} />
+      <GlassShard w={10} h={20} rotate={-40} delay={300} style={{ right: '24%', bottom: size * 0.08 }} />
+      <GlassShard w={16} h={10} rotate={60} delay={900} style={{ left: '38%', bottom: 0 }} />
+      <Sparkle size={10} color="#FDE68A" delay={400} style={{ position: 'absolute', left: '46%', top: size * 0.35 }} />
+      <Sparkle size={9} color="#FDE68A" delay={1000} style={{ position: 'absolute', left: '56%', top: size * 0.58 }} />
       <View style={{ position: 'absolute', left: '3%', top: size * 0.42 }}><EmojiAvatar seed="hero-left" size={56} float delay={300} /></View>
       <View style={{ position: 'absolute', right: '3%', top: size * 0.3 }}><EmojiAvatar seed="hero-right-2" size={52} float delay={1100} /></View>
     </View>
@@ -59,30 +66,29 @@ function MatchCard({ m, onAccept, onPass, busy }: { m: MysteryMatch; onAccept: (
   const waiting = m.i_accepted && !m.they_accepted && !m.conversation_id;
   const tags = [...m.shared_interests.map(interestLabel), ...m.other_tags].slice(0, 3);
   return (
-    <Animated.View entering={ZoomIn.springify().damping(15)} style={{ paddingTop: 16 }}>
-      <View style={[s.stackCard, { top: 0, left: 24, right: 24, opacity: 0.45 }]} />
-      <View style={[s.stackCard, { top: 8, left: 12, right: 12, opacity: 0.7 }]} />
-      <LinearGradient colors={['#2A2470', '#1A1D52', '#151A44']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.matchCard}>
+    <Animated.View entering={ZoomIn.springify().damping(15)}>
+      <LinearGradient colors={['#1F2557', '#161B45', '#12163A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.matchCard}>
         <View pointerEvents="none" style={s.cardGloss} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={{ flex: 1, gap: 6 }}>
+          <View style={{ flex: 1, gap: 4 }}>
             <T v="caption" color={colors.cyan} style={{ fontFamily: fonts.display, letterSpacing: 0.8 }}>
               {m.is_incoming ? 'SOMEONE FOUND YOU' : (MATCH_MODES.find((x) => x.key === m.mode)?.label ?? 'Mystery Match').toUpperCase()}
             </T>
-            <T style={{ fontFamily: fonts.display, fontSize: 24, lineHeight: 28 }}>UNKNOWN</T>
-            <T style={{ fontFamily: fonts.displaySemi, fontSize: 20, lineHeight: 24, color: colors.textSecondary }}>#{m.other_number}</T>
+            <T style={{ fontFamily: fonts.display, fontSize: 28, lineHeight: 32 }}>UNKNOWN ⭐</T>
+            <T style={{ fontFamily: fonts.displaySemi, fontSize: 19, lineHeight: 23, color: colors.textSecondary }}>#{m.other_number} 🚨</T>
             <T v="caption" color={colors.textSecondary}>{flagOf(m.other_country)} {m.other_country ? countryName(m.other_country) : 'Somewhere'}{m.other_age ? ` · ${m.other_age}` : ''} · {m.compatibility}% match</T>
-            <View style={{ gap: 6, marginTop: 4, alignItems: 'flex-start' }}>
-              {tags.map((t, i) => (
-                <LinearGradient key={t} colors={TAG_COLORS[i % TAG_COLORS.length]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tag}>
-                  <T style={s.tagText}>{t.toUpperCase()}</T>
-                </LinearGradient>
-              ))}
-            </View>
           </View>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <IsoCubes size={118} />
+            <IsoCubes size={104} />
+            <View style={s.alert}><T style={{ fontFamily: fonts.display, fontSize: 14 }}>!</T></View>
           </View>
+        </View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: spacing.sm }}>
+          {tags.map((t, i) => (
+            <View key={t} style={[s.tag, { backgroundColor: TAG_COLORS[i % TAG_COLORS.length][1], borderColor: TAG_COLORS[i % TAG_COLORS.length][0] }]}>
+              <T style={s.tagText}>{t.toUpperCase()}</T>
+            </View>
+          ))}
         </View>
         {m.other_tagline && <T style={{ fontStyle: 'italic', marginTop: spacing.sm }} color={colors.violetSoft}>“{m.other_tagline}”</T>}
         <View style={{ marginTop: spacing.md }}>
@@ -94,7 +100,7 @@ function MatchCard({ m, onAccept, onPass, busy }: { m: MysteryMatch; onAccept: (
             <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>You passed on this match.</T>
           ) : (
             <View style={{ gap: 6 }}>
-              <GradientButton label="Join" icon="sparkles" loading={busy} onPress={onAccept} />
+              <GradientButton label="Join" loading={busy} onPress={onAccept} />
               <PremiumButton tone="ghost" small label="Not this time" onPress={onPass} disabled={busy} />
             </View>
           )}
@@ -166,9 +172,7 @@ export default function Matches() {
             <StatusPill label={searching ? 'SEARCHING THE WORLD…' : 'THE UNKNOWN · ACTIVE'} />
             {profile?.is_premium && <PremiumBadge />}
           </View>
-          <GradientText text="DISCOVERY MODE" size={titleSize} width={width - 32} align="center" weight={fonts.display} letterSpacing={0.5} colors={gradients.candy} />
-          <View style={{ marginTop: -titleSize * 0.35 }} />
-          <GradientText text="ACTIVATED" size={titleSize} width={width - 32} align="center" weight={fonts.display} letterSpacing={1} colors={['#FFFFFF', '#E9D5FF']} />
+          <GoldTitle lines={['DISCOVERY MODE', 'ACTIVATED']} size={titleSize} width={width - 32} />
         </View>
 
         <Hero size={Math.min(230, width * 0.58)} searching={searching} />
@@ -208,6 +212,18 @@ export default function Matches() {
           </Animated.View>
         )}
 
+        <View style={s.trust}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={s.check}><Ionicons name="checkmark" size={12} color="#05301F" /></View>
+            <T style={{ fontFamily: fonts.displaySemi, fontSize: 13 }} color={colors.textSecondary}>100% anonymous</T>
+          </View>
+          <T style={{ fontFamily: fonts.displaySemi, fontSize: 13 }} color={colors.textSecondary}>⭐ {matches.length} this week</T>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <AvatarStack seeds={['t1', 't2', 't3']} size={24} />
+            <View style={s.plus}><Ionicons name="add" size={13} color={colors.text} /></View>
+          </View>
+        </View>
+
         {others.length > 0 && (
           <View style={{ gap: spacing.sm }}>
             <T style={{ fontFamily: fonts.display, fontSize: 18 }}>This week</T>
@@ -237,10 +253,13 @@ const s = StyleSheet.create({
   modeOn: { borderColor: 'rgba(255,255,255,0.35)' },
   timer: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.xl, backgroundColor: 'rgba(17,22,58,0.88)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
   timerIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#5B4BF0', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
-  stackCard: { position: 'absolute', height: 60, borderRadius: radius.xl, backgroundColor: '#3B3394', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
-  matchCard: { borderRadius: radius.xl, padding: spacing.lg, borderWidth: 1.5, borderColor: 'rgba(167,139,250,0.5)', overflow: 'hidden', shadowColor: '#6C5CFF', shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
+  alert: { position: 'absolute', top: -2, right: -2, width: 24, height: 24, borderRadius: 12, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
+  trust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, paddingHorizontal: 4 },
+  check: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
+  plus: { width: 24, height: 24, borderRadius: 12, marginLeft: -6, backgroundColor: '#7C3AED', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
+  matchCard: { borderRadius: 28, padding: spacing.lg, borderWidth: 1.5, borderColor: 'rgba(148,163,255,0.35)', overflow: 'hidden', shadowColor: '#6C5CFF', shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
   cardGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: 70, backgroundColor: 'rgba(255,255,255,0.05)' },
-  tag: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
+  tag: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1.5 },
   tagText: { fontFamily: fonts.display, fontSize: 12.5, letterSpacing: 0.6, color: colors.text },
   waiting: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(103,232,249,0.08)', borderWidth: 1, borderColor: 'rgba(103,232,249,0.3)' },
   emptyCard: { gap: 8, padding: spacing.lg, borderRadius: radius.xl, backgroundColor: 'rgba(24,31,74,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },

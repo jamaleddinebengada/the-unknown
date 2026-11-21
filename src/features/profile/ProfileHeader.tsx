@@ -1,68 +1,105 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { AnonymousAvatar } from '@/components/AnonymousAvatar';
-import { GlassCard, GlowRing, GradientText } from '@/components/Effects';
-import { InterestTag, PremiumBadge, T } from '@/components/ui';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import Animated, { FadeIn, FadeInRight } from 'react-native-reanimated';
+import { GlowRing } from '@/components/Effects';
+import { EmojiAvatar, OrbitBackdrop } from '@/components/Illustrations3D';
+import { PremiumBadge, T } from '@/components/ui';
 import { interestLabel, LANGUAGES } from '@/constants/content';
 import { countryName, flagOf } from '@/constants/countries';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { unknownName } from '@/utils/format';
 
-export function ProfileHeader({ number, seed, country, age, interests, tags, languages, tagline, premium, stats }: {
+const INTEREST_ART: Record<string, { emoji: string; colors: [string, string] }> = {
+  travel: { emoji: '🛣️', colors: ['#F59E0B', '#B45309'] }, business: { emoji: '💼', colors: ['#64748B', '#334155'] },
+  technology: { emoji: '🤖', colors: ['#38BDF8', '#1D4ED8'] }, relationships: { emoji: '💞', colors: ['#F472B6', '#BE185D'] },
+  life: { emoji: '🌿', colors: ['#34D399', '#047857'] }, psychology: { emoji: '🧠', colors: ['#C084FC', '#7E22CE'] },
+  adventure: { emoji: '🏔️', colors: ['#60A5FA', '#1E3A8A'] }, music: { emoji: '🎸', colors: ['#A16207', '#451A03'] },
+  movies: { emoji: '🎬', colors: ['#F87171', '#7F1D1D'] }, gaming: { emoji: '🎮', colors: ['#8B5CF6', '#3730A3'] },
+  sports: { emoji: '⚽', colors: ['#22C55E', '#14532D'] }, culture: { emoji: '🏛️', colors: ['#FBBF24', '#92400E'] },
+  education: { emoji: '📚', colors: ['#2DD4BF', '#115E59'] }, dreams: { emoji: '🌙', colors: ['#818CF8', '#312E81'] },
+  philosophy: { emoji: '🔮', colors: ['#A78BFA', '#4C1D95'] }, mystery: { emoji: '🕵️', colors: ['#475569', '#0F172A'] },
+};
+const CHIP_COLORS = ['#6D28D9', '#1D4ED8', '#2563EB', '#334155', '#0E7490'];
+
+export function ProfileHeader({ number, seed, country, age, interests, tags, languages, tagline, premium, stats, online = true }: {
   number: number; seed: string; country: string | null; age: string | null; interests: string[]; tags: string[]; languages: string[];
-  tagline: string | null; premium?: boolean; stats?: { label: string; value: string | number }[];
+  tagline: string | null; premium?: boolean; stats?: { label: string; value: string | number }[]; online?: boolean;
 }) {
+  const { width } = useWindowDimensions();
   return (
-    <Animated.View entering={FadeIn.duration(500)}>
-     <GlassCard accent={['#8B5CF6', '#38BDF8']} radius={radius.xl} padding={spacing.lg} glow>
-     <View style={{ gap: spacing.md }}>
-      <LinearGradient pointerEvents="none" colors={['rgba(109,74,255,0.35)', 'rgba(56,189,248,0.08)', 'rgba(0,0,0,0)']} style={s.heroGlow} />
-      <View style={{ alignItems: 'center', gap: 10 }}>
-        <GlowRing size={134} speed={8000} thickness={3}>
-          <AnonymousAvatar seed={seed} size={108} />
+    <Animated.View entering={FadeIn.duration(500)} style={{ gap: spacing.lg }}>
+      <View style={{ alignItems: 'center', paddingTop: spacing.md }}>
+        <OrbitBackdrop width={width - 32} height={260} />
+        <GlowRing size={176} speed={7000} thickness={3.5} colors={['#38BDF8', '#8B5CF6', '#EC4899']}>
+          <View style={s.avatarHalo}>
+            <EmojiAvatar seed={seed} size={150} ring={false} />
+          </View>
         </GlowRing>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <GradientText text={unknownName(number)} size={24} align="center" width={240} />
+        {online && <View style={s.onlineDot} />}
+        <View style={s.voice}><T style={{ fontSize: 13 }}>✨</T><T style={{ fontFamily: fonts.display, color: colors.success, fontSize: 14, letterSpacing: -1 }}>ıllı</T></View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: spacing.md }}>
+          <T style={{ fontFamily: fonts.display, fontSize: 30, lineHeight: 36 }}>{unknownName(number)}</T>
           {premium && <PremiumBadge />}
         </View>
-        <T color={colors.textSecondary}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
-        {tagline && <T style={{ textAlign: 'center', fontStyle: 'italic' }} color={colors.violetSoft}>“{tagline}”</T>}
+        <LinearGradient colors={['#6366F1', '#4F46E5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.countryPill}>
+          <T style={{ fontFamily: fonts.display, fontSize: 15 }}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
+        </LinearGradient>
+        {tagline && <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: spacing.sm, paddingHorizontal: spacing.md, fontSize: 15.5, lineHeight: 24 }}>{tagline}</T>}
       </View>
+
       {stats && (
         <View style={s.stats}>
           {stats.map((st) => (
             <View key={st.label} style={s.stat}>
-              <T v="section" style={{ fontFamily: fonts.extrabold }}>{st.value}</T>
+              <T style={{ fontFamily: fonts.display, fontSize: 22 }}>{st.value}</T>
               <T v="caption" color={colors.textMuted}>{st.label}</T>
             </View>
           ))}
         </View>
       )}
-      {tags.length > 0 && (
-        <View style={s.wrap}>{tags.map((t) => <InterestTag key={t} accent label={t} />)}</View>
-      )}
+
       {interests.length > 0 && (
-        <View style={{ gap: 8 }}>
-          <T v="overline" color={colors.textMuted}>INTERESTS</T>
-          <T>{interests.map(interestLabel).join(' · ')}</T>
+        <View style={{ gap: spacing.sm }}>
+          <T style={{ fontFamily: fonts.display, fontSize: 22 }}>{interests.length} interests</T>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+            {interests.map((i, idx) => {
+              const art = INTEREST_ART[i] ?? { emoji: '✨', colors: ['#6D28D9', '#312E81'] as [string, string] };
+              return (
+                <Animated.View key={i} entering={FadeInRight.delay(idx * 60).springify()}>
+                  <LinearGradient colors={art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
+                    <View pointerEvents="none" style={s.tileGloss} />
+                    <T style={{ fontSize: 40 }}>{art.emoji}</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 13 }}>{interestLabel(i)}</T>
+                  </LinearGradient>
+                </Animated.View>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
-      {languages.length > 0 && (
-        <View style={{ gap: 8 }}>
-          <T v="overline" color={colors.textMuted}>SPEAKS</T>
-          <View style={s.wrap}>{languages.map((l) => <InterestTag key={l} label={LANGUAGES.find((x) => x.code === l)?.label ?? l} />)}</View>
-        </View>
+
+      {(tags.length > 0 || languages.length > 0) && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {tags.map((t, i) => (
+            <View key={t} style={[s.chip, { backgroundColor: CHIP_COLORS[i % CHIP_COLORS.length] }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>{t}</T></View>
+          ))}
+          {languages.map((l) => (
+            <View key={l} style={[s.chip, { backgroundColor: 'rgba(51,65,85,0.8)' }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>🗣 {LANGUAGES.find((x) => x.code === l)?.label ?? l}</T></View>
+          ))}
+        </ScrollView>
       )}
-     </View>
-     </GlassCard>
     </Animated.View>
   );
 }
 
 const s = StyleSheet.create({
-  heroGlow: { position: 'absolute', left: -spacing.lg, right: -spacing.lg, top: -spacing.lg, height: 220 },
-  stat: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: radius.md, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.14)' },
+  avatarHalo: { borderRadius: 80, shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 24, elevation: 14 },
+  onlineDot: { position: 'absolute', top: spacing.md + 132, left: '50%', marginLeft: 48, width: 26, height: 26, borderRadius: 13, backgroundColor: colors.success, borderWidth: 4, borderColor: colors.bg },
+  voice: { position: 'absolute', top: spacing.md + 104, left: '50%', marginLeft: 82, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: 'rgba(20,25,60,0.92)', borderWidth: 1, borderColor: 'rgba(148,163,255,0.35)' },
+  countryPill: { marginTop: 6, paddingHorizontal: 22, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
   stats: { flexDirection: 'row', gap: 10 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
+  stat: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 22, backgroundColor: 'rgba(20,25,60,0.85)', borderWidth: 1, borderColor: 'rgba(148,163,255,0.22)' },
+  tile: { width: 104, height: 120, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
+  tileGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: '42%', backgroundColor: 'rgba(255,255,255,0.12)' },
+  chip: { paddingHorizontal: 18, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
 });

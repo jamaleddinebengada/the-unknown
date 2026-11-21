@@ -160,6 +160,8 @@ export const respondMatch = (id: string, accept: boolean) => rpc<string | null>(
 
 /* ---------------- challenges & XP ---------------- */
 export const getMyChallenges = () => rpc<ChallengeState>('get_my_challenges');
+export const getActiveStrangers = (limit = 6) =>
+  rpc<{ unknown_number: number; avatar_seed: string; country_code: string | null; online: boolean }[]>('get_active_strangers', { p_limit: limit });
 
 /* ---------------- notifications ---------------- */
 export async function getNotifications(): Promise<AppNotification[]> {

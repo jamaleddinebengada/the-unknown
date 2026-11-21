@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useEffect, useId, useMemo } from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import Svg, { Circle, Defs, G, Path, Polygon, RadialGradient, Stop, LinearGradient as SvgLinear } from 'react-native-svg';
+import Svg, { Circle, Defs, G, Path, Polygon, RadialGradient, Stop, LinearGradient as SvgLinear, Text as SvgText } from 'react-native-svg';
 import { colors, fonts } from '@/constants/theme';
 import { seeded } from '@/utils/format';
 
@@ -273,5 +273,91 @@ const styles = StyleSheet.create({
   avatarGloss: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.22)' },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(10,14,40,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)' },
   dot: { width: 8, height: 8, borderRadius: 4 },
+  planet: { position: 'absolute', borderRadius: 999, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 10, elevation: 4 },
   pillText: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 1, color: colors.text },
 });
+
+/* =====================================================================
+ * GoldTitle — chunky embossed 3D headline (gold, or gold → pink).
+ * Draws a dark extruded copy under a gradient face, like a game logo.
+ * ===================================================================== */
+export function GoldTitle({ lines, size = 34, width, pinkLast = false }: { lines: string[]; size?: number; width: number; pinkLast?: boolean }) {
+  const id = uid(useId());
+  const lh = size * 1.12;
+  const h = lh * lines.length + size * 0.35;
+  return (
+    <Svg width={width} height={h} accessibilityLabel={lines.join(' ')}>
+      <Defs>
+        <SvgLinear id={`${id}g`} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFF1B8" />
+          <Stop offset="0.45" stopColor="#FFC94A" />
+          <Stop offset="1" stopColor="#F08A0C" />
+        </SvgLinear>
+        <SvgLinear id={`${id}p`} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#FFD1EC" />
+          <Stop offset="0.5" stopColor="#F472B6" />
+          <Stop offset="1" stopColor="#C026D3" />
+        </SvgLinear>
+      </Defs>
+      {lines.map((line, i) => {
+        const y = size + i * lh;
+        const fill = pinkLast && i === lines.length - 1 ? `url(#${id}p)` : `url(#${id}g)`;
+        const depth = pinkLast && i === lines.length - 1 ? '#6B0F4F' : '#6B3300';
+        return (
+          <G key={line + i}>
+            <SvgText x={width / 2} y={y + size * 0.09} textAnchor="middle" fontFamily={fonts.display} fontSize={size} letterSpacing={1} fill={depth}>{line}</SvgText>
+            <SvgText x={width / 2} y={y + size * 0.05} textAnchor="middle" fontFamily={fonts.display} fontSize={size} letterSpacing={1} fill={depth} opacity={0.8}>{line}</SvgText>
+            <SvgText x={width / 2} y={y} textAnchor="middle" fontFamily={fonts.display} fontSize={size} letterSpacing={1} fill={fill} stroke="rgba(255,255,255,0.35)" strokeWidth={0.6}>{line}</SvgText>
+          </G>
+        );
+      })}
+    </Svg>
+  );
+}
+
+/* =====================================================================
+ * GlassShard — translucent crystal fragment drifting around the vortex.
+ * ===================================================================== */
+export function GlassShard({ w = 18, h = 30, rotate = 20, delay = 0, style }: { w?: number; h?: number; rotate?: number; delay?: number; style?: StyleProp<ViewStyle> }) {
+  const t = useSharedValue(0);
+  useEffect(() => {
+    t.value = withDelay(delay, withRepeat(withSequence(withTiming(1, { duration: 2600, easing: Easing.inOut(Easing.sin) }), withTiming(0, { duration: 2600, easing: Easing.inOut(Easing.sin) })), -1));
+  }, [t, delay]);
+  const a = useAnimatedStyle(() => ({ transform: [{ translateY: -8 * t.value }, { rotate: `${rotate + t.value * 18}deg` }], opacity: 0.55 + t.value * 0.35 }));
+  return (
+    <Animated.View style={[{ position: 'absolute', width: w, height: h }, a, style]}>
+      <LinearGradient colors={['rgba(255,255,255,0.75)', 'rgba(186,230,253,0.35)', 'rgba(167,139,250,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        style={{ flex: 1, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.8)' }} />
+    </Animated.View>
+  );
+}
+
+/* =====================================================================
+ * OrbitBackdrop — tilted orbit rings with small planets (profile hero).
+ * ===================================================================== */
+export function OrbitBackdrop({ width, height }: { width: number; height: number }) {
+  const spin = useSpin(30000);
+  const spin2 = useSpin(22000, true);
+  const cx = width / 2;
+  const cy = height / 2;
+  return (
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
+      <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+        <G transform={`rotate(-14 ${cx} ${cy})`}>
+          <Path d={`M ${cx - width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx + width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx - width * 0.48} ${cy}`} stroke="rgba(167,139,250,0.35)" strokeWidth={1.2} fill="none" />
+          <Path d={`M ${cx - width * 0.36} ${cy} A ${width * 0.36} ${height * 0.42} 0 1 0 ${cx + width * 0.36} ${cy} A ${width * 0.36} ${height * 0.42} 0 1 0 ${cx - width * 0.36} ${cy}`} stroke="rgba(103,232,249,0.22)" strokeWidth={1} fill="none" />
+        </G>
+      </Svg>
+      <Animated.View style={[StyleSheet.absoluteFill, spin]}>
+        <View style={[styles.planet, { left: cx - width * 0.42, top: cy - 20, width: 22, height: 22, backgroundColor: '#A855F7' }]} />
+        <View style={[styles.planet, { left: cx + width * 0.3, top: cy + height * 0.2, width: 10, height: 10, backgroundColor: '#38BDF8' }]} />
+      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, spin2]}>
+        <View style={[styles.planet, { left: cx + width * 0.15, top: cy - height * 0.36, width: 34, height: 34, backgroundColor: '#1E1B4B', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]} />
+        <View style={[styles.planet, { left: cx - width * 0.25, top: cy + height * 0.3, width: 8, height: 8, backgroundColor: '#67E8F9' }]} />
+      </Animated.View>
+      <Sparkle size={16} color="#C4B5FD" style={{ position: 'absolute', left: width * 0.2, top: height * 0.12 }} />
+      <Sparkle size={20} color="#A5B4FC" delay={500} style={{ position: 'absolute', right: width * 0.08, top: height * 0.4 }} />
+    </View>
+  );
+}
