@@ -1,6 +1,7 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { uniqueChannel } from '@/lib/realtime';
 import { supabase } from '@/lib/supabase';
 import { getMyConversations, unreadNotificationCount } from '@/services/api';
 
@@ -23,8 +24,7 @@ export function useBadges() {
 
   useEffect(() => {
     if (!session) return;
-    const ch = supabase
-      .channel(`badges:${session.user.id}`)
+    const ch = uniqueChannel('badges')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` }, refresh)
       .subscribe();
     return () => { supabase.removeChannel(ch); };

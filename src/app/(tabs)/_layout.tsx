@@ -16,3 +16,5 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+export { AppErrorBoundary as ErrorBoundary } from '@/components/AppErrorBoundary';

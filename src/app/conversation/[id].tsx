@@ -14,6 +14,7 @@ import { countryName, flagOf } from '@/constants/countries';
 import { colors, fonts, gradients, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { RevealSheet } from '@/features/chat/RevealSheet';
+import { uniqueChannel } from '@/lib/realtime';
 import { friendlyError, supabase } from '@/lib/supabase';
 import { aiAssist, blockUser, endConversation, getConversation, getMessages, markRead, sendMessage, setArchived } from '@/services/api';
 import type { ConversationDetail, Message } from '@/types/models';
@@ -67,7 +68,7 @@ export default function Conversation() {
   // realtime: new messages (RLS-filtered), typing broadcast and presence
   useEffect(() => {
     if (!session) return;
-    const ch = supabase.channel(`conv:${id}`, { config: { presence: { key: session.user.id }, broadcast: { self: false } } });
+    const ch = uniqueChannel(`conv:${id}`, { config: { presence: { key: session.user.id }, broadcast: { self: false } } });
     ch.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}` }, () => {
       setTyping(false);
       loadMessages().catch(() => {});

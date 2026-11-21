@@ -58,3 +58,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export { AppErrorBoundary as ErrorBoundary } from '@/components/AppErrorBoundary';

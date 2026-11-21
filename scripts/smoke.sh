@@ -18,6 +18,14 @@ echo "screen ${W}x${H}"
 for i in 1 2 3 4; do adb shell input tap $((W/2)) $((H*84/100)); sleep 3; done
 sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
 sleep 10; shot 03-home; echo "at home: $(alive)"
+TY=$((H*96/100))
+tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
+tab 30 04-matches
+tab 70 05-messages
+tab 90 06-profile
+tab 50 07-create
+adb shell input keyevent 4; sleep 4
+tab 10 08-discover
 
 adb logcat -d > smoke/logcat-full.txt
 grep -E "ReactNativeJS|AndroidRuntime|FATAL|ReactNative|unknown|Supabase|SoLoader|libc " smoke/logcat-full.txt > smoke/logcat-app.txt || true
