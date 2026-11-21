@@ -23,7 +23,7 @@ tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(a
 tab 30 04-matches
 tab 70 05-messages
 tab 90 06-profile
-tab 50 07-create
+adb shell input tap $((W/2)) $((H*89/100)); sleep 6; shot 07-create; echo "07-create: $(alive)"
 adb shell input keyevent 4; sleep 4
 tab 10 08-discover
 

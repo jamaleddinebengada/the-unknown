@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, { Extrapolation, FadeInDown, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aurora, GradientText } from '@/components/Effects';
 import { PortalMark } from '@/components/Logo';
@@ -95,11 +95,9 @@ export default function Discover() {
           ) : feed.error ? (
             <ErrorState message={feed.error} onRetry={feed.retry} />
           ) : (
-            <Animated.View entering={FadeInDown.springify()}>
-              <EmptyState icon="telescope-outline" title="Nothing here yet"
+            <EmptyState icon="telescope-outline" title="Nothing here yet"
                 body={category === 'my_country' ? 'Be the first voice from your country.' : 'Be the one who starts it. Someone may be waiting to discover your words.'}
                 action="Write the first post" onAction={() => router.push('/create')} />
-            </Animated.View>
           )
         }
         ListFooterComponent={feed.loadingMore ? <ActivityIndicator color={colors.violet} style={{ margin: spacing.lg }} /> :
