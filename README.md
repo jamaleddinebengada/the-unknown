@@ -21,14 +21,13 @@ Without `.env`, the app runs in **preview mode**. A yellow banner says the backe
 
 1. Create a project at supabase.com.
 2. Run `supabase/migrations/20261121000000_init.sql` (SQL editor, or `supabase db push`).
-3. **Auth → Providers:** enable Email. Enable Google and Apple if you want them, and add `theunknown://auth/callback` to the Redirect URLs.
+3. **Auth → Providers:** enable Email (and Apple for iOS), and add `theunknown://auth/callback` to the Redirect URLs.
 4. AI assist (optional): `supabase functions deploy ai-assist` then `supabase secrets set ANTHROPIC_API_KEY=...`
 
 ### Required credentials
 | Credential | Where | Needed for |
 |---|---|---|
 | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` | `.env` | everything |
-| Google OAuth client ID/secret | Supabase Auth → Google | Google sign-in |
 | Apple Services ID + key | Supabase Auth → Apple | Apple sign-in (iOS) |
 | `ANTHROPIC_API_KEY` | Supabase secret | AI post / conversation assist |
 | RevenueCat keys | Phase 5 | UNKNOWN PLUS subscriptions |

@@ -35,17 +35,6 @@ export async function completeAuthFromUrl(url: string) {
   }
 }
 
-export async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo, skipBrowserRedirect: Platform.OS !== 'web' },
-  });
-  if (error) throw error;
-  if (Platform.OS === 'web') return;
-  const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-  if (res.type === 'success') await completeAuthFromUrl(res.url);
-}
-
 export const appleAvailable = () => (Platform.OS === 'ios' ? AppleAuthentication.isAvailableAsync() : Promise.resolve(false));
 
 export async function signInWithApple() {

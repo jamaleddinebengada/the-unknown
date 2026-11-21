@@ -6,25 +6,23 @@ import { Platform, View } from 'react-native';
 import { useToast } from '@/components/Overlay';
 import { PortalMark } from '@/components/Logo';
 import { BackendNotice, Screen, StackHeader } from '@/components/Screen';
-import { GradientButton, PremiumButton, T } from '@/components/ui';
+import { GradientButton, T } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { friendlyError, isSupabaseConfigured } from '@/lib/supabase';
-import { appleAvailable, signInWithApple, signInWithGoogle } from '@/services/auth';
+import { appleAvailable, signInWithApple } from '@/services/auth';
 
 export default function CreateAccount() {
   const router = useRouter();
   const toast = useToast();
   const [apple, setApple] = useState(false);
-  const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => { appleAvailable().then(setApple).catch(() => {}); }, []);
 
-  const run = async (key: string, fn: () => Promise<void>) => {
+  const run = async (fn: () => Promise<void>) => {
     if (!isSupabaseConfigured) return toast(friendlyError(null), 'error');
-    setBusy(key);
     try { await fn(); } catch (e) {
       const code = (e as { code?: string }).code;
       if (code !== 'ERR_REQUEST_CANCELED') toast(friendlyError(e), 'error');
-    } finally { setBusy(null); }
+    }
   };
 
   return (
@@ -44,9 +42,8 @@ export default function CreateAccount() {
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
             buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
             cornerRadius={radius.pill} style={{ height: 54 }}
-            onPress={() => run('apple', signInWithApple)} />
+            onPress={() => run(signInWithApple)} />
         )}
-        <PremiumButton label="Continue with Google" icon="logo-google" loading={busy === 'google'} onPress={() => run('google', signInWithGoogle)} />
         <GradientButton label="Continue with Email" icon="mail-outline" onPress={() => router.push({ pathname: '/auth/email', params: { mode: 'signup' } })} />
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm }}>
           <Ionicons name="shield-checkmark-outline" size={14} color={colors.textMuted} />
