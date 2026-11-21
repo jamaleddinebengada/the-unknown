@@ -34,21 +34,32 @@ export function Pressy({ style, onPressIn, onPressOut, scaleTo = 0.97, ...rest }
 /* ---------------- Buttons ---------------- */
 interface BtnProps { label: string; onPress?: () => void; loading?: boolean; disabled?: boolean; icon?: keyof typeof Ionicons.glyphMap; style?: StyleProp<ViewStyle>; small?: boolean }
 
-export function GradientButton({ label, onPress, loading, disabled, icon, style, small, colors: g = gradients.primary }: BtnProps & { colors?: readonly [string, string, ...string[]] }) {
+/** Glossy 3D "game" button: gradient face over a darker base that it sinks into when pressed. */
+export function GradientButton({ label, onPress, loading, disabled, icon, style, small, colors: g = gradients.pill }: BtnProps & { colors?: readonly [string, string, ...string[]] }) {
   const off = disabled || loading;
+  const press = useSharedValue(0);
+  const face = useAnimatedStyle(() => ({ transform: [{ translateY: press.value * 3 }] }));
+  const h = small ? 44 : 56;
   return (
-    <Pressy accessibilityRole="button" accessibilityLabel={label} disabled={off}
+    <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={off}
+      onPressIn={() => { press.set(withSpring(1, { damping: 20, stiffness: 500 })); }}
+      onPressOut={() => { press.set(withSpring(0, { damping: 12, stiffness: 300 })); }}
       onPress={() => { haptic.soft(); onPress?.(); }}
-      style={[{ borderRadius: radius.pill, opacity: off ? 0.55 : 1 }, !off && glow(colors.violet), style]}>
-      <LinearGradient colors={g} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={[s.btn, small && s.btnSmall]}>
-        {loading ? <ActivityIndicator color={colors.text} /> : (
-          <>
-            {icon && <Ionicons name={icon} size={small ? 16 : 18} color={colors.text} />}
-            <Text style={[s.btnLabel, small && { fontSize: 14 }]}>{label}</Text>
-          </>
-        )}
-      </LinearGradient>
-    </Pressy>
+      style={[{ opacity: off ? 0.55 : 1, paddingBottom: 4 }, style]}>
+      <View style={[s.btnBase, { height: h, top: 4, backgroundColor: '#2E2490' }, !off && glow('#6C5CFF')]} />
+      <Animated.View style={[{ height: h, borderRadius: radius.pill, overflow: 'hidden' }, face]}>
+        <LinearGradient colors={g} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={[s.btn, small && s.btnSmall, { height: h }]}>
+          <View pointerEvents="none" style={[s.btnGloss, { height: h * 0.48 }]} />
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, s.btnRim]} />
+          {loading ? <ActivityIndicator color={colors.text} /> : (
+            <>
+              {icon && <Ionicons name={icon} size={small ? 17 : 20} color={colors.text} />}
+              <Text style={[s.btnGame, small && { fontSize: 15 }]}>{label.toUpperCase()}</Text>
+            </>
+          )}
+        </LinearGradient>
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -201,6 +212,10 @@ const s = StyleSheet.create({
   btn: { height: 54, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: spacing.xl },
   btnSmall: { height: 42, paddingHorizontal: spacing.lg },
   btnLabel: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, letterSpacing: 0.2 },
+  btnGame: { fontFamily: fonts.display, fontSize: 18, color: colors.text, letterSpacing: 0.6, textShadowColor: 'rgba(30,20,90,0.6)', textShadowOffset: { width: 0, height: 1.5 }, textShadowRadius: 2 },
+  btnBase: { position: 'absolute', left: 0, right: 0, borderRadius: radius.pill },
+  btnGloss: { position: 'absolute', top: 0, left: 0, right: 0, borderTopLeftRadius: radius.pill, borderTopRightRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.16)' },
+  btnRim: { borderRadius: radius.pill, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)' },
   solid: { backgroundColor: colors.elevated },
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.hairlineStrong },
   iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(29,36,54,0.7)' },

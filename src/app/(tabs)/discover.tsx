@@ -13,7 +13,11 @@ import { colors, fonts, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useBadges } from '@/hooks/useBadges';
 import { usePaged } from '@/hooks/usePaged';
-import { getFeed } from '@/services/api';
+import { getFeed, getMyChallenges } from '@/services/api';
+import { XpBadge } from '@/features/challenges/Challenges';
+import type { ChallengeState } from '@/types/models';
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import type { FeedPost } from '@/types/models';
 import { unknownName } from '@/utils/format';
 
@@ -31,6 +35,8 @@ export default function Discover() {
   const { notifications } = useBadges();
   const [category, setCategory] = useState<FeedCategory>('for_you');
   const feed = usePaged<FeedPost>((offset) => getFeed(category, offset), category);
+  const [xp, setXp] = useState<ChallengeState | null>(null);
+  useFocusEffect(useCallback(() => { getMyChallenges().then(setXp).catch(() => {}); }, []));
 
   const y = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((e) => { y.value = e.contentOffset.y; });
@@ -48,7 +54,10 @@ export default function Discover() {
       <View style={styles.top}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
           <PortalMark size={36} />
-          <T style={{ fontFamily: fonts.extrabold, fontSize: 14, letterSpacing: 3.4 }}>THE UNKNOWN</T>
+          <View style={{ gap: 3 }}>
+            <T style={{ fontFamily: fonts.display, fontSize: 16, letterSpacing: 2.6 }}>THE UNKNOWN</T>
+            <View style={{ flexDirection: 'row' }}><XpBadge state={xp} /></View>
+          </View>
         </View>
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />

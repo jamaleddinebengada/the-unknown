@@ -1,4 +1,7 @@
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ChallengesPanel } from '@/features/challenges/Challenges';
+import type { ChallengeState } from '@/types/models';
 import { ActivityIndicator, FlatList, RefreshControl, Share, View } from 'react-native';
 import { ScreenTitle } from '@/components/Effects';
 import { PostCard } from '@/components/PostCard';
@@ -8,7 +11,7 @@ import { colors, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { ProfileHeader } from '@/features/profile/ProfileHeader';
 import { usePaged } from '@/hooks/usePaged';
-import { getUserPosts } from '@/services/api';
+import { getMyChallenges, getUserPosts } from '@/services/api';
 import type { FeedPost } from '@/types/models';
 import { ageFromDate, unknownName } from '@/utils/format';
 
@@ -18,6 +21,8 @@ export default function MyProfile() {
   const resetIfNeeded = () => (session ? refreshProfile() : resetIdentity());
   const n = profile?.unknown_number ?? 0;
   const posts = usePaged<FeedPost>((o) => getUserPosts(n, o), String(n));
+  const [challenges, setChallenges] = useState<ChallengeState | null>(null);
+  useFocusEffect(useCallback(() => { getMyChallenges().then(setChallenges).catch(() => {}); }, []));
   if (!profile) return <Screen><ErrorState message="Your anonymous identity is still connecting." onRetry={() => { resetIfNeeded(); }} /></Screen>;
 
   const header = (
@@ -32,6 +37,7 @@ export default function MyProfile() {
         languages={profile.languages} tagline={profile.tagline} premium={profile.is_premium}
         stats={[{ label: 'Posts', value: posts.items.length + (posts.done ? '' : '+') }, { label: 'Member since', value: new Date(profile.created_at).getFullYear() }]} />
       <PremiumButton icon="create-outline" label="Edit profile" onPress={() => router.push('/edit-profile')} />
+      {challenges && <ChallengesPanel state={challenges} />}
       <T v="overline" color={colors.textMuted} style={{ marginTop: spacing.sm }}>YOUR POSTS</T>
     </View>
   );

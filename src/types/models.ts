@@ -160,3 +160,8 @@ export interface AppNotification {
   read_at: string | null;
   created_at: string;
 }
+
+export interface Challenge { key: string; title: string; subtitle: string; xp: number; done: boolean; icon: string }
+export interface ChallengeState {
+  xp: number; level: number; level_xp: number; per_level: number; active_days: number; matched_today: boolean; challenges: Challenge[];
+}

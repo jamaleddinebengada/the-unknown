@@ -96,7 +96,7 @@ export function GlassCard({ children, style, accent, padding = 16, radius: r = r
 /* =====================================================================
  * GradientText — headline text filled with a gradient (SVG, no native deps).
  * ===================================================================== */
-export function GradientText({ text, size = 30, colors: g = ['#F8FAFC', '#C4B5FD', '#67E8F9'], weight = fonts.extrabold, letterSpacing = -0.6, width, align = 'left' }: {
+export function GradientText({ text, size = 30, colors: g = ['#F8FAFC', '#C4B5FD', '#67E8F9'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
   text: string; size?: number; colors?: readonly string[]; weight?: string; letterSpacing?: number; width?: number; align?: 'left' | 'center';
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');

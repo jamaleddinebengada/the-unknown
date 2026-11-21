@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import type {
-  AppNotification, Comment, ConversationDetail, ConversationSummary, FeedPost, InterestedUser, Message,
+  AppNotification, ChallengeState, Comment, ConversationDetail, ConversationSummary, FeedPost, InterestedUser, Message,
   MysteryMatch, Profile, PublicProfile, PostType, Audience,
 } from '@/types/models';
 
@@ -157,6 +157,9 @@ export const getMyMatches = () => rpc<MysteryMatch[]>('get_my_matches');
 export const findMysteryMatch = (mode: string) =>
   rpc<MysteryMatch[]>('find_mystery_match', { p_mode: mode }).then((r) => r[0] ?? null);
 export const respondMatch = (id: string, accept: boolean) => rpc<string | null>('respond_match', { p_match: id, p_accept: accept });
+
+/* ---------------- challenges & XP ---------------- */
+export const getMyChallenges = () => rpc<ChallengeState>('get_my_challenges');
 
 /* ---------------- notifications ---------------- */
 export async function getNotifications(): Promise<AppNotification[]> {

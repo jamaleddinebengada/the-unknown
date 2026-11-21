@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 
 export const colors = {
-  bg: '#090B14',
-  bgSecondary: '#101421',
-  card: '#161B2B',
-  elevated: '#1D2436',
+  bg: '#0B0F28',
+  bgSecondary: '#11163A',
+  card: '#181F4A',
+  elevated: '#222A5C',
   hairline: 'rgba(248,250,252,0.06)',
   hairlineStrong: 'rgba(248,250,252,0.12)',
 
@@ -31,7 +31,12 @@ export const colors = {
 export const gradients = {
   primary: ['#6D4AFF', '#A855F7'] as const,
   secondary: ['#38BDF8', '#8B5CF6'] as const,
-  mystery: ['#090B14', '#1B1640', '#101421'] as const,
+  mystery: ['#0B0F2A', '#1A1550', '#0E1330'] as const,
+  /** Headline candy gradient (pink → violet → white). */
+  candy: ['#FF8AD8', '#C084FC', '#F5F3FF'] as const,
+  /** Glossy pill buttons. */
+  pill: ['#8B7BFF', '#6C5CFF', '#5B4BF0'] as const,
+  gold: ['#FFE07A', '#FBBF24', '#F59E0B'] as const,
   cardSheen: ['rgba(139,92,246,0.16)', 'rgba(22,27,43,0)'] as const,
 };
 
@@ -64,10 +69,14 @@ export const fonts = {
   semibold: 'Inter_600SemiBold',
   bold: 'Inter_700Bold',
   extrabold: 'Inter_800ExtraBold',
+  /** Rounded, playful display face for headlines, buttons and game UI. */
+  display: 'Fredoka_700Bold',
+  displaySemi: 'Fredoka_600SemiBold',
 } as const;
 
 export const type = {
-  display: { fontFamily: fonts.extrabold, fontSize: 36, lineHeight: 42, letterSpacing: -0.8 },
+  display: { fontFamily: 'Fredoka_700Bold', fontSize: 36, lineHeight: 42, letterSpacing: 0 },
+  game: { fontFamily: 'Fredoka_700Bold', fontSize: 18, lineHeight: 23, letterSpacing: 0.3 },
   screenTitle: { fontFamily: fonts.bold, fontSize: 28, lineHeight: 34, letterSpacing: -0.5 },
   section: { fontFamily: fonts.semibold, fontSize: 21, lineHeight: 27, letterSpacing: -0.3 },
   cardTitle: { fontFamily: fonts.semibold, fontSize: 17, lineHeight: 23 },
