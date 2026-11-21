@@ -1,0 +1,49 @@
+name: Smoke test on Android emulator
+
+# Builds an x86_64 release APK, launches it on an emulator, and records the
+# crash log (logcat) + screenshots so startup crashes can be diagnosed.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL || 'https://summcadnxnckemvpzojh.supabase.co' }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Vojut9MapFQJWxA9Q0DV-A_3pCxbwV8' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: zulu, java-version: 17 }
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - name: Build x86_64 release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=x86_64
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Run on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash scripts/smoke.sh android/app/build/outputs/apk/release/app-release.apk
+      - name: Publish smoke results
+        if: always()
+        run: |
+          TAG="smoke-${{ github.run_number }}"
+          gh release create "$TAG" --prerelease --title "Smoke test ${{ github.run_number }}" --notes "Emulator smoke test for ${{ github.sha }}" smoke/* || true
