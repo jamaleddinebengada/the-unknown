@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useRef, useState } from 'react';
-import { Alert, Share, StyleSheet, View } from 'react-native';
+import { Alert, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import { interestLabel, postTypeLabel } from '@/constants/content';
 import { countryName, flagOf } from '@/constants/countries';
@@ -39,6 +39,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
   const lastTap = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accent = typeAccent[post.type] ?? typeAccent.thought;
+  const narrow = useWindowDimensions().width < 380;
   const heart = useSharedValue(1);
   const heartStyle = useAnimatedStyle(() => ({ transform: [{ scale: heart.value }] }));
 
@@ -121,7 +122,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
 
   const interestLabelText = post.is_mine
     ? `${post.interested_count} interested`
-    : post.my_interest === 'accepted' ? 'Connected' : post.my_interest === 'pending' ? 'Requested' : 'I’m Interested';
+    : post.my_interest === 'accepted' ? 'Connected' : post.my_interest === 'pending' ? 'Requested' : narrow ? 'Interested' : 'I’m Interested';
   const imageUrl = mediaUrl(post.image_path);
   const voiceUrl = mediaUrl(post.voice_path);
 
@@ -137,8 +138,8 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 </View>
               </Pressy>
               <View style={{ flex: 1 }}>
-                <T v="bodyStrong" style={{ fontFamily: fonts.bold, letterSpacing: 0.6, fontSize: 14 }}>{unknownName(post.author_number)}{post.is_mine ? '  ·  You' : ''}</T>
-                <T v="caption" color={colors.textMuted}>
+                <T v="bodyStrong" numberOfLines={1} style={{ fontFamily: fonts.bold, letterSpacing: 0.4, fontSize: narrow ? 13 : 14 }}>{narrow ? `#${post.author_number}` : unknownName(post.author_number)}{post.is_mine ? ' · You' : ''}</T>
+                <T v="caption" color={colors.textMuted} numberOfLines={1}>
                   {flagOf(post.author_country)} {post.author_country ? countryName(post.author_country) : 'Hidden'}
                   {post.author_age ? ` · ${post.author_age}` : ''} · {timeAgo(post.created_at)}
                 </T>
@@ -181,9 +182,11 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 <Ionicons name="chatbubble-ellipses-outline" size={18} color={colors.textSecondary} />
                 <T v="caption" color={colors.textSecondary} style={{ fontFamily: fonts.semibold }}>{compact(post.comment_count)}</T>
               </Pressy>
+{!narrow && (
               <Pressy scaleTo={0.88} accessibilityLabel="Share" onPress={share} style={s.action}>
                 <Ionicons name="paper-plane-outline" size={18} color={colors.textSecondary} />
               </Pressy>
+              )}
               <View style={{ flex: 1 }} />
               <Pressy accessibilityLabel={interestLabelText} onPress={onInterested} scaleTo={0.94}
                 style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: colors.violet, shadowOpacity: 0.6, shadowRadius: 12, elevation: 6 }]}>
@@ -206,6 +209,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
       </Pressy>
 
       <BottomSheet visible={menu} onClose={() => setMenu(false)}>
+        <SheetAction icon="paper-plane-outline" label="Share post" onPress={() => { setMenu(false); share(); }} />
         {post.is_mine ? (
           <>
             <SheetAction icon="people-outline" label="People interested" onPress={() => { setMenu(false); router.push({ pathname: '/post/[id]/interested', params: { id: post.id } }); }} />
@@ -243,10 +247,10 @@ const s = StyleSheet.create({
   quoteBar: { width: 3, borderRadius: 2 },
   image: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.lg, backgroundColor: colors.elevated },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.08)', marginTop: 4 },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 7, paddingHorizontal: 11, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.04)' },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.04)' },
   actionOn: { backgroundColor: 'rgba(251,113,133,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
-  interested: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 9, paddingHorizontal: 15, borderRadius: radius.pill },
+  interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },
   interestedOn: { backgroundColor: 'rgba(139,92,246,0.16)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.45)' },
 });
