@@ -1,25 +1,75 @@
 {
   "expo": {
-    "name": "the-unknown",
+    "name": "THE UNKNOWN",
     "slug": "the-unknown",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.theunknown.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "THE UNKNOWN uses the microphone to record voice posts and voice messages.",
+        "NSPhotoLibraryUsageDescription": "THE UNKNOWN lets you attach photos to posts and messages."
+      }
     },
     "android": {
+      "package": "com.theunknown.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#090B14",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#090B14",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160
+        }
+      ],
+      "expo-secure-store",
+      "expo-image",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "THE UNKNOWN uses the microphone to record voice posts."
+        }
+      ],
+      "expo-web-browser",
+      "expo-localization",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "THE UNKNOWN lets you attach photos to posts."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#8B5CF6"
+        }
+      ]
+    ],
+    "scheme": "theunknown",
+    "backgroundColor": "#090B14",
+    "experiments": {
+      "typedRoutes": false
     }
   }
 }
