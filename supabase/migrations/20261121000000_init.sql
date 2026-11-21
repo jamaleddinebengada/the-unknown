@@ -10,7 +10,7 @@
 --   * Privileged columns (premium, status, counters) are not client-writable.
 -- =====================================================================
 
-create extension if not exists pgcrypto;
+-- gen_random_uuid() is built into Postgres 13+
 
 -- ---------- enums ----------------------------------------------------
 create type public.account_status as enum ('active', 'suspended', 'banned');
@@ -57,7 +57,7 @@ create table public.profiles (
   discover_topics text[] not null default '{}',
   personality_tags text[] not null default '{}',
   tagline text check (char_length(tagline) <= 80),
-  avatar_seed text not null default encode(gen_random_bytes(6), 'hex'),
+  avatar_seed text not null default substr(md5(random()::text || clock_timestamp()::text), 1, 12),
   show_age boolean not null default true,
   show_country boolean not null default true,
   show_online boolean not null default true,
@@ -1011,3 +1011,11 @@ create policy "chat media read" on storage.objects for select to authenticated
 create policy "avatar own" on storage.objects for all to authenticated
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text)
   with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ---------- hardening (applied to production 2026-11-21) -------------
+revoke execute on function public.handle_new_user(), public.posts_before_insert(), public.comments_rate_limit(),
+  public.messages_before_insert(), public.messages_after_insert(), public.likes_counter(), public.comments_counter()
+  from authenticated;
+revoke execute on function public.post_row(public.posts, uuid), public.match_row(public.matches),
+  public.can_view_post(public.posts, uuid), public.is_blocked(uuid, uuid) from authenticated;
+comment on table public.matches is 'No client policies on purpose: read/written only through get_my_matches / find_mystery_match / respond_match.';
