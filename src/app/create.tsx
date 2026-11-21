@@ -9,7 +9,7 @@ import { Atmosphere } from '@/components/Atmosphere';
 import { CountrySheet } from '@/components/CountryPicker';
 import { PortalMark } from '@/components/Logo';
 import { BottomSheet, useToast } from '@/components/Overlay';
-import { BackendNotice, Screen } from '@/components/Screen';
+import { Screen } from '@/components/Screen';
 import { CategoryChip, GradientButton, IconButton, PremiumButton, Pressy, T } from '@/components/ui';
 import { useVoiceRecorder, VoicePlayer } from '@/components/VoiceNote';
 import { AUDIENCES, INTERESTS, POST_TYPES } from '@/constants/content';
@@ -125,7 +125,6 @@ export default function CreatePost() {
       {loadingEdit ? <ActivityIndicator color={colors.violet} style={{ marginTop: 60 }} /> : (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
-            <BackendNotice />
             <Animated.View entering={FadeIn} style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
               <T v="screenTitle">What is on your mind?</T>
             </Animated.View>

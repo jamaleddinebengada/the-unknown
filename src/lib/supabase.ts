@@ -37,7 +37,7 @@ export const mediaUrl = (path?: string | null) =>
 /** Turns Postgres exception messages from our RPCs into human sentences. */
 export function friendlyError(e: unknown): string {
   const msg = (e as { message?: string })?.message ?? String(e);
-  if (!isSupabaseConfigured) return 'Backend not connected yet — add your Supabase keys to .env.';
+  if (!isSupabaseConfigured) return 'The community is unreachable right now. Please try again in a moment.';
   if (msg.includes('rate_limited')) return 'You are going a little fast. Take a breath and try again soon.';
   if (msg.includes('daily_limit_reached')) return 'You have used today’s Mystery Match. A new one arrives tomorrow.';
   if (msg.includes('must_be_18')) return 'THE UNKNOWN is for adults 18 and over.';

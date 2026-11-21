@@ -1,5 +1,7 @@
 -- =====================================================================
 -- THE UNKNOWN — initial schema
+-- Access model: every user is an anonymous guest (Supabase anonymous sign-in, no email/password).
+--   Enable it in Dashboard → Authentication → Sign In / Providers → "Allow anonymous sign-ins".
 -- Principles:
 --   * Every table has RLS enabled. Clients never read other people's rows
 --     directly: cross-user reads go through SECURITY DEFINER functions that
@@ -60,7 +62,7 @@ create table public.profiles (
   show_country boolean not null default true,
   show_online boolean not null default true,
   who_can_message text not null default 'approved' check (who_can_message in ('approved','nobody')),
-  onboarding_complete boolean not null default false,
+  onboarding_complete boolean not null default true,   -- guests enter instantly; nothing is required
   -- privileged (not client-writable)
   is_premium boolean not null default false,
   status public.account_status not null default 'active',
@@ -895,7 +897,7 @@ language plpgsql security definer set search_path = public as $$
 declare me profiles; today_count int; daily_limit int; cand record; new_match matches;
 begin
   select * into me from profiles where id = auth.uid();
-  if me.id is null or me.status <> 'active' or not me.onboarding_complete then raise exception 'not_allowed'; end if;
+  if me.id is null or me.status <> 'active' then raise exception 'not_allowed'; end if;
   daily_limit := case when me.is_premium then 10 else 1 end;
   select count(*) into today_count from matches where user_a = me.id and match_date = current_date;
   if today_count >= daily_limit then raise exception 'daily_limit_reached'; end if;
@@ -907,7 +909,7 @@ begin
     (select count(*) from unnest(o.conversation_prefs) x where x = any(me.conversation_prefs)) as pref_n
   into cand
   from profiles o
-  where o.id <> me.id and o.status = 'active' and o.onboarding_complete and o.who_can_message <> 'nobody'
+  where o.id <> me.id and o.status = 'active' and o.who_can_message <> 'nobody'
     and not is_blocked(o.id, me.id)
     and not exists (select 1 from matches m where (m.user_a = me.id and m.user_b = o.id) or (m.user_a = o.id and m.user_b = me.id))
     and (p_mode <> 'world' or o.country_code is distinct from me.country_code)

@@ -12,23 +12,22 @@ cp .env.example .env          # add your Supabase URL + anon key
 npx expo start                # press a (Android) / i (iOS)
 ```
 
-Native modules such as Apple Sign-In, audio recording and haptics need a **development build**:
+Native modules such as audio recording and haptics need a **development build**:
 `npx expo run:android`, or `npx eas-cli@latest build --profile development`.
 
-Without `.env`, the app runs in **preview mode**. A yellow banner says the backend is not connected, and every action shows that message instead of pretending to work.
+**No sign-up, no login.** On first launch the app silently creates an anonymous guest identity (Supabase anonymous sign-in). The session is stored on the device, so the same `UNKNOWN #number` comes back every time. Settings offers *New anonymous identity* and *Delete my data*.
 
 ## Backend setup (Supabase)
 
 1. Create a project at supabase.com.
 2. Run `supabase/migrations/20261121000000_init.sql` (SQL editor, or `supabase db push`).
-3. **Auth → Providers:** enable Email (and Apple for iOS), and add `theunknown://auth/callback` to the Redirect URLs.
+3. **Authentication → Sign In / Providers:** turn on **Allow anonymous sign-ins**. Recommended against abuse: enable CAPTCHA (Turnstile) protection for anonymous sign-ins.
 4. AI assist (optional): `supabase functions deploy ai-assist` then `supabase secrets set ANTHROPIC_API_KEY=...`
 
 ### Required credentials
 | Credential | Where | Needed for |
 |---|---|---|
 | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` | `.env` | everything |
-| Apple Services ID + key | Supabase Auth → Apple | Apple sign-in (iOS) |
 | `ANTHROPIC_API_KEY` | Supabase secret | AI post / conversation assist |
 | RevenueCat keys | Phase 5 | UNKNOWN PLUS subscriptions |
 

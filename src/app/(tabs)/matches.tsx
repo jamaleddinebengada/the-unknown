@@ -8,7 +8,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
 import { PortalMark } from '@/components/Logo';
 import { useToast } from '@/components/Overlay';
-import { BackendNotice, Screen } from '@/components/Screen';
+import { Screen } from '@/components/Screen';
 import { ErrorState, GradientButton, InterestTag, PremiumBadge, PremiumButton, T } from '@/components/ui';
 import { interestLabel, MATCH_MODES } from '@/constants/content';
 import { countryName, flagOf } from '@/constants/countries';
@@ -142,7 +142,6 @@ export default function Matches() {
           <T v="screenTitle">Someone is waiting to discover you.</T>
           <T color={colors.textSecondary}>{profile?.is_premium ? 'Up to 10 matches a day.' : 'One Mystery Match a day. Identity stays hidden until you both choose otherwise.'}</T>
         </View>
-        <BackendNotice />
 
         {loading ? <ActivityIndicator color={colors.violet} /> : error ? <ErrorState message={error} onRetry={load} /> : searching ? <Searching /> : featured ? (
           <MatchCard m={featured} busy={busy === featured.match_id} onAccept={() => respond(featured, true)} onPass={() => respond(featured, false)} />

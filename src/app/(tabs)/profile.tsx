@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, RefreshControl, Share, View } from 'react-native';
 import { PostCard } from '@/components/PostCard';
 import { Screen } from '@/components/Screen';
-import { EmptyState, IconButton, PremiumButton, T } from '@/components/ui';
+import { EmptyState, ErrorState, IconButton, PremiumButton, T } from '@/components/ui';
 import { colors, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { ProfileHeader } from '@/features/profile/ProfileHeader';
@@ -13,10 +13,11 @@ import { ageFromDate, unknownName } from '@/utils/format';
 
 export default function MyProfile() {
   const router = useRouter();
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, session, resetIdentity } = useAuth();
+  const resetIfNeeded = () => (session ? refreshProfile() : resetIdentity());
   const n = profile?.unknown_number ?? 0;
   const posts = usePaged<FeedPost>((o) => getUserPosts(n, o), String(n));
-  if (!profile) return <Screen><ActivityIndicator color={colors.violet} style={{ marginTop: 80 }} /></Screen>;
+  if (!profile) return <Screen><ErrorState message="Your anonymous identity is still connecting." onRetry={() => { resetIfNeeded(); }} /></Screen>;
 
   const header = (
     <View style={{ gap: spacing.md, marginBottom: spacing.md }}>

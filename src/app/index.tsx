@@ -9,14 +9,12 @@ import { useAuth } from '@/features/auth/AuthProvider';
 
 /** Splash: shows the portal briefly, then routes to the right place. */
 export default function Splash() {
-  const { ready, session, profile } = useAuth();
+  const { ready, entered } = useAuth();
   const [minDelay, setMinDelay] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMinDelay(true), 1100); return () => clearTimeout(t); }, []);
 
   if (ready && minDelay) {
-    if (!session) return <Redirect href="/welcome" />;
-    if (!profile?.onboarding_complete) return <Redirect href="/setup/profile" />;
-    return <Redirect href="/discover" />;
+    return <Redirect href={entered ? '/discover' : '/welcome'} />;
   }
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: 28 }}>

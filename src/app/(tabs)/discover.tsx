@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { PortalMark } from '@/components/Logo';
 import { PostCard } from '@/components/PostCard';
-import { BackendNotice, Screen } from '@/components/Screen';
+import { Screen } from '@/components/Screen';
 import { CategoryChip, EmptyState, ErrorState, IconButton, PostSkeleton, T } from '@/components/ui';
 import { FEED_CATEGORIES, type FeedCategory } from '@/constants/content';
 import { colors, fonts, spacing } from '@/constants/theme';
@@ -31,7 +31,6 @@ export default function Discover() {
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
       </View>
-      <BackendNotice />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: spacing.md }}>
         {FEED_CATEGORIES.map((c) => (
           <CategoryChip key={c.key} label={c.label} selected={category === c.key} onPress={() => setCategory(c.key)} />

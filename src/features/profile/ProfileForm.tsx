@@ -3,12 +3,11 @@ import { KeyboardAvoidingView, Platform, ScrollView, Switch, View } from 'react-
 import { CountryField } from '@/components/CountryPicker';
 import { useToast } from '@/components/Overlay';
 import { CategoryChip, GradientButton, T, TextField } from '@/components/ui';
-import { CONVERSATION_PREFS, LANGUAGES, PERSONALITY_TAGS, POST_TYPES } from '@/constants/content';
+import { CONVERSATION_PREFS, INTERESTS, LANGUAGES, PERSONALITY_TAGS, POST_TYPES } from '@/constants/content';
 import { colors, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { updateMyProfile, type ProfileUpdate } from '@/services/api';
 import type { Profile } from '@/types/models';
-import { ageFromDate } from '@/utils/format';
 
 const GENDERS = [{ key: 'woman', label: 'Woman' }, { key: 'man', label: 'Man' }, { key: 'nonbinary', label: 'Non-binary' }, { key: 'other', label: 'Prefer to self-describe' }];
 
@@ -34,40 +33,28 @@ function Chips({ items, value, onChange, max }: { items: { key: string; label: s
   );
 }
 
-/** Shared by onboarding (Profile Setup) and Edit Profile. Collects only what matching needs. */
+/** Edit Profile. Everything is optional — no personal information is ever required. */
 export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
   profile: Profile | null; submitLabel: string; onSaved: () => void; showPrivacy?: boolean;
 }) {
   const toast = useToast();
-  const init = profile?.birth_date ? profile.birth_date.split('-') : ['', '', ''];
-  const [username, setUsername] = useState(profile?.username ?? '');
-  const [dd, setDd] = useState(init[2] ?? '');
-  const [mm, setMm] = useState(init[1] ?? '');
-  const [yyyy, setYyyy] = useState(init[0] ?? '');
   const [country, setCountry] = useState<string | null>(profile?.country_code ?? null);
+  const [interests, setInterests] = useState<string[]>(profile?.interests ?? []);
   const [gender, setGender] = useState<string | null>(profile?.gender ?? null);
   const [languages, setLanguages] = useState<string[]>(profile?.languages?.length ? profile.languages : []);
   const [prefs, setPrefs] = useState<string[]>(profile?.conversation_prefs ?? []);
   const [topics, setTopics] = useState<string[]>(profile?.discover_topics ?? []);
   const [tags, setTags] = useState<string[]>(profile?.personality_tags ?? []);
   const [tagline, setTagline] = useState(profile?.tagline ?? '');
-  const [showAge, setShowAge] = useState(profile?.show_age ?? true);
   const [showCountry, setShowCountry] = useState(profile?.show_country ?? true);
   const [busy, setBusy] = useState(false);
-
-  const usernameOk = /^[a-zA-Z0-9_.]{3,24}$/.test(username);
-  const iso = yyyy.length === 4 && mm && dd ? `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}` : '';
-  const dateValid = !!iso && !Number.isNaN(new Date(iso).getTime()) && Number(mm) <= 12 && Number(dd) <= 31;
-  const age = dateValid ? ageFromDate(iso) : null;
-  const ageError = iso && !dateValid ? 'Check the date.' : age !== null && age < 18 ? 'THE UNKNOWN is only for adults (18+).' : undefined;
-  const valid = usernameOk && dateValid && age !== null && age >= 18 && age < 110 && !!country && languages.length > 0;
 
   const save = async () => {
     setBusy(true);
     try {
       const patch: ProfileUpdate = {
-        username, birth_date: iso, country_code: country, gender, languages, conversation_prefs: prefs,
-        discover_topics: topics, personality_tags: tags, tagline: tagline.trim() || null, show_age: showAge, show_country: showCountry,
+        country_code: country, gender, languages, interests, conversation_prefs: prefs,
+        discover_topics: topics, personality_tags: tags, tagline: tagline.trim() || null, show_country: showCountry,
       };
       await updateMyProfile(patch);
       onSaved();
@@ -77,27 +64,17 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.xl, paddingBottom: 140 }} keyboardShouldPersistTaps="handled">
-        <Section title="Username" hint="Private handle for your account. Publicly you appear as UNKNOWN #number.">
-          <TextField icon="at" value={username} onChangeText={(t) => setUsername(t.replace(/\s/g, ''))} autoCapitalize="none" autoCorrect={false} maxLength={24}
-            placeholder="night_wanderer" error={username && !usernameOk ? '3–24 letters, numbers, _ or .' : undefined} />
+        <Section title="Interests" hint="Shape your feed and your Mystery Matches.">
+          <Chips items={INTERESTS.map((i) => ({ key: i.slug, label: i.label }))} value={interests} onChange={setInterests} />
         </Section>
 
-        <Section title="Date of birth" hint="Used to verify you’re 18+ and to show an age range. Never shown exactly.">
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <View style={{ flex: 1 }}><TextField placeholder="DD" value={dd} onChangeText={(t) => setDd(t.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={2} /></View>
-            <View style={{ flex: 1 }}><TextField placeholder="MM" value={mm} onChangeText={(t) => setMm(t.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={2} /></View>
-            <View style={{ flex: 1.6 }}><TextField placeholder="YYYY" value={yyyy} onChangeText={(t) => setYyyy(t.replace(/\D/g, ''))} keyboardType="number-pad" maxLength={4} /></View>
-          </View>
-          {ageError && <T v="caption" color={colors.danger}>{ageError}</T>}
-        </Section>
-
-        <CountryField value={country} onChange={setCountry} />
+        <CountryField value={country} onChange={setCountry} label="Country (optional)" />
 
         <Section title="Gender" hint="Optional.">
           <Chips items={GENDERS} value={gender ? [gender] : []} onChange={(v) => setGender(v.filter((x) => x !== gender)[0] ?? null)} />
         </Section>
 
-        <Section title="Languages you speak" hint="Pick at least one.">
+        <Section title="Languages you speak" hint="Optional.">
           <Chips items={LANGUAGES.map((l) => ({ key: l.code, label: l.label }))} value={languages} onChange={setLanguages} />
         </Section>
 
@@ -120,10 +97,6 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
         {showPrivacy && (
           <Section title="Visibility">
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <T style={{ flex: 1 }}>Show my age range</T>
-              <Switch value={showAge} onValueChange={setShowAge} trackColor={{ true: colors.violet, false: colors.elevated }} />
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <T style={{ flex: 1 }}>Show my country</T>
               <Switch value={showCountry} onValueChange={setShowCountry} trackColor={{ true: colors.violet, false: colors.elevated }} />
             </View>
@@ -131,7 +104,7 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
         )}
       </ScrollView>
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: spacing.lg, paddingBottom: spacing.xl, backgroundColor: 'rgba(9,11,20,0.94)' }}>
-        <GradientButton label={submitLabel} disabled={!valid} loading={busy} onPress={save} />
+        <GradientButton label={submitLabel} loading={busy} onPress={save} />
       </View>
     </KeyboardAvoidingView>
   );

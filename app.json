@@ -9,7 +9,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.theunknown.app",
-      "usesAppleSignIn": true,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "THE UNKNOWN uses the microphone to record voice posts and voice messages.",
         "NSPhotoLibraryUsageDescription": "THE UNKNOWN lets you attach photos to posts and messages."
@@ -42,7 +41,6 @@
           "imageWidth": 160
         }
       ],
-      "expo-secure-store",
       "expo-image",
       [
         "expo-audio",
@@ -50,9 +48,7 @@
           "microphonePermission": "THE UNKNOWN uses the microphone to record voice posts."
         }
       ],
-      "expo-web-browser",
       "expo-localization",
-      "expo-apple-authentication",
       [
         "expo-image-picker",
         {

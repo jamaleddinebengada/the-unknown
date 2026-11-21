@@ -10,7 +10,6 @@ import { colors, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { friendlyError } from '@/lib/supabase';
 import { deleteMyAccount, getBlockedUsers, unblockUser, updateMyProfile } from '@/services/api';
-import { signOut } from '@/services/auth';
 import { unknownName } from '@/utils/format';
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
@@ -37,7 +36,7 @@ function Row({ icon, label, value, onPress, danger, right }: { icon: keyof typeo
 export default function Settings() {
   const router = useRouter();
   const toast = useToast();
-  const { profile, refreshProfile, session } = useAuth();
+  const { profile, refreshProfile, resetIdentity } = useAuth();
   const [blockedOpen, setBlockedOpen] = useState(false);
   const [guidelines, setGuidelines] = useState(false);
   const [blocked, setBlocked] = useState<Awaited<ReturnType<typeof getBlockedUsers>>>([]);
@@ -52,10 +51,10 @@ export default function Settings() {
     try { await updateMyProfile({ who_can_message: v }); await refreshProfile(); } catch (e) { toast(friendlyError(e), 'error'); }
   };
 
-  const confirmDelete = () => Alert.alert('Delete your account?', 'Your profile, posts, messages and connections are permanently deleted. This cannot be undone.', [
+  const confirmDelete = () => Alert.alert('Delete all your data?', 'Your anonymous profile, posts, messages and connections are permanently deleted. This cannot be undone.', [
     { text: 'Cancel', style: 'cancel' },
     { text: 'Delete forever', style: 'destructive', onPress: async () => {
-      try { await deleteMyAccount(); await signOut(); router.replace('/'); } catch (e) { toast(friendlyError(e), 'error'); }
+      try { await deleteMyAccount(); await resetIdentity(); toast('Your data was deleted. You now have a new anonymous identity.', 'success'); router.replace('/discover'); } catch (e) { toast(friendlyError(e), 'error'); }
     } },
   ]);
 
@@ -67,12 +66,10 @@ export default function Settings() {
       <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.xl, paddingBottom: 60 }}>
         <Group title="ACCOUNT">
           <Row icon="person-outline" label="Edit profile" onPress={() => router.push('/edit-profile')} />
-          <Row icon="mail-outline" label="Email" value={session?.user.email ?? '—'} />
           <Row icon="finger-print-outline" label="Public identity" value={unknownName(profile?.unknown_number)} />
         </Group>
 
         <Group title="PRIVACY">
-          <Row icon="calendar-outline" label="Show age" right={sw(!!profile?.show_age, (v) => toggle('show_age', v))} />
           <Row icon="flag-outline" label="Show country" right={sw(!!profile?.show_country, (v) => toggle('show_country', v))} />
           <Row icon="radio-outline" label="Show online status" right={sw(!!profile?.show_online, (v) => toggle('show_online', v))} />
           <Row icon="chatbubble-ellipses-outline" label="Mystery Matches"
@@ -88,8 +85,11 @@ export default function Settings() {
         </Group>
 
         <View style={{ gap: spacing.sm }}>
-          <PremiumButton label="Sign out" icon="log-out-outline" onPress={() => signOut().then(() => router.replace('/'))} />
-          <PremiumButton tone="danger" label="Delete account" icon="trash-outline" onPress={confirmDelete} />
+          <PremiumButton label="New anonymous identity" icon="refresh-outline" onPress={() => Alert.alert('Start over with a new identity?', 'You will get a new UNKNOWN number. Your current conversations stay with the old identity and cannot be recovered.', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Start over', style: 'destructive', onPress: () => resetIdentity().then(() => { toast('Welcome, new stranger.', 'success'); router.replace('/discover'); }) },
+          ])} />
+          <PremiumButton tone="danger" label="Delete my data" icon="trash-outline" onPress={confirmDelete} />
         </View>
       </ScrollView>
 

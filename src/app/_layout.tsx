@@ -16,26 +16,16 @@ const theme = {
 };
 
 function RootNavigator() {
-  const { ready, session, profile } = useAuth();
-  const signedIn = !!session;
-  const onboarded = !!profile?.onboarding_complete;
-
+  const { ready, entered } = useAuth();
   useEffect(() => { if (ready) SplashScreen.hideAsync().catch(() => {}); }, [ready]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade_from_bottom' }}>
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
-      <Stack.Protected guard={!signedIn} redirectTo="/">
+      <Stack.Protected guard={!entered} redirectTo="/">
         <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
-        <Stack.Screen name="auth/index" />
-        <Stack.Screen name="auth/email" />
       </Stack.Protected>
-      <Stack.Screen name="auth/callback" options={{ animation: 'fade' }} />
-      <Stack.Protected guard={signedIn && !onboarded} redirectTo="/">
-        <Stack.Screen name="setup/profile" />
-        <Stack.Screen name="setup/interests" />
-      </Stack.Protected>
-      <Stack.Protected guard={signedIn && onboarded} redirectTo="/">
+      <Stack.Protected guard={entered} redirectTo="/">
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="create" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="post/[id]/index" />

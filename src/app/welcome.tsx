@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Atmosphere } from '@/components/Atmosphere';
 import { ConnectIllustration, GlobeIllustration, ShareIllustration } from '@/components/Illustrations';
 import { PortalMark, Wordmark } from '@/components/Logo';
-import { BackendNotice } from '@/components/Screen';
-import { GradientButton, PremiumButton, T } from '@/components/ui';
+import { GradientButton, T } from '@/components/ui';
+import { useAuth } from '@/features/auth/AuthProvider';
+import { haptic } from '@/utils/format';
 import { colors, spacing } from '@/constants/theme';
 
 const SLIDES = [
@@ -19,6 +20,7 @@ const SLIDES = [
 
 export default function Welcome() {
   const router = useRouter();
+  const { enter } = useAuth();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const ref = useRef<ScrollViewInstance>(null);
@@ -26,7 +28,7 @@ export default function Welcome() {
   const last = page === SLIDES.length - 1;
 
   const next = () => {
-    if (last) return router.push('/auth');
+    if (last) { haptic.success(); enter().then(() => router.replace('/discover')); return; }
     ref.current?.scrollTo({ x: width * (page + 1), animated: true });
     setPage(page + 1);
   };
@@ -34,7 +36,7 @@ export default function Welcome() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Atmosphere stars={50} />
-      <View style={{ paddingTop: insets.top }}><BackendNotice /></View>
+      <View style={{ paddingTop: insets.top }} />
       <ScrollView ref={ref} horizontal pagingEnabled showsHorizontalScrollIndicator={false} scrollEventThrottle={16}
         onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}>
         {SLIDES.map((s, i) => (
@@ -57,8 +59,10 @@ export default function Welcome() {
         <View style={styles.dots}>
           {SLIDES.map((s, i) => <View key={s.key} style={[styles.dot, i === page && styles.dotOn]} />)}
         </View>
-        <GradientButton label={page === 0 ? 'Get Started' : last ? 'Create my account' : 'Continue'} onPress={next} />
-        <PremiumButton tone="ghost" label="I already have an account" onPress={() => router.push({ pathname: '/auth/email', params: { mode: 'signin' } })} />
+        <GradientButton label={page === 0 ? 'Get Started' : last ? 'Enter THE UNKNOWN' : 'Continue'} onPress={next} />
+        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', marginTop: 4 }}>
+          No account needed. By entering you confirm you are 18+ and accept the Community Guidelines.
+        </T>
       </View>
     </View>
   );
