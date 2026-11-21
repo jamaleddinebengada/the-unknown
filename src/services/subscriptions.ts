@@ -8,6 +8,8 @@ import Purchases, { PACKAGE_TYPE, type CustomerInfo, type PurchasesPackage } fro
  *   (supabase/functions/revenuecat-webhook) can flip profiles.is_premium on the server.
  * - Premium status is never trusted from the client: limits are enforced in the database.
  */
+/** Advertised list price; the store's localized price is always shown when available. */
+export const PLUS_LIST_PRICE = '$20';
 export const ENTITLEMENT = 'plus';
 const KEY = Platform.select({
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
@@ -57,7 +59,8 @@ export async function getPlusPlans(): Promise<PlusPlan[]> {
         trial: p.introPrice && p.introPrice.price === 0 ? `${p.introPrice.periodNumberOfUnits} ${p.introPrice.periodUnit.toLowerCase()} free` : null,
       };
     })
-    .sort((a, b) => (a.kind === 'annual' ? -1 : b.kind === 'annual' ? 1 : 0));
+    // THE UNKNOWN sells one plan: UNKNOWN PLUS monthly (set to $20/month in Google Play).
+    .filter((p) => p.kind === 'monthly');
 }
 
 export const hasPlus = (info: CustomerInfo | null | undefined) => !!info?.entitlements.active[ENTITLEMENT];

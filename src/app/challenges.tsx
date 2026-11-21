@@ -84,7 +84,7 @@ export default function Challenges() {
           <Star3D size={24} delay={600} style={{ position: 'absolute', left: 10, top: titleSize * 1.4 }} />
           <Sparkle size={14} style={{ position: 'absolute', left: 4, top: 0 }} />
           <Sparkle size={12} color="#A5B4FC" delay={500} style={{ position: 'absolute', right: 26, top: titleSize * 2.6 }} />
-          <GoldTitle lines={['EARN POINTS', 'BY WINNING', 'YOUR CHALLENGES!']} size={titleSize} width={width - 32} pinkLast />
+          <GoldTitle lines={['EARN POINTS', 'BY WINNING', 'YOUR CHALLENGES!']} tones={['orange', 'navy', 'blue']} size={titleSize} width={width - 32} />
           <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: 4 }}>Complete daily challenges and mind games to level up your mystery profile.</T>
         </View>
 
@@ -127,10 +127,12 @@ export default function Challenges() {
 
             {/* start a discussion */}
             <Animated.View entering={FadeInDown.delay(140).springify().damping(18)}>
-              <Pressable onPress={() => { haptic.tap(); router.push('/messages'); }} style={[s.card, { paddingVertical: 16 }]}>
-                <Ionicons name="checkmark-done" size={26} color={ch('chat')?.done ? colors.success : colors.textMuted} />
-                <T style={{ fontFamily: fonts.display, fontSize: 18, flex: 1 }}>Start a discussion</T>
-                <T style={{ fontFamily: fonts.display, color: '#D97706' }}>+{ch('chat')?.xp}</T>
+              <Pressable onPress={() => { haptic.tap(); router.push('/messages'); }}>
+                <LinearGradient colors={['#22C58B', '#10B981', '#059669']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={s.greenBar}>
+                  <View style={s.greenCheck}><Ionicons name={ch('chat')?.done ? 'checkmark' : 'add'} size={20} color={colors.white} /></View>
+                  <T style={{ fontFamily: fonts.display, fontSize: 18, flex: 1 }} color={colors.white}>Start a discussion</T>
+                  <View style={s.greenPill}><T style={{ fontFamily: fonts.display, fontSize: 14 }} color={colors.white}>+{ch('chat')?.xp} XP</T></View>
+                </LinearGradient>
               </Pressable>
             </Animated.View>
 
@@ -138,22 +140,23 @@ export default function Challenges() {
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <Animated.View entering={FadeInUp.delay(180).springify()} style={{ flex: 1 }}>
                 <Pressable onPress={() => router.push('/matches')} style={{ flex: 1 }}>
-                  <LinearGradient colors={['#0F766E', '#134E5E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                    <T style={{ fontFamily: fonts.display, fontSize: 17 }} color={colors.white}>Discover{'\n'}a stranger</T>
-                    <View style={[s.bigCheck, !ch('match')?.done && { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                  <LinearGradient colors={['#ECFEFF', '#E0F2FE']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
+                    <T v="caption" color="#0E7490" style={{ fontFamily: fonts.display, letterSpacing: 0.6 }}>QUICK CHALLENGE</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 17 }}>Discover{'\n'}a stranger</T>
+                    <View style={[s.bigCheck, !ch('match')?.done && { backgroundColor: '#A5B4FC' }]}>
                       <Ionicons name={ch('match')?.done ? 'checkmark' : 'planet'} size={24} color={colors.white} />
                     </View>
-                    <T v="caption" color="rgba(255,255,255,0.8)">{ch('match')?.done ? 'Done today' : `+${ch('match')?.xp} XP`}</T>
+                    <T v="caption" color="#0E7490" style={{ fontFamily: fonts.displaySemi }}>{ch('match')?.done ? 'Done today' : `+${ch('match')?.xp} XP`}</T>
                   </LinearGradient>
                 </Pressable>
               </Animated.View>
               <Animated.View entering={FadeInUp.delay(240).springify()} style={{ flex: 1 }}>
-                <LinearGradient colors={['#7C3AED', '#4C1D95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17 }} color={colors.white}>{allDone ? 'Bravo\nchampion!' : 'Become\nchampion'}</T>
+                <LinearGradient colors={['#FFFBEB', '#FEF3C7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
+                  <T style={{ fontFamily: fonts.display, fontSize: 17 }} color="#9A3412">{allDone ? 'Bravo\nchampion!' : 'Become\nchampion'}</T>
                   <View style={{ position: 'absolute', right: 8, top: 18 }}><Trophy size={52} /></View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 'auto' }}>
                     <EmojiAvatar seed={profile?.avatar_seed ?? 'me'} size={28} />
-                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }} color={colors.white}>UNKNOWN{'\n'}#{profile?.unknown_number}</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }} color="#1E2540">UNKNOWN{'\n'}#{profile?.unknown_number}</T>
                   </View>
                 </LinearGradient>
               </Animated.View>
@@ -181,7 +184,7 @@ export default function Challenges() {
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
                 <Pressable onPress={() => router.push('/matches')}>
-                  <LinearGradient colors={['#A855F7', '#7C3AED']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>Join</T></LinearGradient>
+                  <LinearGradient colors={['#FF8A3D', '#F0520C']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>Join</T></LinearGradient>
                 </Pressable>
                 {active.length ? active.map((a, i) => (
                   <Pressable key={a.unknown_number} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(a.unknown_number) } })}
@@ -201,6 +204,9 @@ export default function Challenges() {
 }
 
 const s = StyleSheet.create({
+  greenBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, borderRadius: 22, shadowColor: '#059669', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  greenCheck: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
+  greenPill: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.22)' },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
   bar: { height: 8, borderRadius: 4, backgroundColor: colors.elevated, overflow: 'hidden', marginTop: 4 },
   barFill: { height: '100%', borderRadius: 4 },
@@ -210,7 +216,7 @@ const s = StyleSheet.create({
   inputMock: { height: 46, borderRadius: 16, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.bg },
   bonus: { width: 74, height: 74, borderRadius: 37, padding: 4, backgroundColor: '#3B82F6', shadowColor: '#3B82F6', shadowOpacity: 0.9, shadowRadius: 16, elevation: 12 },
   bonusInner: { flex: 1, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
-  tile: { minHeight: 150, borderRadius: 26, padding: spacing.md, gap: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
+  tile: { minHeight: 150, borderRadius: 26, padding: spacing.md, gap: 10, borderWidth: 1.5, borderColor: '#E6E9F2', overflow: 'hidden' },
   bigCheck: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
   icon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C6CFF' },
   reward: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: '#FDE68A', borderWidth: 1.5, borderColor: '#FFFFFF' },

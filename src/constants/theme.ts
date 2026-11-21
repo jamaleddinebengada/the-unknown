@@ -39,6 +39,9 @@ export const gradients = {
   /** Headline candy gradient (pink → violet → white). */
   candy: ['#EC4899', '#A855F7', '#6D28D9'] as const,
   /** Glossy pill buttons. */
+  orange: ['#FF9A3D', '#FF6A1A', '#F04A0C'] as const,
+  blueBtn: ['#5B9BFF', '#2F6BFF', '#1D4ED8'] as const,
+  green: ['#34D399', '#10B981', '#059669'] as const,
   pill: ['#8B7BFF', '#6C5CFF', '#5B4BF0'] as const,
   gold: ['#FFE07A', '#FBBF24', '#F59E0B'] as const,
   cardSheen: ['rgba(139,92,246,0.10)', 'rgba(255,255,255,0)'] as const,

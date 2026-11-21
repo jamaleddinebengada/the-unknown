@@ -55,7 +55,7 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         <Defs>
           <RadialGradient id={`${id}h`} cx="50%" cy="50%" r="50%">
-            <Stop offset="0.35" stopColor="#C4B5FD" stopOpacity="0.65" />
+            <Stop offset="0.35" stopColor="#BFDBFE" stopOpacity="0.55" />
             <Stop offset="0.7" stopColor="#6D4AFF" stopOpacity="0.18" />
             <Stop offset="1" stopColor="#38BDF8" stopOpacity="0" />
           </RadialGradient>
@@ -67,9 +67,9 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
         <Svg width={size} height={size}>
           <Defs>
             <SvgLinear id={`${id}a`} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor="#C4B5FD" />
-              <Stop offset="0.5" stopColor="#8B5CF6" />
-              <Stop offset="1" stopColor="#4C1D95" />
+              <Stop offset="0" stopColor="#60A5FA" />
+              <Stop offset="0.5" stopColor="#A855F7" />
+              <Stop offset="1" stopColor="#FB923C" />
             </SvgLinear>
           </Defs>
           {arms(5, size * 0.12, size * 0.46, 0.55, 0).map((d, i) => (
@@ -82,9 +82,9 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
         <Svg width={size} height={size}>
           <Defs>
             <SvgLinear id={`${id}b`} x1="0" y1="1" x2="1" y2="0">
-              <Stop offset="0" stopColor="#F9A8D4" />
-              <Stop offset="0.5" stopColor="#E879F9" />
-              <Stop offset="1" stopColor="#A78BFA" />
+              <Stop offset="0" stopColor="#FDBA74" />
+              <Stop offset="0.5" stopColor="#F97316" />
+              <Stop offset="1" stopColor="#818CF8" />
             </SvgLinear>
           </Defs>
           {arms(4, size * 0.08, size * 0.36, 0.7, 0.6).map((d, i) => (
@@ -97,8 +97,8 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
         <Svg width={size} height={size}>
           <Defs>
             <SvgLinear id={`${id}c`} x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0" stopColor="#67E8F9" />
-              <Stop offset="1" stopColor="#F0ABFC" />
+              <Stop offset="0" stopColor="#93C5FD" />
+              <Stop offset="1" stopColor="#FDBA74" />
             </SvgLinear>
           </Defs>
           {arms(3, size * 0.04, size * 0.25, 0.85, 1.2).map((d, i) => (
@@ -112,8 +112,8 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
           <Defs>
             <RadialGradient id={`${id}k`} cx="50%" cy="50%" r="50%">
               <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
-              <Stop offset="0.25" stopColor="#F0ABFC" stopOpacity="0.95" />
-              <Stop offset="0.6" stopColor="#8B5CF6" stopOpacity="0.4" />
+              <Stop offset="0.25" stopColor="#BFDBFE" stopOpacity="0.95" />
+              <Stop offset="0.6" stopColor="#3B82F6" stopOpacity="0.4" />
               <Stop offset="1" stopColor="#6D4AFF" stopOpacity="0" />
             </RadialGradient>
           </Defs>
@@ -175,10 +175,10 @@ export function Sparkle({ size = 14, color = '#FDE68A', delay = 0, style }: { si
  * EmojiAvatar — playful 3D-style character bubble (decorative / personas).
  * ===================================================================== */
 
-export const EmojiAvatar = memo(function EmojiAvatar({ seed, size = 44, ring = true, float = false, delay = 0, gender }: { seed: string; size?: number; ring?: boolean; float?: boolean; delay?: number; gender?: string | null }) {
+export const EmojiAvatar = memo(function EmojiAvatar({ seed, size = 44, ring = true, float = false, delay = 0, gender, ringColor = '#FFFFFF' }: { seed: string; size?: number; ring?: boolean; float?: boolean; delay?: number; gender?: string | null; ringColor?: string }) {
   const f = useFloat(float ? 6 : 0, 2000 + delay / 2, delay);
   return (
-    <Animated.View style={[{ width: size, height: size, borderRadius: size / 2 }, ring && { borderWidth: Math.max(2, size * 0.05), borderColor: '#FFFFFF' }, styles.avatarShadow, f]}>
+    <Animated.View style={[{ width: size, height: size, borderRadius: size / 2 }, ring && { borderWidth: Math.max(2, size * 0.05), borderColor: ringColor }, styles.avatarShadow, f]}>
       <Character seed={seed} size={ring ? size - Math.max(2, size * 0.05) * 2 : size} gender={gender} />
     </Animated.View>
   );
@@ -243,7 +243,7 @@ export function StarRating({ value, max = 5, size = 14 }: { value: number; max?:
   return (
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {Array.from({ length: max }, (_, i) => (
-        <Text key={i} style={{ fontSize: size, color: i < value ? '#FBBF24' : 'rgba(255,255,255,0.22)' }}>★</Text>
+        <Text key={i} style={{ fontSize: size, color: i < value ? '#FBBF24' : '#D6D9E4' }}>★</Text>
       ))}
     </View>
   );
@@ -263,7 +263,7 @@ export function StatusPill({ label, live = true }: { label: string; live?: boole
 }
 
 const styles = StyleSheet.create({
-  avatarShadow: { shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
+  avatarShadow: { shadowColor: '#1E2540', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   avatarGloss: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.22)' },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
   dot: { width: 8, height: 8, borderRadius: 4 },
@@ -275,28 +275,34 @@ const styles = StyleSheet.create({
  * GoldTitle — chunky embossed 3D headline (gold, or gold → pink).
  * Draws a dark extruded copy under a gradient face, like a game logo.
  * ===================================================================== */
-export function GoldTitle({ lines, size = 34, width, pinkLast = false }: { lines: string[]; size?: number; width: number; pinkLast?: boolean }) {
+type TitleTone = 'gold' | 'pink' | 'orange' | 'navy' | 'blue';
+const TONES: Record<TitleTone, { g: [string, string, string]; depth: string }> = {
+  gold: { g: ['#FFF1B8', '#FFC94A', '#F08A0C'], depth: '#6B3300' },
+  pink: { g: ['#FFD1EC', '#F472B6', '#C026D3'], depth: '#6B0F4F' },
+  orange: { g: ['#FFB067', '#FF6A1A', '#E8340A'], depth: '#7A1F05' },
+  navy: { g: ['#3B4566', '#1E2540', '#0F1428'], depth: '#9AA3C0' },
+  blue: { g: ['#60A5FA', '#2F6BFF', '#1D4ED8'], depth: '#0B2A7A' },
+};
+export function GoldTitle({ lines, size = 34, width, pinkLast = false, tones }: { lines: string[]; size?: number; width: number; pinkLast?: boolean; tones?: TitleTone[] }) {
   const id = uid(useId());
   const lh = size * 1.12;
   const h = lh * lines.length + size * 0.35;
   return (
     <Svg width={width} height={h} accessibilityLabel={lines.join(' ')}>
       <Defs>
-        <SvgLinear id={`${id}g`} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#FFF1B8" />
-          <Stop offset="0.45" stopColor="#FFC94A" />
-          <Stop offset="1" stopColor="#F08A0C" />
-        </SvgLinear>
-        <SvgLinear id={`${id}p`} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#FFD1EC" />
-          <Stop offset="0.5" stopColor="#F472B6" />
-          <Stop offset="1" stopColor="#C026D3" />
-        </SvgLinear>
+        {(Object.keys(TONES) as TitleTone[]).map((k) => (
+          <SvgLinear key={k} id={`${id}${k}`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={TONES[k].g[0]} />
+            <Stop offset="0.5" stopColor={TONES[k].g[1]} />
+            <Stop offset="1" stopColor={TONES[k].g[2]} />
+          </SvgLinear>
+        ))}
       </Defs>
       {lines.map((line, i) => {
         const y = size + i * lh;
-        const fill = pinkLast && i === lines.length - 1 ? `url(#${id}p)` : `url(#${id}g)`;
-        const depth = pinkLast && i === lines.length - 1 ? '#6B0F4F' : '#6B3300';
+        const tone: TitleTone = tones?.[i] ?? (pinkLast && i === lines.length - 1 ? 'pink' : 'gold');
+        const fill = `url(#${id}${tone})`;
+        const depth = TONES[tone].depth;
         return (
           <G key={line + i}>
             <SvgText x={width / 2} y={y + size * 0.09} textAnchor="middle" fontFamily={fonts.display} fontSize={size} letterSpacing={1} fill={depth}>{line}</SvgText>

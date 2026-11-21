@@ -9,10 +9,10 @@ import { Aurora } from '@/components/Effects';
 import { Couple, GoldTitle, Sparkle, Star3D } from '@/components/Illustrations3D';
 import { useToast } from '@/components/Overlay';
 import { GradientButton, IconButton, T } from '@/components/ui';
-import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { colors, fonts, gradients, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { friendlyError } from '@/lib/supabase';
-import { buyPlan, getPlusPlans, manageSubscription, restorePlus, subscriptionsAvailable, type PlusPlan } from '@/services/subscriptions';
+import { PLUS_LIST_PRICE, buyPlan, getPlusPlans, manageSubscription, restorePlus, subscriptionsAvailable, type PlusPlan } from '@/services/subscriptions';
 import { haptic } from '@/utils/format';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -95,7 +95,7 @@ export default function Premium() {
         <View style={{ alignItems: 'center' }}>
           <Star3D size={28} style={{ position: 'absolute', right: 20, top: -8 }} />
           <Sparkle size={14} style={{ position: 'absolute', left: 26, top: 6 }} />
-          <GoldTitle lines={['UNKNOWN PLUS']} size={Math.min(38, width / 9)} width={width - 32} />
+          <GoldTitle lines={['UNKNOWN PLUS']} tones={['orange']} size={Math.min(38, width / 9)} width={width - 32} />
           <T style={{ fontFamily: fonts.display, fontSize: 20, textAlign: 'center' }}>Discover more. Connect deeper.</T>
         </View>
 
@@ -151,16 +151,24 @@ export default function Premium() {
                   </Pressable>
                 );
               })}
-              <GradientButton label="Unlock UNKNOWN PLUS" icon="sparkles" loading={busy === 'buy'} disabled={!plan || !!busy} onPress={buy} />
+              <GradientButton label="Unlock UNKNOWN PLUS" icon="sparkles" colors={gradients.orange} loading={busy === 'buy'} disabled={!plan || !!busy} onPress={buy} />
               <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
                 {plan ? `${plan.price} ${plan.kind === 'annual' ? 'per year' : 'per month'}` : ''}, billed through {`your ${process.env.EXPO_OS === 'ios' ? 'App Store' : 'Google Play'} account`}. Renews automatically until you cancel — cancel anytime in your store settings, at least 24 hours before renewal.
               </T>
             </Animated.View>
           ) : (
-            <View style={s.soon}>
-              <T style={{ fontFamily: fonts.display, fontSize: 17, textAlign: 'center' }}>Subscriptions open soon</T>
-              <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>
-                UNKNOWN PLUS will be available here as soon as the app is published on Google Play. Nothing will be charged before then.
+            <View style={{ gap: 10 }}>
+              <View style={[s.plan, s.planOn]}>
+                <Ionicons name="radio-button-on" size={24} color={colors.violetDeep} />
+                <View style={{ flex: 1 }}>
+                  <T style={{ fontFamily: fonts.display, fontSize: 18 }}>Monthly</T>
+                  <T v="caption" color={colors.textSecondary}>Cancel anytime</T>
+                </View>
+                <T style={{ fontFamily: fonts.display, fontSize: 22 }} color="#F0520C">{PLUS_LIST_PRICE}<T v="caption" color={colors.textSecondary}> / month</T></T>
+              </View>
+              <GradientButton label="Coming soon on Google Play" disabled colors={gradients.orange} />
+              <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
+                Subscriptions open when THE UNKNOWN is published on Google Play. Nothing will be charged before then.
               </T>
             </View>
           )
@@ -178,5 +186,4 @@ const s = StyleSheet.create({
   planOn: { borderColor: colors.violetDeep, shadowColor: colors.violet, shadowOpacity: 0.25, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
   bestValue: { position: 'absolute', top: -11, right: 16, paddingHorizontal: 10, paddingVertical: 3, borderRadius: radius.pill },
   activeCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: 'rgba(52,211,153,0.1)', borderWidth: 1.5, borderColor: 'rgba(52,211,153,0.5)' },
-  soon: { gap: 6, padding: spacing.lg, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.surfaceBorder },
 });

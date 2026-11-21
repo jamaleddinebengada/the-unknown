@@ -30,7 +30,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
     <Animated.View entering={FadeIn.duration(500)} style={{ gap: spacing.lg }}>
       <View style={{ alignItems: 'center', paddingTop: spacing.md }}>
         <OrbitBackdrop width={width - 32} height={260} />
-        <GlowRing size={176} speed={7000} thickness={3.5} colors={['#38BDF8', '#8B5CF6', '#EC4899']}>
+        <GlowRing size={176} speed={7000} thickness={3.5} colors={['#FDBA74', '#F97316', '#FB7185']}>
           <View style={s.avatarHalo}>
             <EmojiAvatar seed={seed} size={150} ring={false} />
           </View>
@@ -41,7 +41,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
           <T style={{ fontFamily: fonts.display, fontSize: 30, lineHeight: 36 }}>{unknownName(number)}</T>
           {premium && <PremiumBadge />}
         </View>
-        <LinearGradient colors={['#6366F1', '#4F46E5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.countryPill}>
+        <LinearGradient colors={['#FF9A3D', '#F0520C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.countryPill}>
           <T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
         </LinearGradient>
         {tagline && <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: spacing.sm, paddingHorizontal: spacing.md, fontSize: 15.5, lineHeight: 24 }}>{tagline}</T>}

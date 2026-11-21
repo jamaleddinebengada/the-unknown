@@ -32,6 +32,8 @@ export function Pressy({ style, onPressIn, onPressOut, scaleTo = 0.97, ...rest }
 }
 
 /* ---------------- Buttons ---------------- */
+/** Darken a #RRGGBB colour for the 3D button base. */
+const shade = (hex: string) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * 0.72).toString(16).padStart(2, '0')).join('');
 interface BtnProps { label: string; onPress?: () => void; loading?: boolean; disabled?: boolean; icon?: keyof typeof Ionicons.glyphMap; style?: StyleProp<ViewStyle>; small?: boolean }
 
 /** Glossy 3D "game" button: gradient face over a darker base that it sinks into when pressed. */
@@ -46,7 +48,7 @@ export function GradientButton({ label, onPress, loading, disabled, icon, style,
       onPressOut={() => { press.set(withSpring(0, { damping: 12, stiffness: 300 })); }}
       onPress={() => { haptic.soft(); onPress?.(); }}
       style={[{ opacity: off ? 0.55 : 1, paddingBottom: 4 }, style]}>
-      <View style={[s.btnBase, { height: h, top: 4, backgroundColor: '#4A3BD6' }, !off && glow('#8B7BFF')]} />
+      <View style={[s.btnBase, { height: h, top: 4, backgroundColor: g[g.length - 1] === gradients.pill[2] ? '#4A3BD6' : shade(g[g.length - 1]) }, !off && glow(g[1])]} />
       <Animated.View style={[{ height: h, borderRadius: radius.pill, overflow: 'hidden' }, face]}>
         <LinearGradient colors={g} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={[s.btn, small && s.btnSmall, { height: h }]}>
           <View pointerEvents="none" style={[s.btnGloss, { height: h * 0.48 }]} />
