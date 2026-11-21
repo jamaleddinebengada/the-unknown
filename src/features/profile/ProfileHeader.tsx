@@ -42,7 +42,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
           {premium && <PremiumBadge />}
         </View>
         <LinearGradient colors={['#6366F1', '#4F46E5']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.countryPill}>
-          <T style={{ fontFamily: fonts.display, fontSize: 15 }}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
+          <T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
         </LinearGradient>
         {tagline && <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: spacing.sm, paddingHorizontal: spacing.md, fontSize: 15.5, lineHeight: 24 }}>{tagline}</T>}
       </View>
@@ -69,7 +69,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
                   <LinearGradient colors={art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
                     <View pointerEvents="none" style={s.tileGloss} />
                     <T style={{ fontSize: 40 }}>{art.emoji}</T>
-                    <T style={{ fontFamily: fonts.display, fontSize: 13 }}>{interestLabel(i)}</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 13 }} color={colors.white}>{interestLabel(i)}</T>
                   </LinearGradient>
                 </Animated.View>
               );
@@ -81,10 +81,10 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
       {(tags.length > 0 || languages.length > 0) && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {tags.map((t, i) => (
-            <View key={t} style={[s.chip, { backgroundColor: CHIP_COLORS[i % CHIP_COLORS.length] }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>{t}</T></View>
+            <View key={t} style={[s.chip, { backgroundColor: CHIP_COLORS[i % CHIP_COLORS.length] }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>{t}</T></View>
           ))}
           {languages.map((l) => (
-            <View key={l} style={[s.chip, { backgroundColor: 'rgba(51,65,85,0.8)' }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>🗣 {LANGUAGES.find((x) => x.code === l)?.label ?? l}</T></View>
+            <View key={l} style={[s.chip, { backgroundColor: colors.white, borderColor: colors.surfaceBorder }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>🗣 {LANGUAGES.find((x) => x.code === l)?.label ?? l}</T></View>
           ))}
         </ScrollView>
       )}
@@ -93,12 +93,12 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, lan
 }
 
 const s = StyleSheet.create({
-  avatarHalo: { borderRadius: 80, shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 24, elevation: 14 },
+  avatarHalo: { borderRadius: 80, shadowColor: '#8B5CF6', shadowOpacity: 0.45, shadowRadius: 24, elevation: 14 },
   onlineDot: { position: 'absolute', top: spacing.md + 132, left: '50%', marginLeft: 48, width: 26, height: 26, borderRadius: 13, backgroundColor: colors.success, borderWidth: 4, borderColor: colors.bg },
-  voice: { position: 'absolute', top: spacing.md + 104, left: '50%', marginLeft: 82, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: 'rgba(20,25,60,0.92)', borderWidth: 1, borderColor: 'rgba(148,163,255,0.35)' },
+  voice: { position: 'absolute', top: spacing.md + 104, left: '50%', marginLeft: 82, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   countryPill: { marginTop: 6, paddingHorizontal: 22, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
   stats: { flexDirection: 'row', gap: 10 },
-  stat: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 22, backgroundColor: 'rgba(20,25,60,0.85)', borderWidth: 1, borderColor: 'rgba(148,163,255,0.22)' },
+  stat: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   tile: { width: 104, height: 120, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
   tileGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: '42%', backgroundColor: 'rgba(255,255,255,0.12)' },
   chip: { paddingHorizontal: 18, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },

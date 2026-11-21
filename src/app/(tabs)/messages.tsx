@@ -58,10 +58,10 @@ export default function Messages() {
       <Pressable accessibilityRole="button" onLongPress={() => setMenuFor(item)}
         onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: item.conversation_id } })}
         style={({ pressed }) => [s.row, item.unread > 0 && s.rowUnread, pressed && { backgroundColor: 'rgba(139,92,246,0.12)' }]}>
-        {item.unread > 0 && <LinearGradient colors={['rgba(109,74,255,0.22)', 'rgba(56,189,248,0.04)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
+        {item.unread > 0 && <LinearGradient colors={['rgba(167,139,250,0.18)', 'rgba(255,255,255,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
         <View>
           {item.kind === 'group' ? (
-            <LinearGradient colors={['rgba(109,74,255,0.5)', 'rgba(56,189,248,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.group}><Ionicons name="people" size={22} color={colors.text} /></LinearGradient>
+            <LinearGradient colors={['#7C6CFF', '#60A5FA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.group}><Ionicons name="people" size={22} color={colors.white} /></LinearGradient>
           ) : item.unread ? (
             <GlowRing size={60} speed={3500} thickness={2}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={50} revealed={item.revealed} /></GlowRing>
           ) : (
@@ -145,9 +145,9 @@ export default function Messages() {
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.sm, paddingHorizontal: spacing.sm, paddingVertical: 10, borderRadius: radius.lg, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.sm, marginBottom: 6, paddingHorizontal: spacing.sm, paddingVertical: 10, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.85)' },
   rowUnread: { borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
   online: { position: 'absolute', right: 5, bottom: 5, padding: 2, borderRadius: 8, backgroundColor: colors.bg },
   group: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', margin: 4 },
-  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: 'rgba(22,27,43,0.85)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)' },
+  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)' },
 });

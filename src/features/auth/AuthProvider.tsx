@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { AppState } from 'react-native';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { fetchMyProfile, touchPresence } from '@/services/api';
+import { initPurchases } from '@/services/subscriptions';
 import type { Profile } from '@/types/models';
 
 const ENTERED_KEY = 'the-unknown:entered-v1';
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session) return;
     touchPresence().catch(() => {});
+    initPurchases(session.user.id).catch(() => {});
     const id = setInterval(() => AppState.currentState === 'active' && touchPresence().catch(() => {}), 120_000);
     return () => clearInterval(id);
   }, [session]);

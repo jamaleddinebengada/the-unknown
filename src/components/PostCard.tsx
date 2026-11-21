@@ -192,13 +192,13 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: colors.violet, shadowOpacity: 0.6, shadowRadius: 12, elevation: 6 }]}>
                 {post.my_interest || post.is_mine ? (
                   <View style={[s.interested, s.interestedOn]}>
-                    <Ionicons name={post.is_mine ? 'people' : post.my_interest === 'accepted' ? 'chatbubbles' : 'checkmark-circle'} size={15} color={colors.violetSoft} />
-                    <T v="caption" style={{ fontFamily: fonts.bold }} color={colors.violetSoft}>{interestLabelText}</T>
+                    <Ionicons name={post.is_mine ? 'people' : post.my_interest === 'accepted' ? 'chatbubbles' : 'checkmark-circle'} size={15} color={colors.violetDeep} />
+                    <T v="caption" style={{ fontFamily: fonts.bold }} color={colors.violetDeep}>{interestLabelText}</T>
                   </View>
                 ) : (
                   <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={s.interested}>
-                    <Ionicons name="sparkles" size={15} color={colors.text} />
-                    <T v="caption" style={{ fontFamily: fonts.bold }}>{interestLabelText}</T>
+                    <Ionicons name="sparkles" size={15} color={colors.white} />
+                    <T v="caption" style={{ fontFamily: fonts.bold }} color={colors.white}>{interestLabelText}</T>
                   </LinearGradient>
                 )}
               </Pressy>
@@ -241,14 +241,14 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
 const s = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarRing: { padding: 2, borderRadius: 24, borderWidth: 1.5 },
-  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(124,108,255,0.15)' },
   typeDot: { width: 6, height: 6, borderRadius: 3 },
   more: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
   quoteBar: { width: 3, borderRadius: 2 },
   image: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.lg, backgroundColor: colors.elevated },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: 'rgba(255,255,255,0.08)', marginTop: 4 },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.hairlineStrong, marginTop: 4 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.04)' },
+  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: colors.elevated },
   actionOn: { backgroundColor: 'rgba(251,113,133,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
   interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },

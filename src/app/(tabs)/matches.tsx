@@ -54,8 +54,8 @@ function Hero({ size, searching }: { size: number; searching: boolean }) {
       <GlassShard w={16} h={10} rotate={60} delay={900} style={{ left: '38%', bottom: 0 }} />
       <Sparkle size={10} color="#FDE68A" delay={400} style={{ position: 'absolute', left: '46%', top: size * 0.35 }} />
       <Sparkle size={9} color="#FDE68A" delay={1000} style={{ position: 'absolute', left: '56%', top: size * 0.58 }} />
-      <View style={{ position: 'absolute', left: '3%', top: size * 0.42 }}><EmojiAvatar seed="hero-left" size={56} float delay={300} /></View>
-      <View style={{ position: 'absolute', right: '3%', top: size * 0.3 }}><EmojiAvatar seed="hero-right-2" size={52} float delay={1100} /></View>
+      <View style={{ position: 'absolute', left: '3%', top: size * 0.42 }}><EmojiAvatar seed="hero-left-w" gender="woman" size={66} float delay={300} /></View>
+      <View style={{ position: 'absolute', right: '3%', top: size * 0.3 }}><EmojiAvatar seed="hero-right-m" gender="man" size={62} float delay={1100} /></View>
     </View>
   );
 }
@@ -67,11 +67,11 @@ function MatchCard({ m, onAccept, onPass, busy }: { m: MysteryMatch; onAccept: (
   const tags = [...m.shared_interests.map(interestLabel), ...m.other_tags].slice(0, 3);
   return (
     <Animated.View entering={ZoomIn.springify().damping(15)}>
-      <LinearGradient colors={['#1F2557', '#161B45', '#12163A']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.matchCard}>
+      <LinearGradient colors={['#FFFFFF', '#F6F3FF', '#EEF4FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.matchCard}>
         <View pointerEvents="none" style={s.cardGloss} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <View style={{ flex: 1, gap: 4 }}>
-            <T v="caption" color={colors.cyan} style={{ fontFamily: fonts.display, letterSpacing: 0.8 }}>
+            <T v="caption" color={colors.blue} style={{ fontFamily: fonts.display, letterSpacing: 0.8 }}>
               {m.is_incoming ? 'SOMEONE FOUND YOU' : (MATCH_MODES.find((x) => x.key === m.mode)?.label ?? 'Mystery Match').toUpperCase()}
             </T>
             <T style={{ fontFamily: fonts.display, fontSize: 28, lineHeight: 32 }}>UNKNOWN ⭐</T>
@@ -80,7 +80,7 @@ function MatchCard({ m, onAccept, onPass, busy }: { m: MysteryMatch; onAccept: (
           </View>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             <IsoCubes size={104} />
-            <View style={s.alert}><T style={{ fontFamily: fonts.display, fontSize: 14 }}>!</T></View>
+            <View style={s.alert}><T style={{ fontFamily: fonts.display, fontSize: 14 }} color={colors.white}>!</T></View>
           </View>
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: spacing.sm }}>
@@ -184,8 +184,8 @@ export default function Matches() {
               <Pressable key={m.key} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => { haptic.tap(); setMode(m.key); }}
                 style={[s.mode, on && s.modeOn]}>
                 {on && <LinearGradient colors={['#7C6CFF', '#5B4BF0']} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
-                <Ionicons name={m.icon} size={15} color={on ? colors.text : colors.violetSoft} />
-                <T style={{ fontFamily: fonts.displaySemi, fontSize: 14 }} color={on ? colors.text : colors.textSecondary}>{m.label}</T>
+                <Ionicons name={m.icon} size={15} color={on ? colors.white : colors.violet} />
+                <T style={{ fontFamily: fonts.displaySemi, fontSize: 14 }} color={on ? colors.white : colors.textSecondary}>{m.label}</T>
               </Pressable>
             );
           })}
@@ -193,9 +193,16 @@ export default function Matches() {
 
         <GradientButton label={searching ? 'Searching…' : 'Find a stranger'} icon="planet" loading={searching} onPress={find} />
         {none && <T v="caption" color={colors.warning} style={{ textAlign: 'center' }}>No one new fits this mode right now. Try another mode.</T>}
+        {usedToday && !profile?.is_premium && (
+          <Pressable onPress={() => router.push('/premium')} style={s.upsell}>
+            <Ionicons name="diamond" size={18} color="#D97706" />
+            <T style={{ fontFamily: fonts.displaySemi, fontSize: 14, flex: 1 }}>Want more today? UNKNOWN PLUS gives you 10 matches a day.</T>
+            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+          </Pressable>
+        )}
 
         <View style={s.timer}>
-          <View style={s.timerIcon}><Ionicons name="stopwatch" size={22} color={colors.text} /></View>
+          <View style={s.timerIcon}><Ionicons name="stopwatch" size={22} color={colors.white} /></View>
           <View style={{ flex: 1, gap: 2 }}>
             <T style={{ fontFamily: fonts.display, fontSize: 16 }}>{usedToday && !profile?.is_premium ? `Next match in ${nextReset}` : 'Your match is ready'}</T>
             <StarRating value={Math.min(5, matches.length)} />
@@ -220,7 +227,7 @@ export default function Matches() {
           <T style={{ fontFamily: fonts.displaySemi, fontSize: 13 }} color={colors.textSecondary}>⭐ {matches.length} this week</T>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <AvatarStack seeds={['t1', 't2', 't3']} size={24} />
-            <View style={s.plus}><Ionicons name="add" size={13} color={colors.text} /></View>
+            <View style={s.plus}><Ionicons name="add" size={13} color={colors.white} /></View>
           </View>
         </View>
 
@@ -249,20 +256,21 @@ export default function Matches() {
 }
 
 const s = StyleSheet.create({
-  mode: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: 'rgba(24,31,74,0.85)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', overflow: 'hidden' },
+  mode: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, overflow: 'hidden' },
   modeOn: { borderColor: 'rgba(255,255,255,0.35)' },
-  timer: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.xl, backgroundColor: 'rgba(17,22,58,0.88)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
+  timer: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.xl, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.1, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   timerIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#5B4BF0', borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
   alert: { position: 'absolute', top: -2, right: -2, width: 24, height: 24, borderRadius: 12, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
   trust: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, paddingHorizontal: 4 },
   check: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
   plus: { width: 24, height: 24, borderRadius: 12, marginLeft: -6, backgroundColor: '#7C3AED', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFFFFF' },
-  matchCard: { borderRadius: 28, padding: spacing.lg, borderWidth: 1.5, borderColor: 'rgba(148,163,255,0.35)', overflow: 'hidden', shadowColor: '#6C5CFF', shadowOpacity: 0.5, shadowRadius: 20, elevation: 10 },
-  cardGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: 70, backgroundColor: 'rgba(255,255,255,0.05)' },
+  matchCard: { borderRadius: 28, padding: spacing.lg, borderWidth: 1.5, borderColor: 'rgba(124,108,255,0.25)', overflow: 'hidden', shadowColor: '#6C5CFF', shadowOpacity: 0.18, shadowRadius: 20, elevation: 10 },
+  cardGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: 70, backgroundColor: 'rgba(255,255,255,0.5)' },
   tag: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1.5 },
-  tagText: { fontFamily: fonts.display, fontSize: 12.5, letterSpacing: 0.6, color: colors.text },
-  waiting: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(103,232,249,0.08)', borderWidth: 1, borderColor: 'rgba(103,232,249,0.3)' },
-  emptyCard: { gap: 8, padding: spacing.lg, borderRadius: radius.xl, backgroundColor: 'rgba(24,31,74,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
-  mini: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(24,31,74,0.82)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)' },
-  pct: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(103,232,249,0.15)', borderWidth: 1, borderColor: 'rgba(103,232,249,0.4)' },
+  tagText: { fontFamily: fonts.display, fontSize: 12.5, letterSpacing: 0.6, color: colors.white },
+  waiting: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(56,189,248,0.08)', borderWidth: 1, borderColor: 'rgba(56,189,248,0.3)' },
+  emptyCard: { gap: 8, padding: spacing.lg, borderRadius: radius.xl, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
+  mini: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
+  upsell: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(251,191,36,0.12)', borderWidth: 1, borderColor: 'rgba(217,119,6,0.35)' },
+  pct: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, backgroundColor: 'rgba(56,189,248,0.12)', borderWidth: 1, borderColor: 'rgba(56,189,248,0.4)' },
 });

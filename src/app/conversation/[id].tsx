@@ -183,8 +183,8 @@ export default function Conversation() {
                 <Pressable onLongPress={() => !mine && setReportTarget({ type: 'message', targetId: item.id })} accessibilityHint={mine ? undefined : 'Long press to report'}
                   style={[st.bubble, mine ? st.mine : st.theirs]}>
                   {mine && <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20, borderBottomRightRadius: 6 }]} />}
-                  <T>{item.body}</T>
-                  <T v="caption" color={mine ? 'rgba(248,250,252,0.65)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
+                  <T color={mine ? colors.white : colors.text}>{item.body}</T>
+                  <T v="caption" color={mine ? 'rgba(255,255,255,0.75)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
                     {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </T>
                 </Pressable>
@@ -209,7 +209,7 @@ export default function Conversation() {
               <TextInput value={text} onChangeText={onType} placeholder="Write something real…" placeholderTextColor={colors.textMuted}
                 selectionColor={colors.violet} style={st.input} multiline maxLength={4000} accessibilityLabel="Message" />
               <Pressable accessibilityLabel="Send" disabled={!text.trim() || sending} onPress={() => send()} style={[st.send, (!text.trim() || sending) && { opacity: 0.4 }]}>
-                {sending ? <ActivityIndicator size="small" color={colors.text} /> : <Ionicons name="arrow-up" size={20} color={colors.text} />}
+                {sending ? <ActivityIndicator size="small" color={colors.white} /> : <Ionicons name="arrow-up" size={20} color={colors.white} />}
               </Pressable>
             </View>
           </>
@@ -236,8 +236,8 @@ const st = StyleSheet.create({
   stage: { width: 22, height: 3, borderRadius: 2, backgroundColor: colors.elevated },
   bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, gap: 2, overflow: 'hidden' },
   mine: { borderBottomRightRadius: 6 },
-  theirs: { backgroundColor: 'rgba(29,36,58,0.92)', borderBottomLeftRadius: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.2)' },
-  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: 'rgba(20,24,52,0.92)', borderWidth: 1, borderColor: 'rgba(103,232,249,0.45)', shadowColor: colors.cyan, shadowOpacity: 0.35, shadowRadius: 16, elevation: 6 },
+  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.2)' },
+  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(56,189,248,0.45)', shadowColor: colors.cyan, shadowOpacity: 0.35, shadowRadius: 16, elevation: 6 },
   assist: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, minHeight: 34, justifyContent: 'center' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 130, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },

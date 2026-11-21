@@ -1,12 +1,16 @@
 import { Platform } from 'react-native';
 
 export const colors = {
-  bg: '#0B0F28',
-  bgSecondary: '#11163A',
-  card: '#181F4A',
-  elevated: '#222A5C',
-  hairline: 'rgba(248,250,252,0.06)',
-  hairlineStrong: 'rgba(248,250,252,0.12)',
+  bg: '#F7F6FF',
+  bgSecondary: '#FFFFFF',
+  card: '#FFFFFF',
+  elevated: '#F1EEFF',
+  hairline: 'rgba(30,27,75,0.07)',
+  hairlineStrong: 'rgba(30,27,75,0.12)',
+  white: '#FFFFFF',
+  /** Translucent white surface for cards floating over the light aurora. */
+  surface: 'rgba(255,255,255,0.92)',
+  surfaceBorder: 'rgba(124,108,255,0.18)',
 
   violet: '#8B5CF6',
   violetDeep: '#6D4AFF',
@@ -14,30 +18,30 @@ export const colors = {
   blue: '#38BDF8',
   cyan: '#67E8F9',
 
-  text: '#F8FAFC',
-  textSecondary: '#9CA3AF',
-  textMuted: '#64748B',
+  text: '#17133A',
+  textSecondary: '#5E5A7D',
+  textMuted: '#9C99B5',
 
   success: '#34D399',
   warning: '#FBBF24',
   danger: '#FB7185',
 
-  overlay: 'rgba(5,6,12,0.72)',
+  overlay: 'rgba(23,19,58,0.45)',
   violetGlow: 'rgba(139,92,246,0.35)',
-  violetTint: 'rgba(139,92,246,0.14)',
+  violetTint: 'rgba(139,92,246,0.10)',
   blueTint: 'rgba(56,189,248,0.12)',
 } as const;
 
 export const gradients = {
   primary: ['#6D4AFF', '#A855F7'] as const,
   secondary: ['#38BDF8', '#8B5CF6'] as const,
-  mystery: ['#0B0F2A', '#1A1550', '#0E1330'] as const,
+  mystery: ['#FBFAFF', '#F3EEFF', '#EEF4FF'] as const,
   /** Headline candy gradient (pink → violet → white). */
-  candy: ['#FF8AD8', '#C084FC', '#F5F3FF'] as const,
+  candy: ['#EC4899', '#A855F7', '#6D28D9'] as const,
   /** Glossy pill buttons. */
   pill: ['#8B7BFF', '#6C5CFF', '#5B4BF0'] as const,
   gold: ['#FFE07A', '#FBBF24', '#F59E0B'] as const,
-  cardSheen: ['rgba(139,92,246,0.16)', 'rgba(22,27,43,0)'] as const,
+  cardSheen: ['rgba(139,92,246,0.10)', 'rgba(255,255,255,0)'] as const,
 };
 
 /** Accent colour per post type: used for glowing borders, tags and type badges. */
@@ -55,9 +59,9 @@ export const typeAccent: Record<string, readonly [string, string]> = {
 };
 
 export const glass = {
-  fill: ['rgba(32,38,64,0.72)', 'rgba(18,22,38,0.78)'] as const,
-  border: ['rgba(167,139,250,0.55)', 'rgba(56,189,248,0.18)', 'rgba(255,255,255,0.04)'] as const,
-  highlight: 'rgba(255,255,255,0.06)',
+  fill: ['rgba(255,255,255,0.96)', 'rgba(250,248,255,0.94)'] as const,
+  border: ['rgba(167,139,250,0.55)', 'rgba(56,189,248,0.25)', 'rgba(124,108,255,0.10)'] as const,
+  highlight: 'rgba(255,255,255,0.9)',
 };
 
 export const spacing = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32, xxxl: 48 } as const;
@@ -87,7 +91,7 @@ export const type = {
 } as const;
 
 export const shadow = Platform.select({
-  ios: { shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  ios: { shadowColor: '#4C3FB8', shadowOpacity: 0.12, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
   android: { elevation: 6 },
   default: {},
 });

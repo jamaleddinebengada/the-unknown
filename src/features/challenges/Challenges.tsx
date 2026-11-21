@@ -66,8 +66,8 @@ export function ChallengesPanel({ state }: { state: ChallengeState }) {
       <Star3D size={30} style={{ position: 'absolute', right: 18, top: 14 }} />
       <Sparkle size={14} delay={300} style={{ position: 'absolute', left: 16, top: 18 }} />
       <View style={{ alignItems: 'center', gap: 2 }}>
-        <GradientText text="EARN POINTS" size={Math.min(28, (width - 64) / 7.5)} width={width - 64} align="center" weight={fonts.display} colors={['#C4B5FD', '#A78BFA', '#67E8F9']} />
-        <GradientText text="BY WINNING CHALLENGES!" size={Math.min(22, (width - 64) / 12)} width={width - 64} align="center" weight={fonts.display} colors={['#E9D5FF', '#93C5FD']} />
+        <GradientText text="EARN POINTS" size={Math.min(28, (width - 64) / 7.5)} width={width - 64} align="center" weight={fonts.display} colors={['#7C3AED', '#A855F7', '#2563EB']} />
+        <GradientText text="BY WINNING CHALLENGES!" size={Math.min(22, (width - 64) / 12)} width={width - 64} align="center" weight={fonts.display} colors={['#7C3AED', '#2563EB']} />
         <T v="caption" color={colors.textSecondary}>Complete them every day · {done}/{state.challenges.length} done today</T>
       </View>
 

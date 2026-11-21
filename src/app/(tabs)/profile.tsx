@@ -42,7 +42,7 @@ export default function MyProfile() {
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
           <Trophy size={50} />
           <View style={{ flex: 1 }}>
-            <T style={{ fontFamily: fonts.display, fontSize: 18 }}>Daily challenges</T>
+            <T style={{ fontFamily: fonts.display, fontSize: 18 }} color={colors.white}>Daily challenges</T>
             <T v="caption" color="rgba(255,255,255,0.85)">
               {challenges ? `Level ${challenges.level} · ${challenges.xp} XP · ${challenges.challenges.filter((c) => c.done).length}/${challenges.challenges.length} done today` : 'Earn points by winning challenges'}
             </T>

@@ -56,13 +56,14 @@ export default function Discover() {
             <Pressable accessibilityRole="button" accessibilityLabel="Open challenges" onPress={() => router.push('/challenges')} style={{ flexDirection: 'row' }}><XpBadge state={xp} /></Pressable>
           </View>
         </View>
+        <IconButton label="UNKNOWN PLUS" name="diamond" color="#D97706" onPress={() => router.push('/premium')} />
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
       </View>
       <Animated.View style={[{ paddingHorizontal: spacing.md, gap: 4 }, hero]}>
         <T v="overline" color={colors.violetSoft}>{greeting().toUpperCase()}</T>
         <GradientText text="Discover something" size={titleSize} width={width - 32} />
-        <GradientText text="unexpected." size={titleSize} width={width - 32} colors={['#A78BFA', '#67E8F9']} />
+        <GradientText text="unexpected." size={titleSize} width={width - 32} colors={['#A855F7', '#2563EB']} />
         {profile && <T v="caption" color={colors.textMuted} style={{ marginTop: 4 }}>You are {unknownName(profile.unknown_number)} — nobody knows, unless you choose.</T>}
       </Animated.View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: spacing.md }}>
@@ -110,7 +111,7 @@ export default function Discover() {
           feed.done && feed.items.length > 0 ? <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', margin: spacing.xl }}>You reached the edge of the known. Pull to discover more.</T> : undefined}
       />
       <Animated.View pointerEvents="box-none" style={[styles.compact, { paddingTop: insets.top + 6 }, compactBar]}>
-        <LinearGradient colors={['rgba(9,11,20,0.98)', 'rgba(9,11,20,0.85)', 'rgba(9,11,20,0)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
+        <LinearGradient colors={['rgba(247,246,255,0.98)', 'rgba(247,246,255,0.9)', 'rgba(247,246,255,0)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
         <View style={[styles.top, { paddingBottom: 10 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
             <PortalMark size={30} spin={false} />

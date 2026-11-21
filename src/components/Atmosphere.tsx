@@ -11,7 +11,7 @@ const Star = memo(function Star({ x, y, size, delay, dur }: { x: number; y: numb
     o.value = withDelay(delay, withRepeat(withSequence(withTiming(0.9, { duration: dur, easing: Easing.inOut(Easing.quad) }), withTiming(0.15, { duration: dur })), -1));
   }, [o, delay, dur]);
   const a = useAnimatedStyle(() => ({ opacity: o.value }));
-  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: size, height: size, borderRadius: size, backgroundColor: size > 2 ? colors.violetSoft : colors.text }, a]} />;
+  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: size, height: size, borderRadius: size, backgroundColor: size > 2 ? colors.violetSoft : '#FBBF24' }, a]} />;
 });
 
 /** Cinematic background: mystery gradient + soft violet light + twinkling particles. */
@@ -32,6 +32,6 @@ export function Atmosphere({ stars = 40, intensity = 1 }: { stars?: number; inte
 }
 
 const styles = StyleSheet.create({
-  glow: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(109,74,255,0.22)' },
-  glowBlue: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(56,189,248,0.10)' },
+  glow: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(167,139,250,0.28)' },
+  glowBlue: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(56,189,248,0.16)' },
 });

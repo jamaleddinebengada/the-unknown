@@ -105,7 +105,7 @@ export default function PostDetails() {
               selectionColor={colors.violet} style={s.input} multiline maxLength={800} accessibilityLabel="Reply" />
             <Pressable accessibilityLabel="Send reply" disabled={!text.trim() || sending} onPress={send}
               style={[s.send, (!text.trim() || sending) && { opacity: 0.4 }]}>
-              {sending ? <ActivityIndicator color={colors.text} size="small" /> : <Ionicons name="arrow-up" size={20} color={colors.text} />}
+              {sending ? <ActivityIndicator color={colors.white} size="small" /> : <Ionicons name="arrow-up" size={20} color={colors.white} />}
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -116,7 +116,7 @@ export default function PostDetails() {
 }
 
 const s = StyleSheet.create({
-  comment: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(22,27,43,0.82)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.14)' },
+  comment: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 120, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.violetDeep, alignItems: 'center', justifyContent: 'center' },

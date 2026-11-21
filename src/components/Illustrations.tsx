@@ -29,9 +29,9 @@ export function GlobeIllustration({ size = 260 }: { size?: number }) {
       <Svg width={size} height={size}>
         <Defs>
           <RadialGradient id="globe" cx="40%" cy="35%" r="70%">
-            <Stop offset="0" stopColor="#2A2160" />
-            <Stop offset="0.7" stopColor="#101421" />
-            <Stop offset="1" stopColor="#090B14" />
+            <Stop offset="0" stopColor="#FFFFFF" />
+            <Stop offset="0.7" stopColor="#E0E7FF" />
+            <Stop offset="1" stopColor="#C7D2FE" />
           </RadialGradient>
         </Defs>
         <Circle cx={c} cy={c} r={c - 6} fill="url(#globe)" stroke={colors.violet} strokeOpacity={0.45} strokeWidth={1.2} />

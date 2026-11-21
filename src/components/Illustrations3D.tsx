@@ -1,10 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { memo, useEffect, useId, useMemo } from 'react';
+import { memo, useEffect, useId } from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Defs, G, Path, Polygon, RadialGradient, Stop, LinearGradient as SvgLinear, Text as SvgText } from 'react-native-svg';
 import { colors, fonts } from '@/constants/theme';
-import { seeded } from '@/utils/format';
+import { Character } from './Character';
 
 const uid = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '');
 
@@ -55,7 +55,7 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         <Defs>
           <RadialGradient id={`${id}h`} cx="50%" cy="50%" r="50%">
-            <Stop offset="0.35" stopColor="#8B5CF6" stopOpacity="0.55" />
+            <Stop offset="0.35" stopColor="#C4B5FD" stopOpacity="0.65" />
             <Stop offset="0.7" stopColor="#6D4AFF" stopOpacity="0.18" />
             <Stop offset="1" stopColor="#38BDF8" stopOpacity="0" />
           </RadialGradient>
@@ -174,18 +174,12 @@ export function Sparkle({ size = 14, color = '#FDE68A', delay = 0, style }: { si
 /* =====================================================================
  * EmojiAvatar — playful 3D-style character bubble (decorative / personas).
  * ===================================================================== */
-const FACES = ['🧑🏽', '👩🏻‍🦰', '🧔🏾', '👩🏽‍🦱', '🧑🏻‍🦱', '👱🏼‍♀️', '👨🏻', '👩🏿', '🧑🏼‍🦰', '👲🏻', '🧕🏽', '👩🏼'];
-const BUBBLES: [string, string][] = [['#FBCFE8', '#F472B6'], ['#BAE6FD', '#38BDF8'], ['#DDD6FE', '#8B5CF6'], ['#FDE68A', '#F59E0B'], ['#A7F3D0', '#10B981'], ['#FECACA', '#FB7185']];
 
-export const EmojiAvatar = memo(function EmojiAvatar({ seed, size = 44, ring = true, float = false, delay = 0 }: { seed: string; size?: number; ring?: boolean; float?: boolean; delay?: number }) {
-  const pick = useMemo(() => { const r = seeded(seed); return { face: FACES[Math.floor(r() * FACES.length)], bg: BUBBLES[Math.floor(r() * BUBBLES.length)] }; }, [seed]);
+export const EmojiAvatar = memo(function EmojiAvatar({ seed, size = 44, ring = true, float = false, delay = 0, gender }: { seed: string; size?: number; ring?: boolean; float?: boolean; delay?: number; gender?: string | null }) {
   const f = useFloat(float ? 6 : 0, 2000 + delay / 2, delay);
   return (
-    <Animated.View style={[{ width: size, height: size, borderRadius: size / 2 }, ring && { borderWidth: Math.max(2, size * 0.06), borderColor: '#FFFFFF' }, styles.avatarShadow, f]}>
-      <LinearGradient colors={pick.bg} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }]}>
-        <Text style={{ fontSize: size * 0.62, lineHeight: size * 0.8, marginTop: size * 0.06 }}>{pick.face}</Text>
-        <View style={[styles.avatarGloss, { borderTopLeftRadius: size / 2, borderTopRightRadius: size / 2, height: size * 0.4 }]} />
-      </LinearGradient>
+    <Animated.View style={[{ width: size, height: size, borderRadius: size / 2 }, ring && { borderWidth: Math.max(2, size * 0.05), borderColor: '#FFFFFF' }, styles.avatarShadow, f]}>
+      <Character seed={seed} size={ring ? size - Math.max(2, size * 0.05) * 2 : size} gender={gender} />
     </Animated.View>
   );
 });
@@ -271,7 +265,7 @@ export function StatusPill({ label, live = true }: { label: string; live?: boole
 const styles = StyleSheet.create({
   avatarShadow: { shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   avatarGloss: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.22)' },
-  pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(10,14,40,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)' },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   planet: { position: 'absolute', borderRadius: 999, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 10, elevation: 4 },
   pillText: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 1, color: colors.text },
@@ -353,11 +347,32 @@ export function OrbitBackdrop({ width, height }: { width: number; height: number
         <View style={[styles.planet, { left: cx + width * 0.3, top: cy + height * 0.2, width: 10, height: 10, backgroundColor: '#38BDF8' }]} />
       </Animated.View>
       <Animated.View style={[StyleSheet.absoluteFill, spin2]}>
-        <View style={[styles.planet, { left: cx + width * 0.15, top: cy - height * 0.36, width: 34, height: 34, backgroundColor: '#1E1B4B', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }]} />
+        <View style={[styles.planet, { left: cx + width * 0.15, top: cy - height * 0.36, width: 34, height: 34, backgroundColor: '#E0E7FF', borderWidth: 1, borderColor: 'rgba(124,108,255,0.3)' }]} />
         <View style={[styles.planet, { left: cx - width * 0.25, top: cy + height * 0.3, width: 8, height: 8, backgroundColor: '#67E8F9' }]} />
       </Animated.View>
       <Sparkle size={16} color="#C4B5FD" style={{ position: 'absolute', left: width * 0.2, top: height * 0.12 }} />
       <Sparkle size={20} color="#A5B4FC" delay={500} style={{ position: 'absolute', right: width * 0.08, top: height * 0.4 }} />
+    </View>
+  );
+}
+
+/* =====================================================================
+ * Couple — illustrated woman & man meeting through the portal.
+ * ===================================================================== */
+export function Couple({ size = 280 }: { size?: number }) {
+  const heart = useFloat(6, 1600);
+  const a = size * 0.46;
+  return (
+    <View style={{ width: size, height: size * 0.78, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ position: 'absolute', opacity: 0.9 }}><Vortex size={size * 0.72} /></View>
+      <View style={{ position: 'absolute', left: 0, bottom: size * 0.02 }}><EmojiAvatar seed="welcome-woman-3" gender="woman" size={a} float delay={200} /></View>
+      <View style={{ position: 'absolute', right: 0, top: size * 0.02 }}><EmojiAvatar seed="welcome-man-7" gender="man" size={a} float delay={900} /></View>
+      <Animated.View style={[{ position: 'absolute', top: size * 0.3, left: size * 0.44 }, heart]}>
+        <Text style={{ fontSize: size * 0.11 }}>💜</Text>
+      </Animated.View>
+      <Star3D size={size * 0.12} style={{ position: 'absolute', left: size * 0.1, top: 0 }} />
+      <Star3D size={size * 0.08} tone="violet" delay={500} style={{ position: 'absolute', right: size * 0.06, bottom: size * 0.05 }} />
+      <Sparkle size={14} style={{ position: 'absolute', right: size * 0.42, bottom: size * 0.02 }} />
     </View>
   );
 }

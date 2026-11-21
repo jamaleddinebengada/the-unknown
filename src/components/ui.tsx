@@ -46,14 +46,14 @@ export function GradientButton({ label, onPress, loading, disabled, icon, style,
       onPressOut={() => { press.set(withSpring(0, { damping: 12, stiffness: 300 })); }}
       onPress={() => { haptic.soft(); onPress?.(); }}
       style={[{ opacity: off ? 0.55 : 1, paddingBottom: 4 }, style]}>
-      <View style={[s.btnBase, { height: h, top: 4, backgroundColor: '#2E2490' }, !off && glow('#6C5CFF')]} />
+      <View style={[s.btnBase, { height: h, top: 4, backgroundColor: '#4A3BD6' }, !off && glow('#8B7BFF')]} />
       <Animated.View style={[{ height: h, borderRadius: radius.pill, overflow: 'hidden' }, face]}>
         <LinearGradient colors={g} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={[s.btn, small && s.btnSmall, { height: h }]}>
           <View pointerEvents="none" style={[s.btnGloss, { height: h * 0.48 }]} />
           <View pointerEvents="none" style={[StyleSheet.absoluteFill, s.btnRim]} />
-          {loading ? <ActivityIndicator color={colors.text} /> : (
+          {loading ? <ActivityIndicator color={colors.white} /> : (
             <>
-              {icon && <Ionicons name={icon} size={small ? 17 : 20} color={colors.text} />}
+              {icon && <Ionicons name={icon} size={small ? 17 : 20} color={colors.white} />}
               <Text style={[s.btnGame, small && { fontSize: 15 }]}>{label.toUpperCase()}</Text>
             </>
           )}
@@ -97,9 +97,9 @@ export function CategoryChip({ label, selected, onPress, icon }: { label: string
   return (
     <Pressy accessibilityRole="button" accessibilityState={{ selected }} onPress={() => { haptic.tap(); onPress?.(); }}
       style={[s.chip, selected && s.chipOn]}>
-      {selected && <LinearGradient colors={['rgba(109,74,255,0.55)', 'rgba(168,85,247,0.35)', 'rgba(56,189,248,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
-      {icon && <Ionicons name={icon} size={14} color={selected ? colors.text : colors.textSecondary} />}
-      <Text style={[s.chipLabel, selected && { color: colors.text, fontFamily: fonts.semibold }]}>{label}</Text>
+      {selected && <LinearGradient colors={['#7C6CFF', '#A855F7', '#60A5FA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
+      {icon && <Ionicons name={icon} size={14} color={selected ? colors.white : colors.textSecondary} />}
+      <Text style={[s.chipLabel, selected && { color: colors.white, fontFamily: fonts.semibold }]}>{label}</Text>
     </Pressy>
   );
 }
@@ -115,7 +115,7 @@ export function InterestTag({ label, accent = false }: { label: string; accent?:
 export function PremiumBadge({ label = 'PLUS' }: { label?: string }) {
   return (
     <LinearGradient colors={gradients.secondary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.premium}>
-      <Ionicons name="sparkles" size={10} color={colors.text} />
+      <Ionicons name="sparkles" size={10} color={colors.white} />
       <Text style={s.premiumLabel}>{label}</Text>
     </LinearGradient>
   );
@@ -212,24 +212,24 @@ const s = StyleSheet.create({
   btn: { height: 54, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: spacing.xl },
   btnSmall: { height: 42, paddingHorizontal: spacing.lg },
   btnLabel: { fontFamily: fonts.semibold, fontSize: 16, color: colors.text, letterSpacing: 0.2 },
-  btnGame: { fontFamily: fonts.display, fontSize: 18, color: colors.text, letterSpacing: 0.6, textShadowColor: 'rgba(30,20,90,0.6)', textShadowOffset: { width: 0, height: 1.5 }, textShadowRadius: 2 },
+  btnGame: { fontFamily: fonts.display, fontSize: 18, color: colors.white, letterSpacing: 0.6, textShadowColor: 'rgba(30,20,90,0.6)', textShadowOffset: { width: 0, height: 1.5 }, textShadowRadius: 2 },
   btnBase: { position: 'absolute', left: 0, right: 0, borderRadius: radius.pill },
   btnGloss: { position: 'absolute', top: 0, left: 0, right: 0, borderTopLeftRadius: radius.pill, borderTopRightRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.16)' },
   btnRim: { borderRadius: radius.pill, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)' },
   solid: { backgroundColor: colors.elevated },
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.hairlineStrong },
-  iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(29,36,54,0.7)' },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
-  chipOn: { borderColor: 'rgba(167,139,250,0.7)', overflow: 'hidden' },
+  iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
+  chipOn: { borderColor: 'rgba(124,108,255,0.6)', overflow: 'hidden' },
   chipLabel: { fontFamily: fonts.medium, fontSize: 14, color: colors.textSecondary },
-  tag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.elevated, borderWidth: 1, borderColor: colors.hairline },
+  tag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.elevated, borderWidth: 1, borderColor: colors.surfaceBorder },
   tagLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary },
   premium: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
-  premiumLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.text, letterSpacing: 1 },
+  premiumLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.white, letterSpacing: 1 },
   badge: { minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg },
-  badgeLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.text },
-  card: { backgroundColor: 'rgba(22,27,43,0.88)', borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.hairline, overflow: 'hidden' },
-  field: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 54, paddingHorizontal: 16, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
+  badgeLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.white },
+  card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.hairline, overflow: 'hidden' },
+  field: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 54, paddingHorizontal: 16, borderRadius: radius.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   fieldInput: { flex: 1, color: colors.text, fontFamily: fonts.regular, fontSize: 15, paddingVertical: 14 },
   empty: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 56, paddingHorizontal: spacing.xl },
   emptyOrb: { width: 112, height: 112, borderRadius: 56, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },

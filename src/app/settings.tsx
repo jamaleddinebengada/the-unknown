@@ -64,6 +64,10 @@ export default function Settings() {
     <Screen edges={['top', 'bottom']}>
       <StackHeader title="Settings" />
       <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.xl, paddingBottom: 60 }}>
+        <Group title="UNKNOWN PLUS">
+          <Row icon="diamond-outline" label={profile?.is_premium ? 'Your subscription' : 'Upgrade to UNKNOWN PLUS'} value={profile?.is_premium ? 'Active' : undefined} onPress={() => router.push('/premium')} />
+        </Group>
+
         <Group title="ACCOUNT">
           <Row icon="person-outline" label="Edit profile" onPress={() => router.push('/edit-profile')} />
           <Row icon="finger-print-outline" label="Public identity" value={unknownName(profile?.unknown_number)} />
@@ -82,6 +86,9 @@ export default function Settings() {
         <Group title="SAFETY">
           <Row icon="ban-outline" label="Blocked users" onPress={() => setBlockedOpen(true)} />
           <Row icon="document-text-outline" label="Community guidelines" onPress={() => setGuidelines(true)} />
+          <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
+            <T v="caption" color={colors.textMuted}>Character illustrations: “Personas” by Draftbit, CC BY 4.0, generated with DiceBear.</T>
+          </View>
         </Group>
 
         <View style={{ gap: spacing.sm }}>

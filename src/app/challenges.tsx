@@ -31,8 +31,8 @@ function BonusBubble({ xp }: { xp: number }) {
   return (
     <Animated.View style={[s.bonus, a]}>
       <LinearGradient colors={['#FDBA74', '#F97316', '#EA580C']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={s.bonusInner}>
-        <T style={{ fontFamily: fonts.display, fontSize: 20, lineHeight: 22 }}>+{xp}</T>
-        <T style={{ fontFamily: fonts.displaySemi, fontSize: 11, lineHeight: 13 }}>XP</T>
+        <T style={{ fontFamily: fonts.display, fontSize: 20, lineHeight: 22 }} color={colors.white}>+{xp}</T>
+        <T style={{ fontFamily: fonts.displaySemi, fontSize: 11, lineHeight: 13 }} color={colors.white}>XP</T>
       </LinearGradient>
     </Animated.View>
   );
@@ -94,10 +94,10 @@ export default function Challenges() {
             <Animated.View entering={FadeInDown.springify().damping(18)} style={s.card}>
               <View style={{ flex: 1, gap: 4 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17, color: '#FBBF24', letterSpacing: 0.6 }}>NEW CHALLENGES</T>
+                  <T style={{ fontFamily: fonts.display, fontSize: 17, color: '#D97706', letterSpacing: 0.6 }}>NEW CHALLENGES</T>
                   <T style={{ fontFamily: fonts.display, fontSize: 17 }}>{resetIn()}</T>
                 </View>
-                <T style={{ fontFamily: fonts.displaySemi, fontSize: 14, color: colors.violetSoft, letterSpacing: 0.8 }}>LEVEL {state.level} · {state.xp} XP · 🔥 {state.active_days}/7 DAYS</T>
+                <T style={{ fontFamily: fonts.displaySemi, fontSize: 14, color: colors.violet, letterSpacing: 0.8 }}>LEVEL {state.level} · {state.xp} XP · 🔥 {state.active_days}/7 DAYS</T>
                 <View style={s.bar}><LinearGradient colors={['#FDE68A', '#FBBF24', '#F59E0B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[s.barFill, { width: `${Math.max(5, (state.level_xp / state.per_level) * 100)}%` }]} /></View>
                 <View style={{ marginTop: 6 }}><AvatarStack seeds={active.length ? active.slice(0, 4).map((a) => a.avatar_seed) : ['s1', 's2', 's3', 's4']} size={30} /></View>
               </View>
@@ -111,13 +111,13 @@ export default function Challenges() {
                   <View key={m.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: m.is_mine ? 'flex-end' : 'flex-start' }}>
                     {!m.is_mine && <EmojiAvatar seed={m.sender_avatar_seed ?? 'x'} size={32} />}
                     <View style={[s.bubble, m.is_mine ? s.mine : s.theirs]}>
-                      <T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} numberOfLines={2}>{m.body}</T>
+                      <T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white} numberOfLines={2}>{m.body}</T>
                     </View>
                   </View>
                 )) : (
                   <>
-                    <View style={{ alignItems: 'flex-end' }}><View style={[s.bubble, s.mine]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>Ready to meet someone?</T></View></View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><EmojiAvatar seed="guide" size={32} /><View style={[s.bubble, s.theirs]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>Let’s start! ✨</T></View></View>
+                    <View style={{ alignItems: 'flex-end' }}><View style={[s.bubble, s.mine]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>Ready to meet someone?</T></View></View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><EmojiAvatar seed="guide" size={32} /><View style={[s.bubble, s.theirs]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>Let’s start! ✨</T></View></View>
                   </>
                 )}
                 <View style={s.inputMock}><T color={colors.textMuted}>{chatId ? 'Continue the conversation…' : 'Find a stranger to start chatting…'}</T></View>
@@ -130,7 +130,7 @@ export default function Challenges() {
               <Pressable onPress={() => { haptic.tap(); router.push('/messages'); }} style={[s.card, { paddingVertical: 16 }]}>
                 <Ionicons name="checkmark-done" size={26} color={ch('chat')?.done ? colors.success : colors.textMuted} />
                 <T style={{ fontFamily: fonts.display, fontSize: 18, flex: 1 }}>Start a discussion</T>
-                <T style={{ fontFamily: fonts.display, color: '#FBBF24' }}>+{ch('chat')?.xp}</T>
+                <T style={{ fontFamily: fonts.display, color: '#D97706' }}>+{ch('chat')?.xp}</T>
               </Pressable>
             </Animated.View>
 
@@ -139,9 +139,9 @@ export default function Challenges() {
               <Animated.View entering={FadeInUp.delay(180).springify()} style={{ flex: 1 }}>
                 <Pressable onPress={() => router.push('/matches')} style={{ flex: 1 }}>
                   <LinearGradient colors={['#0F766E', '#134E5E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                    <T style={{ fontFamily: fonts.display, fontSize: 17 }}>Discover{'\n'}a stranger</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 17 }} color={colors.white}>Discover{'\n'}a stranger</T>
                     <View style={[s.bigCheck, !ch('match')?.done && { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                      <Ionicons name={ch('match')?.done ? 'checkmark' : 'planet'} size={24} color={colors.text} />
+                      <Ionicons name={ch('match')?.done ? 'checkmark' : 'planet'} size={24} color={colors.white} />
                     </View>
                     <T v="caption" color="rgba(255,255,255,0.8)">{ch('match')?.done ? 'Done today' : `+${ch('match')?.xp} XP`}</T>
                   </LinearGradient>
@@ -149,11 +149,11 @@ export default function Challenges() {
               </Animated.View>
               <Animated.View entering={FadeInUp.delay(240).springify()} style={{ flex: 1 }}>
                 <LinearGradient colors={['#7C3AED', '#4C1D95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17 }}>{allDone ? 'Bravo\nchampion!' : 'Become\nchampion'}</T>
+                  <T style={{ fontFamily: fonts.display, fontSize: 17 }} color={colors.white}>{allDone ? 'Bravo\nchampion!' : 'Become\nchampion'}</T>
                   <View style={{ position: 'absolute', right: 8, top: 18 }}><Trophy size={52} /></View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 'auto' }}>
                     <EmojiAvatar seed={profile?.avatar_seed ?? 'me'} size={28} />
-                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }}>UNKNOWN{'\n'}#{profile?.unknown_number}</T>
+                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }} color={colors.white}>UNKNOWN{'\n'}#{profile?.unknown_number}</T>
                   </View>
                 </LinearGradient>
               </Animated.View>
@@ -163,7 +163,7 @@ export default function Challenges() {
             {rest.map((c, i) => (
               <Animated.View key={c.key} entering={FadeInDown.delay(280 + i * 50).springify()}>
                 <Pressable disabled={c.done} onPress={() => { haptic.tap(); router.push(ROUTE[c.key] as never); }} style={[s.card, { paddingVertical: 12 }, c.done && { borderColor: 'rgba(52,211,153,0.5)' }]}>
-                  <View style={[s.icon, c.done && { backgroundColor: colors.success }]}><Ionicons name={(c.done ? 'checkmark' : c.icon) as IconName} size={18} color={c.done ? '#05301F' : colors.text} /></View>
+                  <View style={[s.icon, c.done && { backgroundColor: colors.success }]}><Ionicons name={(c.done ? 'checkmark' : c.icon) as IconName} size={18} color={c.done ? '#05301F' : colors.white} /></View>
                   <View style={{ flex: 1 }}>
                     <T style={{ fontFamily: fonts.display, fontSize: 16 }}>{c.title}</T>
                     <T v="caption" color={colors.textSecondary}>{c.done ? 'Completed today' : c.subtitle}</T>
@@ -181,7 +181,7 @@ export default function Challenges() {
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
                 <Pressable onPress={() => router.push('/matches')}>
-                  <LinearGradient colors={['#A855F7', '#7C3AED']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }}>Join</T></LinearGradient>
+                  <LinearGradient colors={['#A855F7', '#7C3AED']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>Join</T></LinearGradient>
                 </Pressable>
                 {active.length ? active.map((a, i) => (
                   <Pressable key={a.unknown_number} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(a.unknown_number) } })}
@@ -201,19 +201,19 @@ export default function Challenges() {
 }
 
 const s = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, backgroundColor: 'rgba(20,25,60,0.88)', borderWidth: 1.5, borderColor: 'rgba(148,163,255,0.25)' },
-  bar: { height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginTop: 4 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  bar: { height: 8, borderRadius: 4, backgroundColor: colors.elevated, overflow: 'hidden', marginTop: 4 },
   barFill: { height: '100%', borderRadius: 4 },
   bubble: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, maxWidth: '75%' },
   mine: { backgroundColor: '#2563EB' },
   theirs: { backgroundColor: '#7C3AED' },
-  inputMock: { height: 46, borderRadius: 16, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(148,163,255,0.3)', backgroundColor: 'rgba(11,15,40,0.6)' },
+  inputMock: { height: 46, borderRadius: 16, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.bg },
   bonus: { width: 74, height: 74, borderRadius: 37, padding: 4, backgroundColor: '#3B82F6', shadowColor: '#3B82F6', shadowOpacity: 0.9, shadowRadius: 16, elevation: 12 },
   bonusInner: { flex: 1, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
   tile: { minHeight: 150, borderRadius: 26, padding: spacing.md, gap: 10, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
   bigCheck: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
-  icon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(124,108,255,0.5)' },
+  icon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C6CFF' },
   reward: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: '#FDE68A', borderWidth: 1.5, borderColor: '#FFFFFF' },
   join: { paddingHorizontal: 18, height: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, height: 48, borderRadius: radius.pill, borderWidth: 1.5, backgroundColor: 'rgba(11,15,40,0.6)' },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, height: 48, borderRadius: radius.pill, borderWidth: 1.5, backgroundColor: colors.white },
 });

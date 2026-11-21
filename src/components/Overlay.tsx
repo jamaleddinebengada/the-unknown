@@ -31,7 +31,7 @@ export function BottomSheet({ visible, onClose, title, children }: { visible: bo
 export function SheetAction({ icon, label, onPress, danger }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; danger?: boolean }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.action, pressed && { backgroundColor: colors.elevated }]}>
-      <Ionicons name={icon} size={20} color={danger ? colors.danger : colors.textSecondary} />
+      <Ionicons name={icon} size={20} color={danger ? colors.danger : colors.violetDeep} />
       <Text style={[styles.actionLabel, danger && { color: colors.danger }]}>{label}</Text>
     </Pressable>
   );

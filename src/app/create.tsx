@@ -139,8 +139,8 @@ export default function CreatePost() {
                     <Pressy key={p.key} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => { haptic.tap(); setType(p.key as PostType); }}
                       style={[s.type, on && s.typeOn, on && { borderColor: typeAccent[p.key][1], shadowColor: typeAccent[p.key][0] }]}>
                       {on && <LinearGradient colors={[typeAccent[p.key][0], `${typeAccent[p.key][1]}AA`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.md }]} />}
-                      <Ionicons name={p.icon} size={20} color={on ? colors.text : typeAccent[p.key][0]} />
-                      <T v="caption" color={on ? colors.text : colors.textSecondary} style={{ fontFamily: fonts.semibold }}>{p.action}</T>
+                      <Ionicons name={p.icon} size={20} color={on ? colors.white : typeAccent[p.key][0]} />
+                      <T v="caption" color={on ? colors.white : colors.textSecondary} style={{ fontFamily: fonts.semibold }}>{p.action}</T>
                     </Pressy>
                   );
                 })}
@@ -248,7 +248,7 @@ export default function CreatePost() {
 
 const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
-  type: { width: 112, height: 84, padding: 12, borderRadius: radius.md, overflow: 'hidden', backgroundColor: 'rgba(22,27,43,0.85)', borderWidth: 1, borderColor: colors.hairline, justifyContent: 'space-between' },
+  type: { width: 112, height: 84, padding: 12, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, justifyContent: 'space-between' },
   typeOn: { shadowOpacity: 0.6, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
   input: { minHeight: 150, color: colors.text, fontFamily: fonts.regular, fontSize: 17, lineHeight: 25, textAlignVertical: 'top', outlineStyle: 'none' } as object,
   preview: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md },
