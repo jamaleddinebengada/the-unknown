@@ -3,16 +3,16 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing } from '@/constants/theme';
-import { Atmosphere } from './Atmosphere';
+import { Aurora } from './Effects';
 import { IconButton, T } from './ui';
 
-export function Screen({ children, style, atmosphere = false, edges = ['top'] }: {
+export function Screen({ children, style, atmosphere = true, edges = ['top'] }: {
   children: ReactNode; style?: StyleProp<ViewStyle>; atmosphere?: boolean; edges?: ('top' | 'bottom')[];
 }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[{ flex: 1, backgroundColor: colors.bg, paddingTop: edges.includes('top') ? insets.top : 0, paddingBottom: edges.includes('bottom') ? insets.bottom : 0 }, style]}>
-      {atmosphere && <Atmosphere stars={24} intensity={0.6} />}
+      {atmosphere && <Aurora stars={14} />}
       {children}
     </View>
   );

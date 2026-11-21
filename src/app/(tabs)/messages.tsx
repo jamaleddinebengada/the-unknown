@@ -8,6 +8,8 @@ import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { Screen } from '@/components/Screen';
 import { CategoryChip, EmptyState, ErrorState, NotificationBadge, PostSkeleton, T, TextField } from '@/components/ui';
 import { flagOf } from '@/constants/countries';
+import { GlowRing, PulseDot, ScreenTitle } from '@/components/Effects';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { getMyConversations, getMyMatches, getMyPendingInterests, setArchived } from '@/services/api';
@@ -55,12 +57,17 @@ export default function Messages() {
     <Animated.View entering={FadeInDown.delay(Math.min(index, 10) * 35)}>
       <Pressable accessibilityRole="button" onLongPress={() => setMenuFor(item)}
         onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: item.conversation_id } })}
-        style={({ pressed }) => [s.row, pressed && { backgroundColor: colors.bgSecondary }]}>
+        style={({ pressed }) => [s.row, item.unread > 0 && s.rowUnread, pressed && { backgroundColor: 'rgba(139,92,246,0.12)' }]}>
+        {item.unread > 0 && <LinearGradient colors={['rgba(109,74,255,0.22)', 'rgba(56,189,248,0.04)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
         <View>
           {item.kind === 'group' ? (
-            <View style={[s.group]}><Ionicons name="people" size={22} color={colors.violetSoft} /></View>
-          ) : <AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={52} revealed={item.revealed} />}
-          {item.other_online && <View style={s.online} />}
+            <LinearGradient colors={['rgba(109,74,255,0.5)', 'rgba(56,189,248,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.group}><Ionicons name="people" size={22} color={colors.text} /></LinearGradient>
+          ) : item.unread ? (
+            <GlowRing size={60} speed={3500} thickness={2}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={50} revealed={item.revealed} /></GlowRing>
+          ) : (
+            <View style={{ width: 60, height: 60, alignItems: 'center', justifyContent: 'center' }}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={50} revealed={item.revealed} /></View>
+          )}
+          {item.other_online && <View style={s.online}><PulseDot size={10} /></View>}
         </View>
         <View style={{ flex: 1, gap: 3 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -83,7 +90,7 @@ export default function Messages() {
   return (
     <Screen>
       <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm, gap: spacing.md }}>
-        <T v="screenTitle">Messages</T>
+        <ScreenTitle overline="YOUR CONVERSATIONS" title="Messages" />
         <TextField icon="search" placeholder="Search conversations" value={q} onChangeText={setQ} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {TABS.map((t) => <CategoryChip key={t} label={t === 'Requests' && requestCount ? `Requests · ${requestCount}` : t} selected={tab === t} onPress={() => setTab(t)} />)}
@@ -138,8 +145,9 @@ export default function Messages() {
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: spacing.md, paddingVertical: 12 },
-  online: { position: 'absolute', right: 1, bottom: 1, width: 13, height: 13, borderRadius: 7, backgroundColor: colors.success, borderWidth: 2, borderColor: colors.bg },
-  group: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.violetTint, alignItems: 'center', justifyContent: 'center' },
-  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.sm, paddingHorizontal: spacing.sm, paddingVertical: 10, borderRadius: radius.lg, overflow: 'hidden' },
+  rowUnread: { borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
+  online: { position: 'absolute', right: 5, bottom: 5, padding: 2, borderRadius: 8, backgroundColor: colors.bg },
+  group: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', margin: 4 },
+  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: 'rgba(22,27,43,0.85)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)' },
 });

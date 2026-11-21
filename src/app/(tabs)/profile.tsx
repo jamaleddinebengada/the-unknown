@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, RefreshControl, Share, View } from 'react-native';
+import { ScreenTitle } from '@/components/Effects';
 import { PostCard } from '@/components/PostCard';
 import { Screen } from '@/components/Screen';
 import { EmptyState, ErrorState, IconButton, PremiumButton, T } from '@/components/ui';
@@ -22,7 +23,7 @@ export default function MyProfile() {
   const header = (
     <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <T v="screenTitle" style={{ flex: 1 }}>Profile</T>
+        <View style={{ flex: 1 }}><ScreenTitle overline="YOUR MYSTERY PROFILE" title="Profile" /></View>
         <IconButton label="Share profile" name="share-outline" onPress={() => Share.share({ message: `Find me on THE UNKNOWN as ${unknownName(n)}` }).catch(() => {})} />
         <IconButton label="Settings" name="settings-outline" onPress={() => router.push('/settings')} />
       </View>
@@ -39,7 +40,7 @@ export default function MyProfile() {
     <Screen>
       <FlatList data={posts.items} keyExtractor={(p) => p.id} ListHeaderComponent={header}
         contentContainerStyle={{ padding: spacing.md, paddingBottom: 130 }}
-        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         renderItem={({ item, index }) => <PostCard post={item} index={index} onChange={posts.update} onRemoved={posts.remove} />}
         onEndReached={posts.loadMore}
         refreshControl={<RefreshControl refreshing={posts.refreshing} onRefresh={() => { refreshProfile(); posts.refresh(); }} tintColor={colors.violet} />}

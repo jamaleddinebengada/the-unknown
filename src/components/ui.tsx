@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { forwardRef, useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { forwardRef, useState, type ComponentProps, type ReactNode } from 'react';
 import {
   ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View,
   type PressableProps, type StyleProp, type TextInputInstance, type TextInputProps, type TextProps, type TextStyle, type ViewStyle,
 } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming, FadeIn } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, FadeIn } from 'react-native-reanimated';
 import { colors, fonts, glow, gradients, radius, spacing, type } from '@/constants/theme';
 import { haptic } from '@/utils/format';
+import { GlassCard, GlowRing, Shimmer } from './Effects';
 
 /* ---------------- Typography ---------------- */
 type Variant = keyof typeof type;
@@ -85,8 +86,9 @@ export function CategoryChip({ label, selected, onPress, icon }: { label: string
   return (
     <Pressy accessibilityRole="button" accessibilityState={{ selected }} onPress={() => { haptic.tap(); onPress?.(); }}
       style={[s.chip, selected && s.chipOn]}>
+      {selected && <LinearGradient colors={['rgba(109,74,255,0.55)', 'rgba(168,85,247,0.35)', 'rgba(56,189,248,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
       {icon && <Ionicons name={icon} size={14} color={selected ? colors.text : colors.textSecondary} />}
-      <Text style={[s.chipLabel, selected && { color: colors.text }]}>{label}</Text>
+      <Text style={[s.chipLabel, selected && { color: colors.text, fontFamily: fonts.semibold }]}>{label}</Text>
     </Pressy>
   );
 }
@@ -157,10 +159,12 @@ export function EmptyState({ icon = 'planet-outline', title, body, action, onAct
 }) {
   return (
     <Animated.View entering={FadeIn.duration(400)} style={s.empty}>
-      <View style={s.emptyOrb}>
-        <LinearGradient colors={['rgba(109,74,255,0.35)', 'rgba(56,189,248,0.05)']} style={[StyleSheet.absoluteFill, { borderRadius: 60 }]} />
-        <Ionicons name={icon} size={40} color={colors.violetSoft} />
-      </View>
+      <GlowRing size={136}>
+        <View style={s.emptyOrb}>
+          <LinearGradient colors={['rgba(109,74,255,0.45)', 'rgba(56,189,248,0.06)']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 60 }]} />
+          <Ionicons name={icon} size={40} color={colors.violetSoft} />
+        </View>
+      </GlowRing>
       <T v="section" style={{ textAlign: 'center' }}>{title}</T>
       {body && <T color={colors.textSecondary} style={{ textAlign: 'center', maxWidth: 300 }}>{body}</T>}
       {action && <GradientButton small label={action} onPress={onAction} style={{ marginTop: spacing.sm }} />}
@@ -169,21 +173,21 @@ export function EmptyState({ icon = 'planet-outline', title, body, action, onAct
 }
 
 export function Skeleton({ w = '100%', h = 14, r = 8, style }: { w?: number | `${number}%`; h?: number; r?: number; style?: StyleProp<ViewStyle> }) {
-  const o = useSharedValue(0.35);
-  useEffect(() => { o.value = withRepeat(withTiming(0.8, { duration: 900 }), -1, true); }, [o]);
-  const a = useAnimatedStyle(() => ({ opacity: o.value }));
-  return <Animated.View style={[{ width: w, height: h, borderRadius: r, backgroundColor: colors.elevated }, a, style]} />;
+  return <Shimmer style={[{ width: w, height: h, borderRadius: r }, style]} />;
 }
 
 export function PostSkeleton() {
   return (
-    <View style={[s.card, { gap: 14 }]}>
-      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-        <Skeleton w={42} h={42} r={21} />
-        <View style={{ gap: 6, flex: 1 }}><Skeleton w="45%" h={12} /><Skeleton w="25%" h={10} /></View>
+    <GlassCard style={{ marginBottom: 2 }}>
+      <View style={{ gap: 14 }}>
+        <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+          <Skeleton w={44} h={44} r={22} />
+          <View style={{ gap: 6, flex: 1 }}><Skeleton w="45%" h={12} /><Skeleton w="25%" h={10} /></View>
+        </View>
+        <Skeleton h={14} /><Skeleton w="82%" h={14} /><Skeleton w="55%" h={14} />
+        <View style={{ flexDirection: 'row', gap: 10 }}><Skeleton w={60} h={28} r={14} /><Skeleton w={60} h={28} r={14} /><View style={{ flex: 1 }} /><Skeleton w={120} h={34} r={17} /></View>
       </View>
-      <Skeleton h={14} /><Skeleton w="80%" h={14} /><Skeleton w="55%" h={14} />
-    </View>
+    </GlassCard>
   );
 }
 
@@ -201,7 +205,7 @@ const s = StyleSheet.create({
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.hairlineStrong },
   iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(29,36,54,0.7)' },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
-  chipOn: { backgroundColor: colors.violetTint, borderColor: colors.violet },
+  chipOn: { borderColor: 'rgba(167,139,250,0.7)', overflow: 'hidden' },
   chipLabel: { fontFamily: fonts.medium, fontSize: 14, color: colors.textSecondary },
   tag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.elevated, borderWidth: 1, borderColor: colors.hairline },
   tagLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary },
@@ -209,9 +213,9 @@ const s = StyleSheet.create({
   premiumLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.text, letterSpacing: 1 },
   badge: { minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 5, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.bg },
   badgeLabel: { fontFamily: fonts.bold, fontSize: 10, color: colors.text },
-  card: { backgroundColor: colors.card, borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.hairline, overflow: 'hidden' },
+  card: { backgroundColor: 'rgba(22,27,43,0.88)', borderRadius: radius.lg, padding: spacing.md, borderWidth: 1, borderColor: colors.hairline, overflow: 'hidden' },
   field: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 54, paddingHorizontal: 16, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
   fieldInput: { flex: 1, color: colors.text, fontFamily: fonts.regular, fontSize: 15, paddingVertical: 14 },
   empty: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 56, paddingHorizontal: spacing.xl },
-  emptyOrb: { width: 120, height: 120, borderRadius: 60, alignItems: 'center', justifyContent: 'center', marginBottom: 12, borderWidth: 1, borderColor: 'rgba(139,92,246,0.3)' },
+  emptyOrb: { width: 112, height: 112, borderRadius: 56, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
 });

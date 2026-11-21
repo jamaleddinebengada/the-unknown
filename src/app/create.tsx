@@ -14,7 +14,9 @@ import { CategoryChip, GradientButton, IconButton, PremiumButton, Pressy, T } fr
 import { useVoiceRecorder, VoicePlayer } from '@/components/VoiceNote';
 import { AUDIENCES, INTERESTS, POST_TYPES } from '@/constants/content';
 import { flagOf } from '@/constants/countries';
-import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { colors, fonts, radius, spacing, typeAccent } from '@/constants/theme';
+import { GlassCard, ScreenTitle } from '@/components/Effects';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { friendlyError } from '@/lib/supabase';
 import { aiAssist, createPost, getPost, updatePost, uploadPostMedia, type AiAction } from '@/services/api';
@@ -126,7 +128,7 @@ export default function CreatePost() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={{ paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
             <Animated.View entering={FadeIn} style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
-              <T v="screenTitle">What is on your mind?</T>
+              <ScreenTitle overline={edit ? 'EDIT' : 'SHARE ANONYMOUSLY'} title="What is on your mind?" />
             </Animated.View>
 
             {!edit && (
@@ -135,8 +137,9 @@ export default function CreatePost() {
                   const on = p.key === type;
                   return (
                     <Pressy key={p.key} accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => { haptic.tap(); setType(p.key as PostType); }}
-                      style={[s.type, on && s.typeOn]}>
-                      <Ionicons name={p.icon} size={20} color={on ? colors.text : colors.violetSoft} />
+                      style={[s.type, on && s.typeOn, on && { borderColor: typeAccent[p.key][1], shadowColor: typeAccent[p.key][0] }]}>
+                      {on && <LinearGradient colors={[typeAccent[p.key][0], `${typeAccent[p.key][1]}AA`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.md }]} />}
+                      <Ionicons name={p.icon} size={20} color={on ? colors.text : typeAccent[p.key][0]} />
                       <T v="caption" color={on ? colors.text : colors.textSecondary} style={{ fontFamily: fonts.semibold }}>{p.action}</T>
                     </Pressy>
                   );
@@ -144,7 +147,8 @@ export default function CreatePost() {
               </ScrollView>
             )}
 
-            <View style={s.editor}>
+            <GlassCard accent={typeAccent[type]} glow style={{ marginHorizontal: spacing.lg, marginTop: spacing.sm }} padding={spacing.md}>
+            <View style={{ gap: spacing.sm }}>
               <TextInput value={content} onChangeText={setContent} placeholder={meta.placeholder} placeholderTextColor={colors.textMuted}
                 multiline autoFocus={!edit} maxLength={MAX + 50} selectionColor={colors.violet} style={s.input} accessibilityLabel="Post text" />
               {image && (
@@ -168,6 +172,7 @@ export default function CreatePost() {
                 <T v="caption" color={content.length > MAX ? colors.danger : colors.textMuted}>{content.length}/{MAX}</T>
               </View>
             </View>
+            </GlassCard>
 
             <View style={s.section}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -243,10 +248,9 @@ export default function CreatePost() {
 
 const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
-  type: { width: 112, height: 84, padding: 12, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, justifyContent: 'space-between' },
-  typeOn: { backgroundColor: colors.violetDeep, borderColor: colors.violetSoft },
-  editor: { marginHorizontal: spacing.lg, marginTop: spacing.sm, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, gap: spacing.sm },
-  input: { minHeight: 150, color: colors.text, fontFamily: fonts.regular, fontSize: 17, lineHeight: 25, textAlignVertical: 'top' },
+  type: { width: 112, height: 84, padding: 12, borderRadius: radius.md, overflow: 'hidden', backgroundColor: 'rgba(22,27,43,0.85)', borderWidth: 1, borderColor: colors.hairline, justifyContent: 'space-between' },
+  typeOn: { shadowOpacity: 0.6, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
+  input: { minHeight: 150, color: colors.text, fontFamily: fonts.regular, fontSize: 17, lineHeight: 25, textAlignVertical: 'top', outlineStyle: 'none' } as object,
   preview: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md },
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   section: { paddingHorizontal: spacing.lg, marginTop: spacing.xl, gap: spacing.sm },

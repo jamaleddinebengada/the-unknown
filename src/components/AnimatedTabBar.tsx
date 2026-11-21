@@ -3,11 +3,12 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import { colors, fonts, glow, gradients } from '@/constants/theme';
+import { colors, fonts, gradients } from '@/constants/theme';
 import { haptic } from '@/utils/format';
+import { GlowRing } from './Effects';
 import { NotificationBadge } from './ui';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -17,23 +18,23 @@ const META: Record<string, { label: string; icon: IconName; iconOn: IconName }> 
   messages: { label: 'Messages', icon: 'chatbubbles-outline', iconOn: 'chatbubbles' },
   profile: { label: 'Profile', icon: 'person-circle-outline', iconOn: 'person-circle' },
 };
+const SLOTS = 5; // 4 tabs + the create button in the middle
 
 function TabItem({ name, focused, onPress, badge }: { name: string; focused: boolean; onPress: () => void; badge?: number }) {
   const m = META[name];
   const v = useSharedValue(focused ? 1 : 0);
-  useEffect(() => { v.value = withSpring(focused ? 1 : 0, { damping: 16, stiffness: 220 }); }, [focused, v]);
-  const icon = useAnimatedStyle(() => ({ transform: [{ translateY: -2 * v.value }, { scale: 1 + 0.08 * v.value }] }));
-  const dot = useAnimatedStyle(() => ({ opacity: v.value, transform: [{ scaleX: 0.4 + 0.6 * v.value }] }));
+  useEffect(() => { v.value = withSpring(focused ? 1 : 0, { damping: 15, stiffness: 200 }); }, [focused, v]);
+  const icon = useAnimatedStyle(() => ({ transform: [{ translateY: -3 * v.value }, { scale: 1 + 0.12 * v.value }] }));
+  const label = useAnimatedStyle(() => ({ opacity: 0.55 + 0.45 * v.value }));
   if (!m) return null;
   return (
     <Pressable accessibilityRole="tab" accessibilityState={{ selected: focused }} accessibilityLabel={m.label}
       onPress={() => { haptic.tap(); onPress(); }} style={s.item}>
-      <Animated.View style={[icon, focused && glow(colors.violet)]}>
-        <Ionicons name={focused ? m.iconOn : m.icon} size={24} color={focused ? colors.violetSoft : colors.textMuted} />
-        {!!badge && <NotificationBadge count={badge} style={{ position: 'absolute', top: -4, right: -10 }} />}
+      <Animated.View style={icon}>
+        <Ionicons name={focused ? m.iconOn : m.icon} size={23} color={focused ? colors.text : colors.textMuted} />
+        {!!badge && <NotificationBadge count={badge} style={{ position: 'absolute', top: -5, right: -11 }} />}
       </Animated.View>
-      <Text style={[s.label, focused && { color: colors.text }]}>{m.label}</Text>
-      <Animated.View style={[s.indicator, dot]} />
+      <Animated.Text style={[s.label, focused && { color: colors.text, fontFamily: fonts.semibold }, label]}>{m.label}</Animated.Text>
     </Pressable>
   );
 }
@@ -44,43 +45,74 @@ function CreateButton() {
   const a = useAnimatedStyle(() => ({ transform: [{ scale: sc.value }] }));
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="Create post" style={s.createWrap}
-      onPressIn={() => { sc.set(withTiming(0.92, { duration: 90 })); }} onPressOut={() => { sc.set(withSpring(1)); }}
+      onPressIn={() => { sc.set(withTiming(0.9, { duration: 90 })); }} onPressOut={() => { sc.set(withSpring(1, { damping: 8 })); }}
       onPress={() => { haptic.soft(); router.push('/create'); }}>
-      <Animated.View style={[s.create, glow(colors.violetDeep), a]}>
-        <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-        <Ionicons name="add" size={28} color={colors.text} />
+      <Animated.View style={[s.createShadow, a]}>
+        <GlowRing size={66} speed={5000} thickness={2}>
+          <LinearGradient colors={['#7C5CFF', '#A855F7', '#38BDF8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.create}>
+            <View style={s.createSheen} />
+            <Ionicons name="add" size={30} color={colors.text} />
+          </LinearGradient>
+        </GlowRing>
       </Animated.View>
     </Pressable>
   );
 }
 
+/** Floating glass tab bar with a sliding glow indicator and a portal-style create button. */
 export function AnimatedTabBar({ state, navigateToTab, insets, badges = {} }: BottomTabBarProps & { badges?: Record<string, number> }) {
   const routes = state.routes.filter((r) => META[r.name]);
-  const left = routes.slice(0, 2);
-  const right = routes.slice(2);
   const focusedKey = state.routes[state.index]?.key;
+  const focusedIdx = routes.findIndex((r) => r.key === focusedKey);
+  const slot = focusedIdx < 2 ? focusedIdx : focusedIdx + 1; // skip the middle create slot
+  const [w, setW] = useState(0);
+  const x = useSharedValue(0);
+  const slotW = w / SLOTS;
+  useEffect(() => { if (w) x.value = withSpring(slot * slotW, { damping: 18, stiffness: 180 }); }, [slot, slotW, w, x]);
+  const ind = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+
   const render = (r: (typeof routes)[number]) => (
     <TabItem key={r.key} name={r.name} focused={r.key === focusedKey} onPress={() => navigateToTab(r.key)} badge={badges[r.name]} />
   );
   return (
-    <View style={[s.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      {Platform.OS === 'ios' ? <BlurView tint="dark" intensity={60} style={StyleSheet.absoluteFill} /> : null}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: Platform.OS === 'ios' ? 'rgba(9,11,20,0.72)' : 'rgba(9,11,20,0.97)' }]} />
-      <View style={s.row}>
-        {left.map(render)}
+    <View pointerEvents="box-none" style={[s.outer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={s.bar} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+        {Platform.OS === 'ios' && <BlurView tint="dark" intensity={50} style={StyleSheet.absoluteFill} />}
+        <LinearGradient colors={['rgba(167,139,250,0.55)', 'rgba(56,189,248,0.18)', 'rgba(255,255,255,0.04)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={[StyleSheet.absoluteFill, { borderRadius: 28 }]} pointerEvents="none" />
+        <LinearGradient colors={['rgba(28,32,56,0.97)', 'rgba(12,14,26,0.98)']} pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { margin: 1, borderRadius: 27 }]} />
+        {w > 0 && (
+          <Animated.View pointerEvents="none" style={[s.indicator, { width: slotW }, ind]}>
+            <LinearGradient colors={['rgba(139,92,246,0.42)', 'rgba(139,92,246,0)']} start={{ x: 0.5, y: 1 }} end={{ x: 0.5, y: 0 }} style={s.indicatorGlow} />
+            <LinearGradient colors={gradients.secondary} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={s.indicatorLine} />
+          </Animated.View>
+        )}
+        <View style={s.row}>
+          {routes.slice(0, 2).map(render)}
+          <View style={{ flex: 1 }} />
+          {routes.slice(2).map(render)}
+        </View>
+      </View>
+      <View pointerEvents="box-none" style={[s.createLayer, { bottom: Math.max(insets.bottom, 12) + 22 }]}>
         <CreateButton />
-        {right.map(render)}
       </View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong, overflow: 'visible' },
-  row: { flexDirection: 'row', alignItems: 'center', paddingTop: 10 },
-  item: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 2 },
+  outer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 14 },
+  bar: { height: 66, borderRadius: 28, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 14 },
+  row: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, height: '100%' },
   label: { fontFamily: fonts.medium, fontSize: 10.5, color: colors.textMuted },
-  indicator: { width: 18, height: 3, borderRadius: 2, backgroundColor: colors.violet, marginTop: 2 },
-  createWrap: { width: 72, alignItems: 'center' },
-  create: { width: 54, height: 54, borderRadius: 20, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginTop: -18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+  indicator: { position: 'absolute', bottom: 0, top: 0, alignItems: 'center', justifyContent: 'flex-end' },
+  indicatorGlow: { position: 'absolute', bottom: 0, left: 8, right: 8, height: 46, borderRadius: 20 },
+  indicatorLine: { width: 26, height: 3, borderRadius: 2, marginBottom: 6 },
+  createLayer: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
+  createWrap: { width: 76, alignItems: 'center' },
+  createShadow: { shadowColor: colors.violet, shadowOpacity: 0.8, shadowRadius: 18, shadowOffset: { width: 0, height: 4 }, elevation: 16, borderRadius: 33 },
+  create: { width: 54, height: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  createSheen: { position: 'absolute', top: 0, left: 0, right: 0, height: 24, backgroundColor: 'rgba(255,255,255,0.14)', borderTopLeftRadius: 27, borderTopRightRadius: 27 },
 });

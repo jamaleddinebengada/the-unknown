@@ -116,7 +116,7 @@ export default function PostDetails() {
 }
 
 const s = StyleSheet.create({
-  comment: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: radius.md, backgroundColor: colors.bgSecondary },
+  comment: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(22,27,43,0.82)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.14)' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 10, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 120, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },
   send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.violetDeep, alignItems: 'center', justifyContent: 'center' },
