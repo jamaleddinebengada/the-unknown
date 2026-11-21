@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   smoke:
+    # Opt-in: only when the commit message contains [smoke] (each run creates one guest user in the database)
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[smoke]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
