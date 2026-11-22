@@ -136,8 +136,8 @@ export default function Discover() {
     <View style={{ gap: spacing.md, paddingTop: insets.top + spacing.sm }}>
       <View style={styles.top}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.brand}>THE <Text style={styles.brandHi}>UNKNOWN</Text></Text>
-          <T v="caption" color={colors.textSecondary}>Discover something unexpected.</T>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={styles.brand}>THE <Text style={styles.brandHi}>UNKNOWN</Text></Text>
+          <T v="caption" color={colors.textSecondary} numberOfLines={1}>Discover something unexpected.</T>
         </View>
         <IconButton label="Premium" name="diamond-outline" color={colors.gold} onPress={() => router.push('/premium')} />
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
