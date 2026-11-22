@@ -5,6 +5,7 @@ import { DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/Overlay';
 import { colors } from '@/constants/theme';
@@ -54,6 +55,9 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, Fredoka_600SemiBold, Fredoka_700Bold, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_700Bold_Italic });
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
+      {/* Short entrance animations always finish (with "remove animations" on, Android otherwise leaves
+          entering content invisible). Looping/decorative motion still honours the system setting via useReducedMotion. */}
+      <ReducedMotionConfig mode={ReduceMotion.Never} />
       <SafeAreaProvider>
         <ThemeProvider value={theme}>
           <AuthProvider>

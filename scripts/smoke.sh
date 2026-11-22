@@ -12,15 +12,17 @@ shot() { adb exec-out screencap -p > "smoke/$1.png"; }
 alive() { adb shell pidof "$PKG" >/dev/null && echo "ALIVE" || echo "DEAD"; }
 
 sleep 15; shot 01-launch; echo "after launch: $(alive)"
-# tap the main button 4x (Get Started / Continue / Continue / Enter)
+# Welcome → "Get Started", then Choose Your Vibe → pick one interest → "Continue"
 SIZE=$(adb shell wm size | tail -1 | awk '{print $NF}'); W=${SIZE%x*}; H=${SIZE#*x}
 echo "screen ${W}x${H}"
-for i in 1 2 3 4; do adb shell input tap $((W/2)) $((H*84/100)); sleep 3; done
-sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
+adb shell input tap $((W/2)) $((H*84/100)); sleep 4; shot 02-vibe; echo "vibe: $(alive)"
+adb shell input tap $((W*20/100)) $((H*32/100)); sleep 1
+adb shell input tap $((W/2)) $((H*93/100)); sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
 sleep 10; shot 03-home; echo "at home: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
-tab 30 04-matches
+adb shell input tap $((W*72/100)) $((H*15/100)); sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
+tab 30 04-challenges
 tab 70 05-messages
 tab 90 06-profile
 adb shell input tap $((W/2)) $((H*89/100)); sleep 6; shot 07-create; echo "07-create: $(alive)"
