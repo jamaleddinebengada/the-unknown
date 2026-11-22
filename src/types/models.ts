@@ -22,6 +22,9 @@ export interface Profile {
   who_can_message: 'approved' | 'nobody';
   onboarding_complete: boolean;
   is_premium: boolean;
+  tier: 'free' | 'plus' | 'vip';
+  photo_visibility: 'public' | 'revealed' | 'hidden';
+  profile_theme: 'rose' | 'plum' | 'gold' | 'ocean' | 'sunset';
   status: 'active' | 'suspended' | 'banned';
   created_at: string;
 }
@@ -165,3 +168,7 @@ export interface Challenge { key: string; title: string; subtitle: string; xp: n
 export interface ChallengeState {
   xp: number; level: number; level_xp: number; per_level: number; active_days: number; matched_today: boolean; challenges: Challenge[];
 }
+
+export interface Plan { tier: 'free' | 'plus' | 'vip'; matches_today: number; match_limit: number; supers_today: number; super_limit: number; renews_at: string | null; sub_status: string | null }
+export interface Person { unknown_number: number; avatar_seed: string; country_code: string | null; age: number | null; interests: string[]; tagline: string | null; tier: 'free' | 'plus' | 'vip'; online: boolean; has_photo: boolean }
+export interface MatchFilters { country?: string | null; minAge?: number | null; maxAge?: number | null }

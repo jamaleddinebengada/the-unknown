@@ -66,7 +66,7 @@ export default function InterestedUsers() {
             <Animated.View entering={FadeInDown.delay(index * 50).springify().damping(18)} layout={LinearTransition}>
               <Card glowing={item.status === 'pending'} style={{ gap: spacing.sm }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <AnonymousAvatar seed={item.avatar_seed} size={48} />
+                  <AnonymousAvatar seed={item.avatar_seed} number={item.unknown_number} size={48} />
                   <View style={{ flex: 1 }}>
                     <T v="bodyStrong" style={{ fontFamily: fonts.semibold }}>{unknownName(item.unknown_number)}</T>
                     <T v="caption" color={colors.textMuted}>

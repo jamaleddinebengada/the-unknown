@@ -256,5 +256,5 @@ const s = StyleSheet.create({
   section: { paddingHorizontal: spacing.lg, marginTop: spacing.xl, gap: spacing.sm },
   audience: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline },
   audienceOn: { borderColor: colors.violet },
-  aiBox: { padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(103,232,249,0.3)' },
+  aiBox: { padding: spacing.md, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(247,183,207,0.3)' },
 });

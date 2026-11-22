@@ -57,15 +57,15 @@ export default function Messages() {
     <Animated.View entering={FadeInDown.delay(Math.min(index, 10) * 35)}>
       <Pressable accessibilityRole="button" onLongPress={() => setMenuFor(item)}
         onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: item.conversation_id } })}
-        style={({ pressed }) => [s.row, item.unread > 0 && s.rowUnread, pressed && { backgroundColor: 'rgba(139,92,246,0.12)' }]}>
-        {item.unread > 0 && <LinearGradient colors={['rgba(167,139,250,0.18)', 'rgba(255,255,255,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
+        style={({ pressed }) => [s.row, item.unread > 0 && s.rowUnread, pressed && { backgroundColor: 'rgba(163,40,142,0.12)' }]}>
+        {item.unread > 0 && <LinearGradient colors={['rgba(226,80,138,0.18)', 'rgba(255,255,255,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
         <View>
           {item.kind === 'group' ? (
-            <LinearGradient colors={['#7C6CFF', '#60A5FA']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.group}><Ionicons name="people" size={22} color={colors.white} /></LinearGradient>
+            <LinearGradient colors={['#C13A9F', '#F7B7CF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.group}><Ionicons name="people" size={22} color={colors.white} /></LinearGradient>
           ) : item.unread ? (
-            <GlowRing size={60} speed={3500} thickness={2}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={50} revealed={item.revealed} /></GlowRing>
+            <GlowRing size={60} speed={3500} thickness={2}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} number={item.other_number} size={50} revealed={item.revealed} /></GlowRing>
           ) : (
-            <View style={{ width: 60, height: 60, alignItems: 'center', justifyContent: 'center' }}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} size={50} revealed={item.revealed} /></View>
+            <View style={{ width: 60, height: 60, alignItems: 'center', justifyContent: 'center' }}><AnonymousAvatar seed={item.other_avatar_seed ?? item.conversation_id} number={item.other_number} size={50} revealed={item.revealed} /></View>
           )}
           {item.other_online && <View style={s.online}><PulseDot size={10} /></View>}
         </View>
@@ -104,7 +104,7 @@ export default function Messages() {
             {requestCount === 0 && <EmptyState icon="mail-open-outline" title="No requests" body="When someone is interested in your post or discovers you through a Mystery Match, it appears here." />}
             {matches.map((m) => (
               <Pressable key={m.match_id} onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })} style={s.request}>
-                <AnonymousAvatar seed={m.other_avatar_seed} size={44} />
+                <AnonymousAvatar seed={m.other_avatar_seed} number={m.other_number} size={44} />
                 <View style={{ flex: 1 }}>
                   <T v="bodyStrong">Someone discovered you</T>
                   <T v="caption" color={colors.textSecondary}>{unknownName(m.other_number)} {flagOf(m.other_country)} · {m.compatibility}% compatible</T>
@@ -146,8 +146,8 @@ export default function Messages() {
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: spacing.sm, marginBottom: 6, paddingHorizontal: spacing.sm, paddingVertical: 10, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.85)' },
-  rowUnread: { borderWidth: 1, borderColor: 'rgba(167,139,250,0.3)' },
+  rowUnread: { borderWidth: 1, borderColor: 'rgba(226,80,138,0.3)' },
   online: { position: 'absolute', right: 5, bottom: 5, padding: 2, borderRadius: 8, backgroundColor: colors.bg },
   group: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', margin: 4 },
-  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)' },
+  request: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(226,80,138,0.28)' },
 });

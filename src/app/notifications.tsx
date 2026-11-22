@@ -18,6 +18,7 @@ const META: Record<string, { icon: IconName; color: string; text: string }> = {
   interested: { icon: 'sparkles', color: colors.violetSoft, text: 'Someone is interested in your post.' },
   interest_accepted: { icon: 'checkmark-circle', color: colors.success, text: 'Your interest was accepted — a conversation is open.' },
   match: { icon: 'planet', color: colors.cyan, text: 'You received a Mystery Match.' },
+  super_connect: { icon: 'star', color: colors.gold, text: 'A VIP sent you a Super Connect ⭐' },
   match_accepted: { icon: 'planet', color: colors.success, text: 'Your Mystery Match wants to discover you too.' },
   message: { icon: 'chatbubbles', color: colors.violetSoft, text: 'New message.' },
   reveal_request: { icon: 'eye', color: colors.cyan, text: 'Someone wants to reveal their identity.' },
@@ -42,7 +43,7 @@ export default function Notifications() {
     if (d.conversation_id) router.push({ pathname: '/conversation/[id]', params: { id: d.conversation_id } });
     else if (n.type === 'interested' && d.post_id) router.push({ pathname: '/post/[id]/interested', params: { id: d.post_id } });
     else if (d.post_id) router.push({ pathname: '/post/[id]', params: { id: d.post_id } });
-    else if (n.type === 'match') router.navigate({ pathname: '/discover', params: { view: 'match' } });
+    else if (n.type === 'match' || n.type === 'super_connect') router.navigate({ pathname: '/discover', params: { view: 'match' } });
   };
 
   return (
@@ -71,6 +72,6 @@ export default function Notifications() {
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.md, backgroundColor: colors.card },
-  unread: { borderWidth: 1, borderColor: 'rgba(139,92,246,0.35)' },
+  unread: { borderWidth: 1, borderColor: 'rgba(163,40,142,0.35)' },
   icon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });

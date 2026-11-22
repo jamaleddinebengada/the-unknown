@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 import { Aurora } from './Effects';
 import { IconButton, T } from './ui';
 
@@ -24,7 +24,7 @@ export function StackHeader({ title, right, onBack }: { title?: string; right?: 
   return (
     <View style={styles.header}>
       <IconButton label="Back" name="chevron-back" onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/discover')))} />
-      <T v="cardTitle" numberOfLines={1} style={{ flex: 1, textAlign: 'center' }}>{title}</T>
+      <T numberOfLines={1} style={{ flex: 1, textAlign: 'center', fontFamily: fonts.bold, fontSize: 22, letterSpacing: -0.4 }}>{title}</T>
       <View style={{ minWidth: 42, alignItems: 'flex-end' }}>{right}</View>
     </View>
   );

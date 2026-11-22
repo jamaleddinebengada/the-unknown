@@ -131,7 +131,7 @@ export default function Conversation() {
         <Pressable style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }} accessibilityRole="button"
           onPress={() => !isGroup && conv.other_number && router.push({ pathname: '/user/[number]', params: { number: String(conv.other_number) } })}>
           <View>
-            <AnonymousAvatar seed={conv.other_avatar_seed ?? id} size={38} revealed={conv.stage >= 4} />
+            <AnonymousAvatar seed={conv.other_avatar_seed ?? id} number={isGroup ? null : conv.other_number} size={42} revealed={conv.stage >= 4} />
             {online && <View style={st.online} />}
           </View>
           <View style={{ flex: 1 }}>
@@ -145,6 +145,17 @@ export default function Conversation() {
         <IconButton label="Conversation options" name="ellipsis-horizontal" onPress={() => setMenu(true)} />
       </View>
 
+      {!isGroup && (
+        <Pressable accessibilityRole="button" onPress={() => setReveal(true)} style={{ paddingHorizontal: spacing.md, paddingBottom: 6 }}>
+          <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={st.banner}>
+            <Ionicons name={conv.stage >= 4 ? 'lock-open' : 'lock-closed'} size={18} color={colors.white} />
+            <View style={{ flex: 1 }}>
+              <T style={{ fontFamily: fonts.semibold, fontSize: 14 }} color={colors.white}>{conv.stage >= 4 ? 'Identities revealed' : 'You are both anonymous'}</T>
+              <T v="caption" color="rgba(255,255,255,0.85)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
+            </View>
+          </LinearGradient>
+        </Pressable>
+      )}
       {!isGroup && (
         <View style={st.stages}>
           {STAGES.map((s, i) => <View key={s} style={[st.stage, i < conv.stage && { backgroundColor: i < 3 ? colors.violet : colors.cyan }]} />)}
@@ -230,14 +241,15 @@ export default function Conversation() {
 }
 
 const st = StyleSheet.create({
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md, paddingVertical: 6 },
   online: { position: 'absolute', right: 0, bottom: 0, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.success, borderWidth: 2, borderColor: colors.bg },
   stages: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingBottom: 8 },
   stage: { width: 22, height: 3, borderRadius: 2, backgroundColor: colors.elevated },
   bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, gap: 2, overflow: 'hidden' },
   mine: { borderBottomRightRadius: 6 },
-  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.2)' },
-  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(56,189,248,0.45)', shadowColor: colors.cyan, shadowOpacity: 0.35, shadowRadius: 16, elevation: 6 },
+  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: 'rgba(226,80,138,0.2)' },
+  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(226,80,138,0.45)', shadowColor: colors.cyan, shadowOpacity: 0.35, shadowRadius: 16, elevation: 6 },
   assist: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, minHeight: 34, justifyContent: 'center' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 130, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },

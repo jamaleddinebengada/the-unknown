@@ -2,21 +2,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, { Easing, FadeInDown, FadeInUp, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Aurora } from '@/components/Effects';
-import { AvatarStack, EmojiAvatar, GoldTitle, Sparkle, Star3D, StatusPill, Trophy } from '@/components/Illustrations3D';
+import { Scenery } from '@/components/Scenery';
 import { ErrorState, T } from '@/components/ui';
-import { colors, fonts, radius, spacing } from '@/constants/theme';
-import { useAuth } from '@/features/auth/AuthProvider';
+import { colors, fonts, gradients, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
-import { getActiveStrangers, getMessages, getMyChallenges, getMyConversations } from '@/services/api';
-import type { ChallengeState, Message } from '@/types/models';
+import { getMyChallenges } from '@/services/api';
+import type { Challenge, ChallengeState } from '@/types/models';
 import { haptic } from '@/utils/format';
+import { rankOf } from '@/features/challenges/ranks';
 
 type IconName = keyof typeof Ionicons.glyphMap;
-const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
+const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/messages', like: '/discover' };
+const TINT: Record<string, [string, string]> = {
+  post: ['#FCE4EE', '#E2508A'], chat: ['#F3E3F5', '#A3288E'], like: ['#FDE6EC', '#E0466E'], match: ['#F7E9D7', '#C9974A'],
+  interest: ['#EFE6FB', '#9B2386'], reply: ['#E8F3F7', '#3F8FB5'],
+};
 
 function resetIn() {
   const n = new Date();
@@ -24,198 +27,113 @@ function resetIn() {
   return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
 }
 
-function BonusBubble({ xp }: { xp: number }) {
-  const p = useSharedValue(1);
-  useEffect(() => { p.value = withRepeat(withSequence(withTiming(1.08, { duration: 700, easing: Easing.inOut(Easing.quad) }), withTiming(1, { duration: 700 })), -1); }, [p]);
-  const a = useAnimatedStyle(() => ({ transform: [{ scale: p.value }] }));
+function Bar({ pct, delay }: { pct: number; delay: number }) {
+  const w = useSharedValue(0);
+  const reduce = useReducedMotion();
+  useEffect(() => { w.set(reduce ? pct : withDelay(delay, withTiming(pct, { duration: 700 }))); }, [pct, delay, reduce, w]);
+  const a = useAnimatedStyle(() => ({ width: `${w.value * 100}%` }));
   return (
-    <Animated.View style={[s.bonus, a]}>
-      <LinearGradient colors={['#FDBA74', '#F97316', '#EA580C']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={s.bonusInner}>
-        <T style={{ fontFamily: fonts.display, fontSize: 20, lineHeight: 22 }} color={colors.white}>+{xp}</T>
-        <T style={{ fontFamily: fonts.displaySemi, fontSize: 11, lineHeight: 13 }} color={colors.white}>XP</T>
-      </LinearGradient>
+    <View style={s.bar}>
+      <Animated.View style={[{ height: '100%', borderRadius: 999, overflow: 'hidden' }, a]}>
+        <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flex: 1 }} />
+      </Animated.View>
+    </View>
+  );
+}
+
+function Row({ c, i, onPress }: { c: Challenge; i: number; onPress: () => void }) {
+  const t = TINT[c.key] ?? ['#FCEEF3', colors.violet];
+  return (
+    <Animated.View entering={FadeInDown.delay(80 + i * 50).springify().damping(18)}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`${c.title}, ${c.xp} XP${c.done ? ', completed' : ''}`} disabled={c.done} onPress={onPress}
+        style={({ pressed }) => [s.row, pressed && { transform: [{ scale: 0.985 }] }]}>
+        <View style={[s.icon, { backgroundColor: t[0] }]}>
+          <Ionicons name={(c.done ? 'checkmark' : c.icon) as IconName} size={20} color={c.done ? colors.success : t[1]} />
+        </View>
+        <View style={{ flex: 1, gap: 7 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <T style={{ flex: 1, fontFamily: fonts.semibold }} numberOfLines={1}>{c.title}</T>
+            <View style={s.xp}><Text style={s.xpText}>+{c.xp} XP</Text></View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flex: 1 }}><Bar pct={c.done ? 1 : 0} delay={150 + i * 60} /></View>
+            <T v="caption" color={colors.textMuted}>{c.done ? '1/1' : '0/1'}</T>
+          </View>
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }
 
+function Trophy() {
+  const f = useSharedValue(0);
+  const reduce = useReducedMotion();
+  useEffect(() => { if (!reduce) f.set(withRepeat(withSequence(withTiming(1, { duration: 1600 }), withTiming(0, { duration: 1600 })), -1)); }, [f, reduce]);
+  const a = useAnimatedStyle(() => ({ transform: [{ translateY: -6 * f.value }] }));
+  return <Animated.Text style={[{ fontSize: 96, textAlign: 'center' }, a]}>🏆</Animated.Text>;
+}
+
+/** Daily challenges — real progress from the server (resets at midnight UTC). */
 export default function Challenges() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { profile } = useAuth();
   const [state, setState] = useState<ChallengeState | null>(null);
-  const [preview, setPreview] = useState<Message[]>([]);
-  const [chatId, setChatId] = useState<string | null>(null);
-  const [active, setActive] = useState<Awaited<ReturnType<typeof getActiveStrangers>>>([]);
   const [error, setError] = useState<string | null>(null);
-
   const load = useCallback(async () => {
-    try {
-      const [ch, convs, act] = await Promise.all([getMyChallenges(), getMyConversations().catch(() => []), getActiveStrangers(6).catch(() => [])]);
-      setState(ch); setActive(act); setError(null);
-      const latest = convs.find((c) => !c.ended);
-      if (latest) {
-        setChatId(latest.conversation_id);
-        const msgs = await getMessages(latest.conversation_id).catch(() => []);
-        setPreview(msgs.filter((m) => m.kind === 'text' || m.kind === 'prompt').slice(0, 4).reverse());
-      }
-    } catch (e) { setError(friendlyError(e)); }
+    try { setState(await getMyChallenges()); setError(null); } catch (e) { setError(friendlyError(e)); }
   }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  const titleSize = Math.min(32, (width - 40) / 10.5);
-  const ch = (k: string) => state?.challenges.find((c) => c.key === k);
-  const rest = state?.challenges.filter((c) => !['match', 'chat'].includes(c.key)) ?? [];
-  const allDone = !!state && state.challenges.every((c) => c.done);
+  const done = state?.challenges.filter((c) => c.done).length ?? 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Aurora variant="warm" stars={24} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.xs, paddingHorizontal: spacing.md, paddingBottom: 140, gap: spacing.md }}
+      <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.md, paddingBottom: 0, gap: spacing.md }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={colors.violet} />}>
-        <View style={{ alignItems: 'center' }}><StatusPill label="DAILY CHALLENGES" /></View>
-
-        <View style={{ alignItems: 'center' }}>
-          <Star3D size={34} style={{ position: 'absolute', right: 4, top: -6 }} />
-          <Star3D size={24} delay={600} style={{ position: 'absolute', left: 10, top: titleSize * 1.4 }} />
-          <Sparkle size={14} style={{ position: 'absolute', left: 4, top: 0 }} />
-          <Sparkle size={12} color="#A5B4FC" delay={500} style={{ position: 'absolute', right: 26, top: titleSize * 2.6 }} />
-          <GoldTitle lines={['EARN POINTS', 'BY WINNING', 'YOUR CHALLENGES!']} tones={['orange', 'navy', 'blue']} size={titleSize} width={width - 32} />
-          <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: 4 }}>Complete daily challenges and mind games to level up your mystery profile.</T>
-        </View>
-
+        <T style={s.title}>Challenges</T>
         {error ? <ErrorState message={error} onRetry={load} /> : !state ? <ActivityIndicator color={colors.violet} style={{ marginTop: 40 }} /> : (
           <>
-            {/* reset timer / level card */}
-            <Animated.View entering={FadeInDown.springify().damping(18)} style={s.card}>
-              <View style={{ flex: 1, gap: 4 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17, color: '#D97706', letterSpacing: 0.6 }}>NEW CHALLENGES</T>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17 }}>{resetIn()}</T>
-                </View>
-                <T style={{ fontFamily: fonts.displaySemi, fontSize: 14, color: colors.violet, letterSpacing: 0.8 }}>LEVEL {state.level} · {state.xp} XP · 🔥 {state.active_days}/7 DAYS</T>
-                <View style={s.bar}><LinearGradient colors={['#FDE68A', '#FBBF24', '#F59E0B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[s.barFill, { width: `${Math.max(5, (state.level_xp / state.per_level) * 100)}%` }]} /></View>
-                <View style={{ marginTop: 6 }}><AvatarStack seeds={active.length ? active.slice(0, 4).map((a) => a.avatar_seed) : ['s1', 's2', 's3', 's4']} size={30} /></View>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/rewards')} style={s.level}>
+              <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.levelBadge}><Text style={s.levelNum}>{state.level}</Text></LinearGradient>
+              <View style={{ flex: 1, gap: 6 }}>
+                <T style={{ fontFamily: fonts.bold }}>Level {state.level} · {rankOf(state.level)}</T>
+                <Bar pct={state.level_xp / state.per_level} delay={100} />
+                <T v="caption" color={colors.textMuted}>{state.level_xp}/{state.per_level} XP · 🔥 {state.active_days}/7 days</T>
               </View>
-              <Star3D size={78} />
-            </Animated.View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </Pressable>
 
-            {/* chat preview + bonus */}
-            <Animated.View entering={FadeInDown.delay(80).springify().damping(18)}>
-              <Pressable onPress={() => router.push(chatId ? { pathname: '/conversation/[id]', params: { id: chatId } } : { pathname: '/discover', params: { view: 'match' } })} style={[s.card, { flexDirection: 'column', alignItems: 'stretch', gap: 10 }]}>
-                {preview.length ? preview.map((m) => (
-                  <View key={m.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: m.is_mine ? 'flex-end' : 'flex-start' }}>
-                    {!m.is_mine && <EmojiAvatar seed={m.sender_avatar_seed ?? 'x'} size={32} />}
-                    <View style={[s.bubble, m.is_mine ? s.mine : s.theirs]}>
-                      <T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white} numberOfLines={2}>{m.body}</T>
-                    </View>
-                  </View>
-                )) : (
-                  <>
-                    <View style={{ alignItems: 'flex-end' }}><View style={[s.bubble, s.mine]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>Ready to meet someone?</T></View></View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><EmojiAvatar seed="guide" size={32} /><View style={[s.bubble, s.theirs]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>Let’s start! ✨</T></View></View>
-                  </>
-                )}
-                <View style={s.inputMock}><T color={colors.textMuted}>{chatId ? 'Continue the conversation…' : 'Find a stranger to start chatting…'}</T></View>
-                <View style={{ position: 'absolute', right: -8, bottom: -14 }}><BonusBubble xp={ch('chat')?.xp ?? 30} /></View>
-              </Pressable>
-            </Animated.View>
-
-            {/* start a discussion */}
-            <Animated.View entering={FadeInDown.delay(140).springify().damping(18)}>
-              <Pressable onPress={() => { haptic.tap(); router.push('/messages'); }}>
-                <LinearGradient colors={['#22C58B', '#10B981', '#059669']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={s.greenBar}>
-                  <View style={s.greenCheck}><Ionicons name={ch('chat')?.done ? 'checkmark' : 'add'} size={20} color={colors.white} /></View>
-                  <T style={{ fontFamily: fonts.display, fontSize: 18, flex: 1 }} color={colors.white}>Start a discussion</T>
-                  <View style={s.greenPill}><T style={{ fontFamily: fonts.display, fontSize: 14 }} color={colors.white}>+{ch('chat')?.xp} XP</T></View>
-                </LinearGradient>
-              </Pressable>
-            </Animated.View>
-
-            {/* two-card grid */}
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Animated.View entering={FadeInUp.delay(180).springify()} style={{ flex: 1 }}>
-                <Pressable onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })} style={{ flex: 1 }}>
-                  <LinearGradient colors={['#ECFEFF', '#E0F2FE']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                    <T v="caption" color="#0E7490" style={{ fontFamily: fonts.display, letterSpacing: 0.6 }}>QUICK CHALLENGE</T>
-                    <T style={{ fontFamily: fonts.display, fontSize: 17 }}>Discover{'\n'}a stranger</T>
-                    <View style={[s.bigCheck, !ch('match')?.done && { backgroundColor: '#A5B4FC' }]}>
-                      <Ionicons name={ch('match')?.done ? 'checkmark' : 'planet'} size={24} color={colors.white} />
-                    </View>
-                    <T v="caption" color="#0E7490" style={{ fontFamily: fonts.displaySemi }}>{ch('match')?.done ? 'Done today' : `+${ch('match')?.xp} XP`}</T>
-                  </LinearGradient>
-                </Pressable>
-              </Animated.View>
-              <Animated.View entering={FadeInUp.delay(240).springify()} style={{ flex: 1 }}>
-                <LinearGradient colors={['#FFFBEB', '#FEF3C7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                  <T style={{ fontFamily: fonts.display, fontSize: 17 }} color="#9A3412">{allDone ? 'Bravo\nchampion!' : 'Become\nchampion'}</T>
-                  <View style={{ position: 'absolute', right: 8, top: 18 }}><Trophy size={52} /></View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 'auto' }}>
-                    <EmojiAvatar seed={profile?.avatar_seed ?? 'me'} size={28} />
-                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }} color="#1E2540">UNKNOWN{'\n'}#{profile?.unknown_number}</T>
-                  </View>
-                </LinearGradient>
-              </Animated.View>
+            <View style={s.head}>
+              <View style={s.daily}><Text style={s.dailyText}>Daily</Text></View>
+              <View style={{ flex: 1 }} />
+              <T v="caption" color={colors.textSecondary}>{done}/{state.challenges.length} done · resets in {resetIn()}</T>
             </View>
-
-            {/* remaining challenges */}
-            {rest.map((c, i) => (
-              <Animated.View key={c.key} entering={FadeInDown.delay(280 + i * 50).springify()}>
-                <Pressable disabled={c.done} onPress={() => { haptic.tap(); router.push(ROUTE[c.key] as never); }} style={[s.card, { paddingVertical: 12 }, c.done && { borderColor: 'rgba(52,211,153,0.5)' }]}>
-                  <View style={[s.icon, c.done && { backgroundColor: colors.success }]}><Ionicons name={(c.done ? 'checkmark' : c.icon) as IconName} size={18} color={c.done ? '#05301F' : colors.white} /></View>
-                  <View style={{ flex: 1 }}>
-                    <T style={{ fontFamily: fonts.display, fontSize: 16 }}>{c.title}</T>
-                    <T v="caption" color={colors.textSecondary}>{c.done ? 'Completed today' : c.subtitle}</T>
-                  </View>
-                  <View style={s.reward}><T style={{ fontFamily: fonts.display, fontSize: 13, color: '#3B2300' }}>+{c.xp}</T></View>
-                </Pressable>
-              </Animated.View>
-            ))}
-
-            {/* active strangers */}
-            <View style={[s.card, { flexDirection: 'column', alignItems: 'stretch', gap: 12 }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <T style={{ fontFamily: fonts.display, fontSize: 18, flex: 1 }}>Active strangers</T>
-                <T>⭐ 👥</T>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-                <Pressable onPress={() => router.navigate({ pathname: '/discover', params: { view: 'match' } })}>
-                  <LinearGradient colors={['#FF8A3D', '#F0520C']} style={s.join}><T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>Join</T></LinearGradient>
-                </Pressable>
-                {active.length ? active.map((a, i) => (
-                  <Pressable key={a.unknown_number} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(a.unknown_number) } })}
-                    style={[s.chip, { borderColor: i % 2 ? '#3B82F6' : '#10B981' }]}>
-                    <EmojiAvatar seed={a.avatar_seed} size={26} ring={false} />
-                    <T style={{ fontFamily: fonts.display, fontSize: 12, lineHeight: 14 }}>UNKNOWN{'\n'}<T style={{ fontFamily: fonts.display, fontSize: 12, color: a.online ? colors.success : colors.textSecondary }}>#{a.unknown_number}</T></T>
-                  </Pressable>
-                )) : <T v="caption" color={colors.textMuted}>No one else is active right now. Be the first!</T>}
-              </ScrollView>
+            <View style={{ gap: 10 }}>
+              {state.challenges.map((c, i) => <Row key={c.key} c={c} i={i} onPress={() => { haptic.tap(); router.push(ROUTE[c.key] as never); }} />)}
             </View>
-            <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>Points are earned automatically from what you do in the app.</T>
           </>
         )}
+        <View style={{ marginHorizontal: -spacing.md, marginTop: spacing.md, height: 260 }}>
+          <Scenery width={width} height={260} flowers="both" style={{ position: 'absolute', top: 0 }} />
+          <View style={{ position: 'absolute', left: 0, right: 0, top: 40 }}><Trophy /></View>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  greenBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 16, borderRadius: 22, shadowColor: '#059669', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
-  greenCheck: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center' },
-  greenPill: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.22)' },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.surfaceBorder, shadowColor: '#4C3FB8', shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
-  bar: { height: 8, borderRadius: 4, backgroundColor: colors.elevated, overflow: 'hidden', marginTop: 4 },
-  barFill: { height: '100%', borderRadius: 4 },
-  bubble: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, maxWidth: '75%' },
-  mine: { backgroundColor: '#2563EB' },
-  theirs: { backgroundColor: '#7C3AED' },
-  inputMock: { height: 46, borderRadius: 16, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.bg },
-  bonus: { width: 74, height: 74, borderRadius: 37, padding: 4, backgroundColor: '#3B82F6', shadowColor: '#3B82F6', shadowOpacity: 0.9, shadowRadius: 16, elevation: 12 },
-  bonusInner: { flex: 1, borderRadius: 33, alignItems: 'center', justifyContent: 'center' },
-  tile: { minHeight: 150, borderRadius: 26, padding: spacing.md, gap: 10, borderWidth: 1.5, borderColor: '#E6E9F2', overflow: 'hidden' },
-  bigCheck: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
-  icon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C6CFF' },
-  reward: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: '#FDE68A', borderWidth: 1.5, borderColor: '#FFFFFF' },
-  join: { paddingHorizontal: 18, height: 44, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10, height: 48, borderRadius: radius.pill, borderWidth: 1.5, backgroundColor: colors.white },
+  title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
+  level: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 24, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
+  levelBadge: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  levelNum: { fontFamily: fonts.serif, fontSize: 22, color: colors.white },
+  head: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  daily: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.violet },
+  dailyText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.white },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#7B1E74', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  xp: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1D6' },
+  xpText: { fontFamily: fonts.bold, fontSize: 12, color: '#9A6B1E' },
+  bar: { height: 8, borderRadius: 999, backgroundColor: '#F3DCE8', overflow: 'hidden' },
 });

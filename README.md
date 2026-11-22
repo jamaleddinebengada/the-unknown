@@ -67,3 +67,23 @@ supabase/           migration + ai-assist edge function
 | 7. Device testing on Android/iOS | ⏳ |
 
 Account deletion removes all database rows through a cascade. Deleting the user's storage files still needs an `account-cleanup` edge function, because Supabase blocks direct deletes on `storage.objects`.
+
+## Memberships (FREE / PLUS / VIP)
+
+| Tier | Price | What the server unlocks |
+|------|-------|--------------------------|
+| Free | 0 MAD | 1 Mystery Match a day, feed, chat, all safety tools |
+| Plus | 49 MAD / month (yearly ≈ 349 MAD) | 10 matches a day, country & age filters, saved favorites, Plus badge |
+| VIP  | 99 MAD / month (yearly ≈ 699 MAD) | everything in Plus, 25 matches a day, priority in Discover, 3 Super Connects a day, exclusive profile themes, VIP badge |
+
+Store setup before real payments:
+1. Google Play Console → subscriptions `plus_monthly`, `plus_yearly`, `vip_monthly`, `vip_yearly` (set the MAD prices there).
+2. RevenueCat → entitlements `plus` (all four products) and `vip` (the two VIP products); one current offering containing the four packages.
+3. Put the public Android SDK key (`goog_…`) in the repository secret/variable `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`.
+4. RevenueCat webhook → `https://<project>.supabase.co/functions/v1/revenuecat-webhook` with an Authorization value equal to the Supabase secret `REVENUECAT_WEBHOOK_AUTH`.
+
+The tier is only ever written by that webhook (service role inside the Edge Function); every limit is enforced in SQL.
+
+## Photos & privacy
+Profile photos and a 6-photo gallery live in the private `avatars` bucket. `can_see_photo()` decides who gets a signed URL:
+`public` (everyone), `revealed` (default — only after both people consent to reveal in a chat, and only if "photo" was shared) or `hidden`.

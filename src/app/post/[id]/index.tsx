@@ -81,7 +81,7 @@ export default function PostDetails() {
             ListEmptyComponent={<EmptyState icon="chatbubble-ellipses-outline" title="No replies yet" body="Your words might be the ones they needed." />}
             renderItem={({ item, index }) => (
               <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 40)} style={s.comment}>
-                <AnonymousAvatar seed={item.author_avatar_seed} size={32} />
+                <AnonymousAvatar seed={item.author_avatar_seed} number={item.author_number} size={32} />
                 <View style={{ flex: 1, gap: 4 }}>
                   <T v="caption" color={colors.textSecondary} style={{ fontFamily: fonts.semibold }}>
                     {unknownName(item.author_number)} {flagOf(item.author_country)} · {timeAgo(item.created_at)}{item.is_mine ? ' · You' : ''}

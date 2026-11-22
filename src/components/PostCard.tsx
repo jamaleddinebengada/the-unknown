@@ -12,6 +12,7 @@ import { friendlyError, mediaUrl } from '@/lib/supabase';
 import { blockUser, deletePost, expressInterest, setLike, withdrawInterest } from '@/services/api';
 import type { FeedPost } from '@/types/models';
 import { compact, haptic, timeAgo, unknownName } from '@/utils/format';
+import { toggleSaved, useSaved } from '@/features/saved/useSaved';
 import { AnonymousAvatar } from './AnonymousAvatar';
 import { GlassCard, HeartBurst } from './Effects';
 import { BottomSheet, SheetAction, useToast } from './Overlay';
@@ -39,7 +40,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
   const lastTap = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accent = typeAccent[post.type] ?? typeAccent.thought;
-  const narrow = useWindowDimensions().width < 380;
+  const narrow = useWindowDimensions().width < 412;
   const heart = useSharedValue(1);
   const heartStyle = useAnimatedStyle(() => ({ transform: [{ scale: heart.value }] }));
 
@@ -120,6 +121,18 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
     ]);
   };
 
+  const saved = useSaved(post.id);
+  const onSave = async () => {
+    haptic.tap();
+    try {
+      const on = await toggleSaved(post.id);
+      toast(on ? 'Saved to your favorites' : 'Removed from favorites', 'success');
+    } catch (e) {
+      if (String((e as Error)?.message).includes('plus_required')) { toast('Saving favorites is part of UNKNOWN PLUS'); router.push('/premium'); }
+      else toast(friendlyError(e), 'error');
+    }
+  };
+
   const interestLabelText = post.is_mine
     ? `${post.interested_count} interested`
     : post.my_interest === 'accepted' ? 'Connected' : post.my_interest === 'pending' ? 'Requested' : narrow ? 'Interested' : 'I’m Interested';
@@ -134,7 +147,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
             <View style={s.head}>
               <Pressy scaleTo={0.92} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(post.author_number) } })} accessibilityLabel={`Open ${unknownName(post.author_number)}`}>
                 <View style={[s.avatarRing, { borderColor: `${accent[0]}88` }]}>
-                  <AnonymousAvatar seed={post.author_avatar_seed} size={40} />
+                  <AnonymousAvatar seed={post.author_avatar_seed} number={post.author_number} size={40} />
                 </View>
               </Pressy>
               <View style={{ flex: 1 }}>
@@ -187,6 +200,9 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 <Ionicons name="paper-plane-outline" size={18} color={colors.textSecondary} />
               </Pressy>
               )}
+              <Pressy scaleTo={0.85} accessibilityLabel={saved ? 'Remove from favorites' : 'Save to favorites'} onPress={onSave} style={s.action}>
+                <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={saved ? colors.violet : colors.textSecondary} />
+              </Pressy>
               <View style={{ flex: 1 }} />
               <Pressy accessibilityLabel={interestLabelText} onPress={onInterested} scaleTo={0.94}
                 style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: colors.violet, shadowOpacity: 0.6, shadowRadius: 12, elevation: 6 }]}>
@@ -241,7 +257,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
 const s = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarRing: { padding: 2, borderRadius: 24, borderWidth: 1.5 },
-  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(124,108,255,0.15)' },
+  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(176,58,140,0.15)' },
   typeDot: { width: 6, height: 6, borderRadius: 3 },
   more: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
   quoteBar: { width: 3, borderRadius: 2 },
@@ -252,5 +268,5 @@ const s = StyleSheet.create({
   actionOn: { backgroundColor: 'rgba(251,113,133,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
   interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },
-  interestedOn: { backgroundColor: 'rgba(139,92,246,0.16)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.45)' },
+  interestedOn: { backgroundColor: 'rgba(163,40,142,0.16)', borderWidth: 1, borderColor: 'rgba(226,80,138,0.45)' },
 });

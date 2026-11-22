@@ -1,79 +1,56 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { ScrollView, StyleSheet, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Atmosphere } from '@/components/Atmosphere';
-import { GlobeIllustration, ShareIllustration } from '@/components/Illustrations';
-import { Couple } from '@/components/Illustrations3D';
-import { Wordmark } from '@/components/Logo';
+import { MaskLogo } from '@/components/Brand';
+import { Scenery } from '@/components/Scenery';
 import { GradientButton, T } from '@/components/ui';
-import { useAuth } from '@/features/auth/AuthProvider';
+import { colors, fonts, gradients, spacing } from '@/constants/theme';
 import { haptic } from '@/utils/format';
-import { colors, spacing } from '@/constants/theme';
 
-const SLIDES = [
-  { key: 'welcome', title: 'Meet people you never expected to meet.', body: 'Meet the unknown. Discover the unexpected.' },
-  { key: 'discover', title: 'Discover people beyond your world.', body: 'Stories, questions and secrets from every corner of the planet.' },
-  { key: 'share', title: 'Your thoughts can find someone anywhere.', body: 'Post anonymously. The right people will find it — and tell you they’re interested.' },
-  { key: 'connect', title: 'Start anonymously. Reveal when you feel ready.', body: 'Identities are only revealed when both of you agree. Always your choice.' },
-];
-
+/** Welcome — no sign-up: you enter instantly with an anonymous identity. */
 export default function Welcome() {
   const router = useRouter();
-  const { enter } = useAuth();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const ref = useRef<ScrollViewInstance>(null);
-  const [page, setPage] = useState(0);
-  const last = page === SLIDES.length - 1;
-
-  const next = () => {
-    if (last) { haptic.success(); enter().then(() => router.replace('/discover')); return; }
-    ref.current?.scrollTo({ x: width * (page + 1), animated: true });
-    setPage(page + 1);
-  };
-
+  const heroH = Math.min(height * 0.5, 460);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Atmosphere stars={50} />
-      <View style={{ paddingTop: insets.top }} />
-      <ScrollView ref={ref} horizontal pagingEnabled showsHorizontalScrollIndicator={false} scrollEventThrottle={16}
-        onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}>
-        {SLIDES.map((s, i) => (
-          <View key={s.key} style={[styles.slide, { width }]}>
-            <View style={styles.art}>
-              {i === 0 && <Animated.View entering={FadeIn.duration(900)} style={{ alignItems: 'center', gap: 18 }}><Couple size={Math.min(width * 0.82, 320)} /><Wordmark size={22} /></Animated.View>}
-              {i === 1 && <GlobeIllustration size={Math.min(width * 0.72, 300)} />}
-              {i === 2 && <ShareIllustration size={Math.min(width * 0.8, 320)} />}
-              {i === 3 && <Couple size={Math.min(width * 0.78, 300)} />}
-            </View>
-            <Animated.View entering={FadeInUp.delay(200).springify().damping(18)} style={{ gap: spacing.sm }}>
-              <T v="display" style={{ textAlign: 'center' }}>{s.title}</T>
-              <T color={colors.textSecondary} style={{ textAlign: 'center', fontSize: 16, lineHeight: 24 }}>{s.body}</T>
-            </Animated.View>
-          </View>
-        ))}
-      </ScrollView>
+      <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
+      <Animated.View entering={FadeIn.duration(900)} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: heroH + 120 }}>
+        <Scenery width={width} height={heroH + 120} flowers="bottom" />
+        <LinearGradient colors={[colors.bg, 'rgba(255,247,243,0)']} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 140 }} />
+      </Animated.View>
+      <Scenery width={width} height={200} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.9 }} />
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
-        <View style={styles.dots}>
-          {SLIDES.map((s, i) => <View key={s.key} style={[styles.dot, i === page && styles.dotOn]} />)}
-        </View>
-        <GradientButton label={page === 0 ? 'Get Started' : last ? 'Enter THE UNKNOWN' : 'Continue'} onPress={next} />
-        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', marginTop: 4 }}>
-          No account needed. By entering you confirm you are 18+ and accept the Community Guidelines.
-        </T>
+      <View style={{ paddingTop: insets.top + spacing.xxl, alignItems: 'center', gap: 6, paddingHorizontal: spacing.xl }}>
+        <Animated.View entering={FadeInDown.springify().damping(14)}><MaskLogo size={96} /></Animated.View>
+        <Animated.View entering={FadeInDown.delay(120).springify().damping(16)} style={{ alignItems: 'center' }}>
+          <Text style={styles.the}>THE</Text>
+          <Text style={styles.unknown}>UNKNOWN</Text>
+        </Animated.View>
+        <Animated.View entering={FadeInDown.delay(220)}>
+          <T style={styles.tag}>Meet the unknown.{'\n'}Discover the unexpected.</T>
+        </Animated.View>
       </View>
+
+      <Animated.View entering={FadeInUp.delay(300).springify().damping(18)} style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
+        <GradientButton label="Get Started" arrow onPress={() => { haptic.soft(); router.push('/vibe'); }} />
+        <View style={styles.note}>
+          <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>
+            No account needed — you start with an anonymous identity.{'\n'}18+ only · By continuing you accept the Community Guidelines.
+          </T>
+        </View>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  slide: { flex: 1, paddingHorizontal: spacing.xl, justifyContent: 'center', gap: spacing.xxl },
-  art: { alignItems: 'center', justifyContent: 'center', minHeight: 300 },
-  footer: { paddingHorizontal: spacing.xl, gap: spacing.sm },
-  dots: { flexDirection: 'row', gap: 6, alignSelf: 'center', marginBottom: spacing.md },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.hairlineStrong },
-  dotOn: { width: 22, backgroundColor: colors.violet },
+  the: { fontFamily: fonts.serif, fontSize: 26, lineHeight: 30, color: colors.plum, letterSpacing: 2 },
+  unknown: { fontFamily: fonts.serif, fontSize: 46, lineHeight: 54, color: colors.plum, letterSpacing: 1 },
+  tag: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 25, color: colors.text, textAlign: 'center', marginTop: 6 },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, gap: spacing.sm },
+  note: { alignSelf: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.82)' },
 });

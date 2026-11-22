@@ -39,7 +39,12 @@ export function friendlyError(e: unknown): string {
   const msg = (e as { message?: string })?.message ?? String(e);
   if (!isSupabaseConfigured) return 'The community is unreachable right now. Please try again in a moment.';
   if (msg.includes('rate_limited')) return 'You are going a little fast. Take a breath and try again soon.';
-  if (msg.includes('daily_limit_reached')) return 'You have used today’s Mystery Match. A new one arrives tomorrow.';
+  if (msg.includes('daily_limit_reached')) return 'You have used today’s matches. New ones arrive tomorrow — or upgrade for more.';
+  if (msg.includes('plus_required')) return 'Saving favorites is part of UNKNOWN PLUS.';
+  if (msg.includes('vip_required')) return 'This is a VIP feature.';
+  if (msg.includes('super_limit_reached')) return 'You have used today’s 3 Super Connects.';
+  if (msg.includes('not_available')) return 'This person is not available right now.';
+  if (msg.includes('gallery_full')) return 'Your gallery can hold 6 photos.';
   if (msg.includes('must_be_18')) return 'THE UNKNOWN is for adults 18 and over.';
   if (msg.includes('blocked')) return 'This conversation is no longer available.';
   if (msg.includes('conversation_ended')) return 'This conversation has ended.';

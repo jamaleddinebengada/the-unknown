@@ -1,123 +1,111 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
+import { MaskLogo } from '@/components/Brand';
 import { BottomSheet, useToast } from '@/components/Overlay';
+import { Scenery } from '@/components/Scenery';
 import { Screen, StackHeader } from '@/components/Screen';
+import { Group, Row } from '@/components/SettingsUI';
 import { EmptyState, PremiumButton, T } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { TIER_LABEL, usePlan } from '@/features/membership/usePlan';
 import { friendlyError } from '@/lib/supabase';
-import { deleteMyAccount, getBlockedUsers, unblockUser, updateMyProfile } from '@/services/api';
+import { deleteMyAccount, getBlockedUsers, unblockUser } from '@/services/api';
 import { unknownName } from '@/utils/format';
 
-function Group({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <View style={{ gap: 8 }}>
-      <T v="overline" color={colors.textMuted}>{title}</T>
-      <View style={s.group}>{children}</View>
-    </View>
-  );
-}
-
-function Row({ icon, label, value, onPress, danger, right }: { icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; onPress?: () => void; danger?: boolean; right?: ReactNode }) {
-  return (
-    <Pressable accessibilityRole={onPress ? 'button' : undefined} onPress={onPress} disabled={!onPress && !right}
-      style={({ pressed }) => [s.row, pressed && onPress && { backgroundColor: colors.elevated }]}>
-      <Ionicons name={icon} size={19} color={danger ? colors.danger : colors.textSecondary} />
-      <T style={{ flex: 1 }} color={danger ? colors.danger : colors.text}>{label}</T>
-      {value && <T v="caption" color={colors.textMuted}>{value}</T>}
-      {right ?? (onPress ? <Ionicons name="chevron-forward" size={16} color={colors.textMuted} /> : null)}
-    </Pressable>
-  );
-}
+const GUIDELINES = [
+  'Adults only. You must be 18 or older.',
+  'Anonymous never means consequence-free. Harassment, threats, hate and scams lead to suspension or a ban.',
+  'Never pressure anyone to reveal their identity, photos or contact details.',
+  'No sexual content, no spam, no selling.',
+  'Report anything that feels wrong — reports are anonymous and reviewed by people.',
+];
 
 export default function Settings() {
   const router = useRouter();
   const toast = useToast();
-  const { profile, refreshProfile, resetIdentity } = useAuth();
-  const [blockedOpen, setBlockedOpen] = useState(false);
-  const [guidelines, setGuidelines] = useState(false);
+  const { width } = useWindowDimensions();
+  const { profile, resetIdentity } = useAuth();
+  const plan = usePlan();
+  const [sheet, setSheet] = useState<null | 'blocked' | 'guidelines' | 'about' | 'account'>(null);
   const [blocked, setBlocked] = useState<Awaited<ReturnType<typeof getBlockedUsers>>>([]);
 
   const loadBlocked = useCallback(() => getBlockedUsers().then(setBlocked).catch(() => {}), []);
-  useEffect(() => { if (blockedOpen) loadBlocked(); }, [blockedOpen, loadBlocked]);
+  useEffect(() => { if (sheet === 'blocked') loadBlocked(); }, [sheet, loadBlocked]);
 
-  const toggle = async (key: 'show_age' | 'show_country' | 'show_online', v: boolean) => {
-    try { await updateMyProfile({ [key]: v }); await refreshProfile(); } catch (e) { toast(friendlyError(e), 'error'); }
-  };
-  const setWhoCanMessage = async (v: 'approved' | 'nobody') => {
-    try { await updateMyProfile({ who_can_message: v }); await refreshProfile(); } catch (e) { toast(friendlyError(e), 'error'); }
-  };
-
-  const confirmDelete = () => Alert.alert('Delete all your data?', 'Your anonymous profile, posts, messages and connections are permanently deleted. This cannot be undone.', [
+  const confirmDelete = () => Alert.alert('Delete all your data?', 'Your anonymous profile, photos, posts, messages and connections are permanently deleted. This cannot be undone. An active store subscription must be cancelled in your store settings.', [
     { text: 'Cancel', style: 'cancel' },
     { text: 'Delete forever', style: 'destructive', onPress: async () => {
       try { await deleteMyAccount(); await resetIdentity(); toast('Your data was deleted. You now have a new anonymous identity.', 'success'); router.replace('/discover'); } catch (e) { toast(friendlyError(e), 'error'); }
     } },
   ]);
+  const newIdentity = () => Alert.alert('Start over with a new identity?', 'You will get a new UNKNOWN number. Your current conversations stay with the old identity and cannot be recovered.', [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Start over', style: 'destructive', onPress: () => resetIdentity().then(() => { toast('Welcome, new stranger.', 'success'); router.replace('/discover'); }) },
+  ]);
 
-  const sw = (v: boolean, on: (x: boolean) => void) => <Switch value={v} onValueChange={on} trackColor={{ true: colors.violet, false: colors.elevated }} />;
-
+  const tier = plan?.tier ?? 'free';
   return (
     <Screen edges={['top', 'bottom']}>
       <StackHeader title="Settings" />
-      <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.xl, paddingBottom: 60 }}>
-        <Group title="UNKNOWN PLUS">
-          <Row icon="diamond-outline" label={profile?.is_premium ? 'Your subscription' : 'Upgrade to UNKNOWN PLUS'} value={profile?.is_premium ? 'Active' : undefined} onPress={() => router.push('/premium')} />
-        </Group>
-
-        <Group title="ACCOUNT">
-          <Row icon="person-outline" label="Edit profile" onPress={() => router.push('/edit-profile')} />
-          <Row icon="finger-print-outline" label="Public identity" value={unknownName(profile?.unknown_number)} />
-        </Group>
-
-        <Group title="PRIVACY">
-          <Row icon="flag-outline" label="Show country" right={sw(!!profile?.show_country, (v) => toggle('show_country', v))} />
-          <Row icon="radio-outline" label="Show online status" right={sw(!!profile?.show_online, (v) => toggle('show_online', v))} />
-          <Row icon="chatbubble-ellipses-outline" label="Mystery Matches"
-            right={sw(profile?.who_can_message !== 'nobody', (v) => setWhoCanMessage(v ? 'approved' : 'nobody'))} />
-          <View style={{ paddingHorizontal: 14, paddingBottom: 12 }}>
-            <T v="caption" color={colors.textMuted}>Nobody can message you without your approval. Conversations only open when you accept interest or a Mystery Match.</T>
+      <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.lg, paddingBottom: 0 }}>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/premium')} style={s.sub}>
+          <Text style={{ fontSize: 26 }}>👑</Text>
+          <View style={{ flex: 1 }}>
+            <T style={{ fontFamily: fonts.bold }} color={colors.violetDeep}>My Subscription</T>
+            <T v="caption" color={colors.textSecondary}>
+              {tier === 'free' ? 'Free · upgrade to Plus or VIP' : `${TIER_LABEL[tier]}${plan?.renews_at ? ` · renews ${new Date(plan.renews_at).toLocaleDateString()}` : ''}`}
+            </T>
           </View>
-        </Group>
+          <Ionicons name="chevron-forward" size={18} color={colors.violet} />
+        </Pressable>
 
-        <Group title="SAFETY">
-          <Row icon="ban-outline" label="Blocked users" onPress={() => setBlockedOpen(true)} />
-          <Row icon="document-text-outline" label="Community guidelines" onPress={() => setGuidelines(true)} />
-          <View style={{ paddingHorizontal: 14, paddingVertical: 12 }}>
-            <T v="caption" color={colors.textMuted}>Character illustrations: “Personas” by Draftbit, CC BY 4.0, generated with DiceBear.</T>
-          </View>
+        <Group>
+          <Row icon="person-outline" label="Account & Security" sub={unknownName(profile?.unknown_number)} onPress={() => setSheet('account')} />
+          <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
+          <Row icon="shield-checkmark-outline" label="Identity & Privacy" onPress={() => router.push('/privacy')} />
+          <Row icon="ban-outline" label="Blocked members" onPress={() => setSheet('blocked')} />
+          <Row icon="help-circle-outline" label="Help & Community Guidelines" onPress={() => setSheet('guidelines')} />
+          <Row icon="information-circle-outline" label="About The Unknown" onPress={() => setSheet('about')} last />
         </Group>
-
-        <View style={{ gap: spacing.sm }}>
-          <PremiumButton label="New anonymous identity" icon="refresh-outline" onPress={() => Alert.alert('Start over with a new identity?', 'You will get a new UNKNOWN number. Your current conversations stay with the old identity and cannot be recovered.', [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Start over', style: 'destructive', onPress: () => resetIdentity().then(() => { toast('Welcome, new stranger.', 'success'); router.replace('/discover'); }) },
-          ])} />
-          <PremiumButton tone="danger" label="Delete my data" icon="trash-outline" onPress={confirmDelete} />
-        </View>
+        <Scenery width={width} height={190} flowers="bottom" style={{ marginHorizontal: -spacing.md, marginTop: spacing.md }} />
       </ScrollView>
 
-      <BottomSheet visible={guidelines} onClose={() => setGuidelines(false)} title="Community guidelines">
-        <View style={{ gap: 10 }}>
-          {[
-            'Adults only. You must be 18 or older.',
-            'Anonymous never means consequence-free. Harassment, threats, hate and scams lead to suspension or a ban.',
-            'Never pressure anyone to reveal their identity, photos or contact details.',
-            'No sexual content, no spam, no selling.',
-            'Report anything that feels wrong — reports are anonymous and reviewed by people.',
-          ].map((r) => (
-            <View key={r} style={{ flexDirection: 'row', gap: 10 }}>
-              <Ionicons name="checkmark-circle-outline" size={18} color={colors.violetSoft} />
-              <T style={{ flex: 1 }}>{r}</T>
-            </View>
-          ))}
+      <BottomSheet visible={sheet === 'account'} onClose={() => setSheet(null)} title="Account & Security">
+        <View style={{ gap: spacing.sm }}>
+          <T v="caption" color={colors.textSecondary}>You use THE UNKNOWN without an email or password. Your anonymous identity is stored securely on this device.</T>
+          <PremiumButton icon="create-outline" label="Edit profile" onPress={() => { setSheet(null); router.push('/edit-profile'); }} />
+          <PremiumButton icon="refresh-outline" label="New anonymous identity" onPress={() => { setSheet(null); newIdentity(); }} />
+          <PremiumButton tone="danger" icon="trash-outline" label="Delete my data" onPress={() => { setSheet(null); confirmDelete(); }} />
         </View>
       </BottomSheet>
 
-      <BottomSheet visible={blockedOpen} onClose={() => setBlockedOpen(false)} title="Blocked users">
+      <BottomSheet visible={sheet === 'guidelines'} onClose={() => setSheet(null)} title="Community guidelines">
+        <View style={{ gap: 10 }}>
+          {GUIDELINES.map((r) => (
+            <View key={r} style={{ flexDirection: 'row', gap: 10 }}>
+              <Ionicons name="checkmark-circle-outline" size={18} color={colors.violet} />
+              <T style={{ flex: 1 }}>{r}</T>
+            </View>
+          ))}
+          <T v="caption" color={colors.textMuted}>To report someone, open their profile or a message and choose “Report”. Blocking and reporting are always free.</T>
+        </View>
+      </BottomSheet>
+
+      <BottomSheet visible={sheet === 'about'} onClose={() => setSheet(null)} title="About The Unknown">
+        <View style={{ alignItems: 'center', gap: 8 }}>
+          <MaskLogo size={80} />
+          <Text style={{ fontFamily: fonts.serif, fontSize: 24, color: colors.plum }}>THE UNKNOWN</Text>
+          <T color={colors.textSecondary} style={{ textAlign: 'center' }}>Meet the unknown. Discover the unexpected.</T>
+          <T v="caption" color={colors.textMuted}>Version {Constants.expoConfig?.version ?? '1.0.0'}</T>
+        </View>
+      </BottomSheet>
+
+      <BottomSheet visible={sheet === 'blocked'} onClose={() => setSheet(null)} title="Blocked members">
         {blocked.length === 0 ? <EmptyState icon="shield-checkmark-outline" title="No one blocked" /> : blocked.map((b) => (
           <View key={b.unknown_number} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
             <AnonymousAvatar seed={b.avatar_seed} size={36} />
@@ -131,6 +119,5 @@ export default function Settings() {
 }
 
 const s = StyleSheet.create({
-  group: { borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, overflow: 'hidden' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, minHeight: 52 },
+  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FBEAF3', borderWidth: 1.5, borderColor: 'rgba(163,40,142,0.22)' },
 });

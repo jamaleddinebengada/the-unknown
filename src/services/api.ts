@@ -2,7 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import type {
   AppNotification, ChallengeState, Comment, ConversationDetail, ConversationSummary, FeedPost, InterestedUser, Message,
-  MysteryMatch, Profile, PublicProfile, PostType, Audience,
+  MatchFilters, MysteryMatch, Person, Plan, Profile, PublicProfile, PostType, Audience,
 } from '@/types/models';
 
 async function rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T> {
@@ -23,7 +23,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
 export type ProfileUpdate = Partial<Pick<Profile,
   'username' | 'birth_date' | 'country_code' | 'gender' | 'languages' | 'interests' | 'conversation_prefs' |
   'discover_topics' | 'personality_tags' | 'tagline' | 'show_age' | 'show_country' | 'show_online' | 'who_can_message' |
-  'onboarding_complete'>>;
+  'onboarding_complete' | 'photo_visibility' | 'profile_theme'>>;
 
 export async function updateMyProfile(patch: ProfileUpdate) {
   const { data: u } = await supabase.auth.getUser();
@@ -154,8 +154,26 @@ export const getRevealedIdentity = (id: string) =>
 
 /* ---------------- matches ---------------- */
 export const getMyMatches = () => rpc<MysteryMatch[]>('get_my_matches');
-export const findMysteryMatch = (mode: string) =>
-  rpc<MysteryMatch[]>('find_mystery_match', { p_mode: mode }).then((r) => r[0] ?? null);
+export const findMysteryMatch = (mode: string, f: MatchFilters = {}) =>
+  rpc<MysteryMatch[]>('find_mystery_match', { p_mode: mode, p_country: f.country ?? null, p_min_age: f.minAge ?? null, p_max_age: f.maxAge ?? null }).then((r) => r[0] ?? null);
+export const connectWith = (n: number) => rpc<MysteryMatch[]>('connect_with', { p_number: n }).then((r) => r[0] ?? null);
+/** VIP: accept with a highlight the other person sees (3 per day). */
+export const superConnect = (matchId: string) => rpc<string | null>('super_connect', { p_match: matchId });
+export const getMySuperMatchIds = () => rpc<string[]>('get_my_super_match_ids').then((r) => new Set(r));
+
+/* ---------------- membership & people ---------------- */
+export const getMyPlan = () => rpc<Plan[]>('get_my_plan').then((r) => r[0] ?? null);
+export const getPeople = (f: MatchFilters = {}, offset = 0) =>
+  rpc<Person[]>('get_people', { p_country: f.country ?? null, p_min_age: f.minAge ?? null, p_max_age: f.maxAge ?? null, p_offset: offset, p_limit: 20 });
+
+/* ---------------- saved favorites (PLUS) ---------------- */
+export const toggleSavedPost = (postId: string) => rpc<boolean>('toggle_saved_post', { p_post: postId });
+export const getSavedPosts = (offset = 0) => rpc<FeedPost[]>('get_saved_posts', { p_offset: offset, p_limit: PAGE_SIZE });
+export async function getMySavedIds(): Promise<Set<string>> {
+  const { data, error } = await supabase.from('saved_posts').select('post_id');
+  if (error) throw error;
+  return new Set((data ?? []).map((r: { post_id: string }) => r.post_id));
+}
 export const respondMatch = (id: string, accept: boolean) => rpc<string | null>('respond_match', { p_match: id, p_accept: accept });
 
 /* ---------------- challenges & XP ---------------- */

@@ -1,105 +1,132 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeInRight } from 'react-native-reanimated';
-import { GlowRing } from '@/components/Effects';
-import { EmojiAvatar, OrbitBackdrop } from '@/components/Illustrations3D';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import { MaskAvatar } from '@/components/PersonAvatar';
+import { Scenery } from '@/components/Scenery';
 import { PremiumBadge, T } from '@/components/ui';
-import { interestLabel, LANGUAGES } from '@/constants/content';
+import { interestLabel } from '@/constants/content';
+import { interestArt } from '@/constants/interestArt';
 import { countryName, flagOf } from '@/constants/countries';
-import { colors, fonts, radius, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
+import { usePersonMeta } from '@/hooks/usePersonMeta';
 import { unknownName } from '@/utils/format';
 
-const INTEREST_ART: Record<string, { emoji: string; colors: [string, string] }> = {
-  travel: { emoji: '🛣️', colors: ['#F59E0B', '#B45309'] }, business: { emoji: '💼', colors: ['#64748B', '#334155'] },
-  technology: { emoji: '🤖', colors: ['#38BDF8', '#1D4ED8'] }, relationships: { emoji: '💞', colors: ['#F472B6', '#BE185D'] },
-  life: { emoji: '🌿', colors: ['#34D399', '#047857'] }, psychology: { emoji: '🧠', colors: ['#C084FC', '#7E22CE'] },
-  adventure: { emoji: '🏔️', colors: ['#60A5FA', '#1E3A8A'] }, music: { emoji: '🎸', colors: ['#A16207', '#451A03'] },
-  movies: { emoji: '🎬', colors: ['#F87171', '#7F1D1D'] }, gaming: { emoji: '🎮', colors: ['#8B5CF6', '#3730A3'] },
-  sports: { emoji: '⚽', colors: ['#22C55E', '#14532D'] }, culture: { emoji: '🏛️', colors: ['#FBBF24', '#92400E'] },
-  education: { emoji: '📚', colors: ['#2DD4BF', '#115E59'] }, dreams: { emoji: '🌙', colors: ['#818CF8', '#312E81'] },
-  philosophy: { emoji: '🔮', colors: ['#A78BFA', '#4C1D95'] }, mystery: { emoji: '🕵️', colors: ['#475569', '#0F172A'] },
+/** VIP exclusive profile themes (the default "rose" is everyone's). */
+export const PROFILE_THEMES: Record<string, { label: string; colors: [string, string] }> = {
+  rose: { label: 'Rose', colors: ['#F7B7CF', '#C13A9F'] },
+  plum: { label: 'Plum Night', colors: ['#C77DB8', '#4A1046'] },
+  gold: { label: 'Champagne', colors: ['#F6E3B4', '#B07C2E'] },
+  ocean: { label: 'Aegean', colors: ['#BFE3F0', '#2F5FA5'] },
+  sunset: { label: 'Sunset', colors: ['#FBD5C4', '#E2508A'] },
 };
-const CHIP_COLORS = ['#6D28D9', '#1D4ED8', '#2563EB', '#334155', '#0E7490'];
 
-export function ProfileHeader({ number, seed, country, age, interests, tags, languages, tagline, premium, stats, online = true }: {
-  number: number; seed: string; country: string | null; age: string | null; interests: string[]; tags: string[]; languages: string[];
-  tagline: string | null; premium?: boolean; stats?: { label: string; value: string | number }[]; online?: boolean;
+export function ProfileHeader({ number, seed, country, age, interests, tags, tagline, stats, online = false, theme: themeOverride, photoUrlOverride, galleryOverride, onPhotoPress, onAddGalleryPhoto, onGalleryPress, footer }: {
+  number: number; seed: string; country: string | null; age: string | null; interests: string[]; tags: string[]; languages?: string[];
+  tagline: string | null; premium?: boolean; stats?: { label: string; value: string | number }[]; online?: boolean; theme?: string;
+  /** own profile: show my photos even before the batched lookup returns */
+  photoUrlOverride?: string | null; galleryOverride?: { url: string; path: string }[];
+  onPhotoPress?: () => void; onAddGalleryPhoto?: () => void; onGalleryPress?: (path: string, url: string) => void; footer?: React.ReactNode;
 }) {
   const { width } = useWindowDimensions();
+  const meta = usePersonMeta(number);
+  const photo = photoUrlOverride !== undefined ? photoUrlOverride : meta?.photoUrl ?? null;
+  const gallery = galleryOverride ?? (meta?.gallery ?? []).map((url) => ({ url, path: url }));
+  const tier = meta?.tier ?? 'free';
+  const theme = PROFILE_THEMES[themeOverride ?? meta?.theme ?? 'rose'] ?? PROFILE_THEMES.rose;
+  const heroW = width - spacing.md * 2;
+  const heroH = Math.min(340, heroW * 0.95);
+  const tile = Math.floor((heroW - 16) / 3);
+
   return (
-    <Animated.View entering={FadeIn.duration(500)} style={{ gap: spacing.lg }}>
-      <View style={{ alignItems: 'center', paddingTop: spacing.md }}>
-        <OrbitBackdrop width={width - 32} height={260} />
-        <GlowRing size={176} speed={7000} thickness={3.5} colors={['#FDBA74', '#F97316', '#FB7185']}>
-          <View style={s.avatarHalo}>
-            <EmojiAvatar seed={seed} size={150} ring={false} />
+    <Animated.View entering={FadeIn.duration(450)} style={{ gap: spacing.md }}>
+      <Pressable disabled={!onPhotoPress} onPress={onPhotoPress} accessibilityRole={onPhotoPress ? 'button' : undefined} accessibilityLabel={onPhotoPress ? 'Change profile photo' : undefined}
+        style={[s.hero, { height: heroH }]}>
+        {photo ? (
+          <Animated.View entering={FadeIn.duration(500)} style={StyleSheet.absoluteFill}>
+            <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} accessibilityLabel="Profile photo" />
+          </Animated.View>
+        ) : (
+          <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+            <Scenery width={heroW} height={heroH} flowers="both" />
+            <LinearGradient colors={[`${theme.colors[0]}55`, `${theme.colors[1]}66`]} style={StyleSheet.absoluteFill} />
+            <Animated.View entering={ZoomIn.springify().damping(12)} style={s.maskWrap}><MaskAvatar seed={seed} size={128} /></Animated.View>
           </View>
-        </GlowRing>
-        {online && <View style={s.onlineDot} />}
-        <View style={s.voice}><T style={{ fontSize: 13 }}>✨</T><T style={{ fontFamily: fonts.display, color: colors.success, fontSize: 14, letterSpacing: -1 }}>ıllı</T></View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: spacing.md }}>
-          <T style={{ fontFamily: fonts.display, fontSize: 30, lineHeight: 36 }}>{unknownName(number)}</T>
-          {premium && <PremiumBadge />}
-        </View>
-        <LinearGradient colors={['#FF9A3D', '#F0520C']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.countryPill}>
-          <T style={{ fontFamily: fonts.display, fontSize: 15 }} color={colors.white}>{flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}</T>
-        </LinearGradient>
-        {tagline && <T color={colors.textSecondary} style={{ textAlign: 'center', marginTop: spacing.sm, paddingHorizontal: spacing.md, fontSize: 15.5, lineHeight: 24 }}>{tagline}</T>}
-      </View>
+        )}
+        <LinearGradient colors={['rgba(42,20,48,0)', 'rgba(42,20,48,0.35)']} style={[StyleSheet.absoluteFill, { top: '60%' }]} />
+        {onPhotoPress && (
+          <View style={s.camera}><Ionicons name="camera" size={18} color={colors.violetDeep} /><T v="caption" style={{ fontFamily: fonts.semibold }}>{photo ? 'Edit photo' : 'Add your photo'}</T></View>
+        )}
+        {online && <View style={s.online}><View style={s.onlineDot} /><T v="caption" color={colors.white} style={{ fontFamily: fonts.semibold }}>Online</T></View>}
+      </Pressable>
 
-      {stats && (
-        <View style={s.stats}>
-          {stats.map((st) => (
-            <View key={st.label} style={s.stat}>
-              <T style={{ fontFamily: fonts.display, fontSize: 22 }}>{st.value}</T>
-              <T v="caption" color={colors.textMuted}>{st.label}</T>
-            </View>
-          ))}
+      <Animated.View entering={FadeInDown.delay(80).springify().damping(18)} style={s.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Text style={s.name}>{unknownName(number)}</Text>
+          {tier !== 'free' && <PremiumBadge label={tier === 'vip' ? 'VIP' : 'PLUS'} />}
         </View>
-      )}
+        <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>
+          {flagOf(country)} {country ? countryName(country) : 'Location hidden'}{age ? ` · ${age}` : ''}
+        </T>
+        {tagline && <Text style={s.quote}>“{tagline}”</Text>}
+        {stats && (
+          <View style={s.stats}>
+            {stats.map((st, i) => (
+              <View key={st.label} style={[s.stat, i > 0 && s.statSep]}>
+                <Text style={s.statValue}>{st.value}</Text>
+                <T v="caption" color={colors.textMuted}>{st.label}</T>
+              </View>
+            ))}
+          </View>
+        )}
+        {footer}
+        {(interests.length > 0 || tags.length > 0) && (
+          <View style={s.chips}>
+            {interests.map((i) => (
+              <View key={i} style={s.chip}><Text style={{ fontSize: 13 }}>{interestArt(i).emoji}</Text><Text style={s.chipText}>{interestLabel(i)}</Text></View>
+            ))}
+            {tags.map((t) => <View key={t} style={[s.chip, { backgroundColor: colors.blush }]}><Text style={s.chipText}>{t}</Text></View>)}
+          </View>
+        )}
+      </Animated.View>
 
-      {interests.length > 0 && (
+      {(gallery.length > 0 || onAddGalleryPhoto) && (
         <View style={{ gap: spacing.sm }}>
-          <T style={{ fontFamily: fonts.display, fontSize: 22 }}>{interests.length} interests</T>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-            {interests.map((i, idx) => {
-              const art = INTEREST_ART[i] ?? { emoji: '✨', colors: ['#6D28D9', '#312E81'] as [string, string] };
-              return (
-                <Animated.View key={i} entering={FadeInRight.delay(idx * 60).springify()}>
-                  <LinearGradient colors={art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.tile}>
-                    <View pointerEvents="none" style={s.tileGloss} />
-                    <T style={{ fontSize: 40 }}>{art.emoji}</T>
-                    <T style={{ fontFamily: fonts.display, fontSize: 13 }} color={colors.white}>{interestLabel(i)}</T>
-                  </LinearGradient>
-                </Animated.View>
-              );
-            })}
-          </ScrollView>
+          <T v="section">Photos</T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {gallery.map((g) => (
+              <Pressable key={g.path} disabled={!onGalleryPress} onPress={() => onGalleryPress?.(g.path, g.url)} accessibilityLabel="Gallery photo">
+                <Image source={{ uri: g.url }} style={{ width: tile, height: tile, borderRadius: 18 }} contentFit="cover" transition={250} />
+              </Pressable>
+            ))}
+            {onAddGalleryPhoto && gallery.length < 6 && (
+              <Pressable onPress={onAddGalleryPhoto} accessibilityRole="button" accessibilityLabel="Add a photo to your gallery" style={[s.addTile, { width: tile, height: tile }]}>
+                <Ionicons name="add" size={28} color={colors.violet} />
+              </Pressable>
+            )}
+          </View>
         </View>
-      )}
-
-      {(tags.length > 0 || languages.length > 0) && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-          {tags.map((t, i) => (
-            <View key={t} style={[s.chip, { backgroundColor: CHIP_COLORS[i % CHIP_COLORS.length] }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }} color={colors.white}>{t}</T></View>
-          ))}
-          {languages.map((l) => (
-            <View key={l} style={[s.chip, { backgroundColor: colors.white, borderColor: colors.surfaceBorder }]}><T style={{ fontFamily: fonts.displaySemi, fontSize: 15 }}>🗣 {LANGUAGES.find((x) => x.code === l)?.label ?? l}</T></View>
-          ))}
-        </ScrollView>
       )}
     </Animated.View>
   );
 }
 
 const s = StyleSheet.create({
-  avatarHalo: { borderRadius: 80, shadowColor: '#8B5CF6', shadowOpacity: 0.45, shadowRadius: 24, elevation: 14 },
-  onlineDot: { position: 'absolute', top: spacing.md + 132, left: '50%', marginLeft: 48, width: 26, height: 26, borderRadius: 13, backgroundColor: colors.success, borderWidth: 4, borderColor: colors.bg },
-  voice: { position: 'absolute', top: spacing.md + 104, left: '50%', marginLeft: 82, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  countryPill: { marginTop: 6, paddingHorizontal: 22, paddingVertical: 6, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
-  stats: { flexDirection: 'row', gap: 10 },
-  stat: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  tile: { width: 104, height: 120, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', overflow: 'hidden' },
-  tileGloss: { position: 'absolute', top: 0, left: 0, right: 0, height: '42%', backgroundColor: 'rgba(255,255,255,0.12)' },
-  chip: { paddingHorizontal: 18, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  hero: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.blush, shadowColor: '#7B1E74', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  maskWrap: { position: 'absolute', padding: 5, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.85)' },
+  camera: { position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
+  online: { position: 'absolute', left: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(42,20,48,0.45)' },
+  onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
+  card: { marginTop: -46, marginHorizontal: 6, padding: spacing.lg, gap: 8, borderRadius: 28, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#7B1E74', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  name: { fontFamily: fonts.bold, fontSize: 26, letterSpacing: -0.5, color: colors.text },
+  quote: { fontFamily: fonts.serifItalic, fontSize: 16.5, lineHeight: 24, color: colors.textSecondary, textAlign: 'center', marginTop: 2 },
+  stats: { flexDirection: 'row', marginTop: 8 },
+  stat: { flex: 1, alignItems: 'center', gap: 2 },
+  statSep: { borderLeftWidth: 1, borderLeftColor: colors.hairline },
+  statValue: { fontFamily: fonts.bold, fontSize: 21, color: colors.text },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.ivory, borderWidth: 1, borderColor: colors.surfaceBorder },
+  chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.violetDeep },
+  addTile: { borderRadius: 18, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.violetSoft, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white },
 });

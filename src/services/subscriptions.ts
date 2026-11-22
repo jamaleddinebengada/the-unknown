@@ -2,15 +2,27 @@ import { Platform } from 'react-native';
 import Purchases, { PACKAGE_TYPE, type CustomerInfo, type PurchasesPackage } from 'react-native-purchases';
 
 /**
- * UNKNOWN PLUS subscriptions via RevenueCat (Google Play Billing / App Store).
- * - Public SDK keys only (safe in the app). Entitlement id: "plus".
- * - The app user id is the anonymous Supabase user id, so the RevenueCat webhook
- *   (supabase/functions/revenuecat-webhook) can flip profiles.is_premium on the server.
- * - Premium status is never trusted from the client: limits are enforced in the database.
+ * THE UNKNOWN memberships via RevenueCat (Google Play Billing / App Store In-App Purchase).
+ *
+ *   FREE 0 MAD · PLUS 49 MAD / month · VIP 99 MAD / month (yearly plans save ~40%)
+ *
+ * Store setup (see README): products plus_monthly, plus_yearly, vip_monthly, vip_yearly;
+ * RevenueCat entitlements "plus" (PLUS + VIP products) and "vip" (VIP products); one offering
+ * whose packages are those four products.
+ * - Only public SDK keys live in the app. The app user id is the anonymous Supabase user id.
+ * - The tier is granted on the server by the RevenueCat webhook; every limit is enforced in
+ *   the database, never trusted from the client.
  */
-/** Advertised list price; the store's localized price is always shown when available. */
-export const PLUS_LIST_PRICE = '$20';
-export const ENTITLEMENT = 'plus';
+export type PaidTier = 'plus' | 'vip';
+export type Billing = 'monthly' | 'yearly';
+
+/** List prices shown before the store is connected (the store's localized price wins when available). */
+export const LIST_PRICES: Record<PaidTier, Record<Billing, string>> = {
+  plus: { monthly: '49 DH', yearly: '349 DH' },
+  vip: { monthly: '99 DH', yearly: '699 DH' },
+};
+export const YEARLY_SAVING = '40%';
+
 const KEY = Platform.select({
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
   ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
@@ -32,44 +44,46 @@ export async function initPurchases(userId: string) {
   }
 }
 
-export interface PlusPlan {
-  id: string;
-  kind: 'annual' | 'monthly' | 'other';
-  title: string;
-  price: string;
-  perMonth: string | null;
-  trial: string | null;
-  pkg: PurchasesPackage;
+export interface StorePlan { tier: PaidTier; billing: Billing; price: string; perMonth: string | null; trial: string | null; productId: string; pkg: PurchasesPackage }
+
+function classify(pkg: PurchasesPackage): { tier: PaidTier; billing: Billing } | null {
+  const id = `${pkg.identifier} ${pkg.product.identifier}`.toLowerCase();
+  const tier: PaidTier | null = id.includes('vip') ? 'vip' : id.includes('plus') ? 'plus' : null;
+  if (!tier) return null;
+  const yearly = pkg.packageType === PACKAGE_TYPE.ANNUAL || /year|annual/.test(id);
+  return { tier, billing: yearly ? 'yearly' : 'monthly' };
 }
 
-export async function getPlusPlans(): Promise<PlusPlan[]> {
+export async function getStorePlans(): Promise<StorePlan[]> {
   if (!subscriptionsAvailable) return [];
   const offerings = await Purchases.getOfferings();
   const pkgs = offerings.current?.availablePackages ?? [];
-  return pkgs
-    .map((pkg): PlusPlan => {
-      const kind = pkg.packageType === PACKAGE_TYPE.ANNUAL ? 'annual' : pkg.packageType === PACKAGE_TYPE.MONTHLY ? 'monthly' : 'other';
-      const p = pkg.product;
-      const perMonth = kind === 'annual' && p.price > 0 ? `${(p.price / 12).toFixed(2)} ${p.currencyCode}` : null;
-      return {
-        id: pkg.identifier, kind, pkg,
-        title: kind === 'annual' ? 'Annual' : kind === 'monthly' ? 'Monthly' : p.title,
-        price: p.priceString,
-        perMonth,
-        trial: p.introPrice && p.introPrice.price === 0 ? `${p.introPrice.periodNumberOfUnits} ${p.introPrice.periodUnit.toLowerCase()} free` : null,
-      };
-    })
-    // THE UNKNOWN sells one plan: UNKNOWN PLUS monthly (set to $20/month in Google Play).
-    .filter((p) => p.kind === 'monthly');
+  return pkgs.flatMap((pkg) => {
+    const c = classify(pkg);
+    if (!c) return [];
+    const p = pkg.product;
+    return [{
+      ...c, pkg, productId: p.identifier, price: p.priceString,
+      perMonth: c.billing === 'yearly' && p.price > 0 ? `${(p.price / 12).toFixed(0)} ${p.currencyCode}` : null,
+      trial: p.introPrice && p.introPrice.price === 0 ? `${p.introPrice.periodNumberOfUnits}-${p.introPrice.periodUnit.toLowerCase()} free trial` : null,
+    }];
+  });
 }
 
-export const hasPlus = (info: CustomerInfo | null | undefined) => !!info?.entitlements.active[ENTITLEMENT];
+export const tierOf = (info: CustomerInfo | null | undefined): 'free' | PaidTier =>
+  info?.entitlements.active.vip ? 'vip' : info?.entitlements.active.plus ? 'plus' : 'free';
 
-/** Returns true when the purchase completed, false when the user cancelled. */
-export async function buyPlan(plan: PlusPlan): Promise<boolean> {
+/** Buy, upgrade or downgrade. Returns false when the user cancels. */
+export async function buyPlan(plan: StorePlan): Promise<boolean> {
   try {
-    const { customerInfo } = await Purchases.purchasePackage(plan.pkg);
-    return hasPlus(customerInfo);
+    let googleProductChangeInfo: { oldProductIdentifier: string } | undefined;
+    if (Platform.OS === 'android') {
+      const info = await Purchases.getCustomerInfo();
+      const current = info.activeSubscriptions.find((id) => id !== plan.productId);
+      if (current) googleProductChangeInfo = { oldProductIdentifier: current.split(':')[0] };
+    }
+    const { customerInfo } = await Purchases.purchasePackage(plan.pkg, null, googleProductChangeInfo ?? null);
+    return tierOf(customerInfo) !== 'free';
   } catch (e) {
     const err = e as { userCancelled?: boolean; code?: string };
     if (err.userCancelled || err.code === Purchases.PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) return false;
@@ -77,9 +91,9 @@ export async function buyPlan(plan: PlusPlan): Promise<boolean> {
   }
 }
 
-export async function restorePlus(): Promise<boolean> {
-  if (!subscriptionsAvailable) return false;
-  return hasPlus(await Purchases.restorePurchases());
+export async function restorePurchases(): Promise<'free' | PaidTier> {
+  if (!subscriptionsAvailable) return 'free';
+  return tierOf(await Purchases.restorePurchases());
 }
 
 export async function manageSubscription() {

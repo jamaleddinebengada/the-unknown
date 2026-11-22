@@ -51,7 +51,7 @@ export function RevealSheet({ conv, visible, onClose, onChanged }: { conv: Conve
     <BottomSheet visible={visible} onClose={onClose}>
       {mutual ? (
         <Animated.View entering={FadeIn} style={{ alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md }}>
-          <Animated.View entering={ZoomIn.springify().damping(10)}><AnonymousAvatar seed={conv.other_avatar_seed ?? 'x'} size={96} revealed /></Animated.View>
+          <Animated.View entering={ZoomIn.springify().damping(10)}><AnonymousAvatar seed={conv.other_avatar_seed ?? 'x'} number={conv.other_number} size={96} revealed /></Animated.View>
           <T v="overline" color={colors.violetSoft}>{unknownName(conv.other_number)} IS</T>
           <T v="screenTitle" style={{ textAlign: 'center' }}>{revealed?.display_name ?? 'Someone who kept their name'}</T>
           {revealed?.social_handle && <T color={colors.cyan}>{revealed.social_handle}</T>}

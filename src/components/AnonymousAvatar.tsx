@@ -1,11 +1,7 @@
 import { memo } from 'react';
-import { EmojiAvatar } from './Illustrations3D';
+import { PersonAvatar } from './PersonAvatar';
 
-/**
- * Anonymous identity avatar: a playful 3D-style character picked deterministically from the
- * user's random avatar seed. Same seed → same character, so strangers stay recognisable
- * across the app without revealing who they really are.
- */
-export const AnonymousAvatar = memo(function AnonymousAvatar({ seed, size = 42 }: { seed: string; size?: number; revealed?: boolean }) {
-  return <EmojiAvatar seed={seed || 'unknown'} size={size} ring={size >= 34} />;
+/** Avatar for a member: real photo when they allow you to see it, otherwise the anonymous mask. */
+export const AnonymousAvatar = memo(function AnonymousAvatar({ seed, size = 42, number, online }: { seed: string; size?: number; revealed?: boolean; number?: number | null; online?: boolean }) {
+  return <PersonAvatar seed={seed || 'unknown'} number={number} size={size} ring={size >= 34} online={online} />;
 });

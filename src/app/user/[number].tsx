@@ -5,14 +5,14 @@ import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { PostCard } from '@/components/PostCard';
 import { ReportSheet, type ReportTarget } from '@/components/SafetySheet';
 import { Screen, StackHeader } from '@/components/Screen';
-import { EmptyState, ErrorState, IconButton, T } from '@/components/ui';
+import { EmptyState, ErrorState, GradientButton, IconButton, T } from '@/components/ui';
 import { colors, spacing } from '@/constants/theme';
 import { ProfileHeader } from '@/features/profile/ProfileHeader';
 import { usePaged } from '@/hooks/usePaged';
 import { friendlyError } from '@/lib/supabase';
-import { blockUser, getPublicProfile, getUserPosts } from '@/services/api';
+import { blockUser, connectWith, getPublicProfile, getUserPosts } from '@/services/api';
 import type { FeedPost, PublicProfile } from '@/types/models';
-import { unknownName } from '@/utils/format';
+import { haptic, unknownName } from '@/utils/format';
 
 /** Mystery profile of another user — only public, anonymised fields. */
 export default function UserProfile() {
@@ -26,6 +26,19 @@ export default function UserProfile() {
   const [menu, setMenu] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const posts = usePaged<FeedPost>((o) => getUserPosts(n, o), String(n));
+  const [connecting, setConnecting] = useState(false);
+  const connect = async () => {
+    setConnecting(true);
+    try {
+      const m = await connectWith(n);
+      haptic.success();
+      if (m?.conversation_id) router.push({ pathname: '/conversation/[id]', params: { id: m.conversation_id } });
+      else toast(m?.they_accepted ? 'They already joined — open Messages.' : 'Request sent. When they join too, your private chat opens.', 'success');
+    } catch (e) {
+      toast(friendlyError(e), 'error');
+      if (String((e as Error)?.message).includes('daily_limit_reached')) router.push('/premium');
+    } finally { setConnecting(false); }
+  };
 
   useEffect(() => {
     getPublicProfile(n).then((r) => { setP(r); if (!r) setError('This profile is not available.'); })
@@ -44,7 +57,7 @@ export default function UserProfile() {
 
   return (
     <Screen edges={['top', 'bottom']}>
-      <StackHeader title="Mystery profile" right={p && <IconButton label="Profile options" name="ellipsis-horizontal" onPress={() => setMenu(true)} />} />
+      <StackHeader title="Profile" right={p && <IconButton label="Profile options" name="ellipsis-horizontal" onPress={() => setMenu(true)} />} />
       {loading ? <ActivityIndicator color={colors.violet} style={{ marginTop: 60 }} /> : error || !p ? <ErrorState message={error ?? ''} /> : (
         <FlatList data={posts.items} keyExtractor={(x) => x.id} contentContainerStyle={{ padding: spacing.md, paddingBottom: 60 }}
           ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
@@ -52,11 +65,12 @@ export default function UserProfile() {
             <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
               <ProfileHeader number={p.unknown_number} seed={p.avatar_seed} country={p.country_code} age={p.age_range} interests={p.interests}
                 tags={p.personality_tags} languages={p.languages} tagline={p.tagline}
-                stats={[{ label: 'Posts', value: p.post_count }, { label: 'Exploring since', value: new Date(p.member_since).getFullYear() }]} />
+                stats={[{ label: 'Posts', value: p.post_count }, { label: 'Since', value: new Date(p.member_since).getFullYear() }]} />
+              <GradientButton icon="heart" label="Connect" loading={connecting} onPress={connect} />
               <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>
-                To talk, tap “I’m Interested” on one of their posts — they decide whether to connect.
+                Sends a match request (counts toward your daily matches). The chat opens only if they join too.
               </T>
-              <T v="overline" color={colors.textMuted}>POSTS</T>
+              <T v="section">Posts</T>
             </View>
           }
           renderItem={({ item, index }) => <PostCard post={item} index={index} onChange={posts.update} onRemoved={posts.remove} />}

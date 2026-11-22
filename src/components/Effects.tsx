@@ -49,12 +49,12 @@ const Spark = memo(function Spark({ x, y, s, delay, dur }: { x: number; y: numbe
     o.value = withDelay(delay, withRepeat(withSequence(withTiming(1, { duration: dur }), withTiming(0.1, { duration: dur })), -1));
   }, [o, delay, dur]);
   const a = useAnimatedStyle(() => ({ opacity: o.value, transform: [{ translateY: -6 * o.value }] }));
-  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#A78BFA' : '#FBBF24' }, a]} />;
+  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#E2BE74' : '#F3C6DA' }, a]} />;
 });
 
 export function Aurora({ variant = 'default', stars = 26, style }: { variant?: 'default' | 'warm' | 'calm'; stars?: number; style?: StyleProp<ViewStyle> }) {
   const { width, height } = useWindowDimensions();
-  const palette = variant === 'warm' ? ['#C4B5FD', '#FBCFE8', '#FDE68A'] : variant === 'calm' ? ['#BAE6FD', '#C4B5FD', '#A5F3FC'] : ['#C4B5FD', '#BAE6FD', '#FBCFE8'];
+  const palette = variant === 'warm' ? ['#F9C9D6', '#FBE4EC', '#F6E3B4'] : variant === 'calm' ? ['#F3D6E6', '#FBE4EC', '#F6E8D6'] : ['#F9D3DF', '#F3DDEB', '#F8E6CC'];
   const sparks = useMemo(() => {
     const r = seeded(`aurora-${variant}`);
     return Array.from({ length: stars }, () => ({ x: r() * width, y: r() * height, s: r() > 0.8 ? 3 : 1.6, delay: r() * 3000, dur: 1800 + r() * 2600 }));
@@ -65,7 +65,7 @@ export function Aurora({ variant = 'default', stars = 26, style }: { variant?: '
       <Blob color={palette[0]} size={width * 1.3} x={width * 0.15} y={height * 0.05} dx={width * 0.25} dy={height * 0.06} dur={9000} delay={0} opacity={0.55} />
       <Blob color={palette[1]} size={width * 1.0} x={width * 0.95} y={height * 0.35} dx={-width * 0.3} dy={height * 0.08} dur={11000} delay={600} opacity={0.32} />
       <Blob color={palette[2]} size={width * 1.1} x={width * 0.2} y={height * 0.85} dx={width * 0.3} dy={-height * 0.1} dur={13000} delay={1200} opacity={0.3} />
-      <LinearGradient colors={['rgba(247,246,255,0)', 'rgba(247,246,255,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
+      <LinearGradient colors={['rgba(255,247,243,0)', 'rgba(255,247,243,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
       {sparks.map((p, i) => <Spark key={i} {...p} />)}
     </View>
   );
@@ -96,7 +96,7 @@ export function GlassCard({ children, style, accent, padding = 16, radius: r = r
 /* =====================================================================
  * GradientText — headline text filled with a gradient (SVG, no native deps).
  * ===================================================================== */
-export function GradientText({ text, size = 30, colors: g = ['#4C3FB8', '#7C3AED', '#2563EB'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
+export function GradientText({ text, size = 30, colors: g = ['#E2508A', '#B5309A', '#6B1A68'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
   text: string; size?: number; colors?: readonly string[]; weight?: string; letterSpacing?: number; width?: number; align?: 'left' | 'center';
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -169,7 +169,7 @@ export function HeartBurst({ trigger, size = 90 }: { trigger: number; size?: num
 /* =====================================================================
  * GlowRing — rotating gradient ring (portal motif) around content.
  * ===================================================================== */
-export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#38BDF8', '#8B5CF6', '#A855F7'] }: {
+export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#E2508A', '#A3288E', '#C13A9F'] }: {
   size: number; children?: ReactNode; speed?: number; thickness?: number; colors?: readonly string[];
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -230,7 +230,7 @@ export function ScreenTitle({ overline, title, subtitle, right }: { overline?: s
               <Animated.Text style={{ fontFamily: fonts.semibold, fontSize: 11.5, letterSpacing: 2.2, color: colors.violetSoft }}>{overline}</Animated.Text>
             </View>
           )}
-          <GradientText text={title} size={size} width={width - (right ? 140 : 32)} />
+          <Animated.Text numberOfLines={1} adjustsFontSizeToFit style={{ fontFamily: fonts.bold, fontSize: Math.max(24, size), letterSpacing: -0.6, color: colors.text }}>{title}</Animated.Text>
         </View>
         {right}
       </View>

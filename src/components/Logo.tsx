@@ -25,8 +25,8 @@ export function PortalMark({ size = 120, spin = true }: { size?: number; spin?: 
             <RadialGradient id={`core${uid}`} cx="50%" cy="50%" r="50%">
               <Stop offset="0" stopColor="#1B1640" />
               <Stop offset="0.7" stopColor="#090B14" />
-              <Stop offset="0.86" stopColor="#6D4AFF" stopOpacity="0.85" />
-              <Stop offset="1" stopColor="#38BDF8" stopOpacity="0" />
+              <Stop offset="0.86" stopColor="#7B1E74" stopOpacity="0.85" />
+              <Stop offset="1" stopColor="#E2508A" stopOpacity="0" />
             </RadialGradient>
           </Defs>
           <Circle cx="60" cy="60" r="58" fill={`url(#core${uid})`} />
@@ -39,9 +39,9 @@ export function PortalMark({ size = 120, spin = true }: { size?: number; spin?: 
         <Svg width={size} height={size} viewBox="0 0 120 120">
           <Defs>
             <LinearGradient id={`ring${uid}`} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor="#38BDF8" />
-              <Stop offset="0.5" stopColor="#8B5CF6" />
-              <Stop offset="1" stopColor="#A855F7" stopOpacity="0.1" />
+              <Stop offset="0" stopColor="#E2508A" />
+              <Stop offset="0.5" stopColor="#A3288E" />
+              <Stop offset="1" stopColor="#C13A9F" stopOpacity="0.1" />
             </LinearGradient>
           </Defs>
           <Circle cx="60" cy="60" r="50" stroke={`url(#ring${uid})`} strokeWidth={2.4} fill="none" strokeDasharray="210 104" strokeLinecap="round" />

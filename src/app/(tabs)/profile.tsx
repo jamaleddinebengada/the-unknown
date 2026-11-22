@@ -1,56 +1,108 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable , ActivityIndicator, FlatList, RefreshControl, Share, View } from 'react-native';
-import { Star3D, Trophy } from '@/components/Illustrations3D';
-import type { ChallengeState , FeedPost } from '@/types/models';
-import { ScreenTitle } from '@/components/Effects';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
+import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { PostCard } from '@/components/PostCard';
 import { Screen } from '@/components/Screen';
-import { EmptyState, ErrorState, IconButton, PremiumButton, T } from '@/components/ui';
+import { EmptyState, ErrorState, GradientButton, IconButton, T } from '@/components/ui';
 import { colors, fonts, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { TIER_LABEL, usePlan } from '@/features/membership/usePlan';
 import { ProfileHeader } from '@/features/profile/ProfileHeader';
 import { usePaged } from '@/hooks/usePaged';
+import { friendlyError } from '@/lib/supabase';
 import { getMyChallenges, getUserPosts } from '@/services/api';
-import { ageFromDate, unknownName } from '@/utils/format';
+import { addGalleryPhoto, getMyPhotos, removeGalleryPhoto, removeProfilePhoto, setProfilePhoto, type MyPhotos } from '@/services/photos';
+import type { ChallengeState, FeedPost } from '@/types/models';
+import { ageFromDate, haptic, unknownName } from '@/utils/format';
+
+const VIS_LABEL = { public: 'Everyone can see your photos', revealed: 'Photos visible only after a mutual reveal', hidden: 'Photos hidden from everyone' } as const;
+
+function Shortcut({ icon, label, onPress, gold }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; gold?: boolean }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => { haptic.tap(); onPress(); }} style={s.short}>
+      <View style={[s.shortIcon, gold && { backgroundColor: '#FFF4DD' }]}><Ionicons name={icon} size={20} color={gold ? colors.gold : colors.violet} /></View>
+      <Text style={s.shortText}>{label}</Text>
+    </Pressable>
+  );
+}
 
 export default function MyProfile() {
   const router = useRouter();
+  const toast = useToast();
+  const plan = usePlan();
   const { profile, refreshProfile, session, resetIdentity } = useAuth();
-  const resetIfNeeded = () => (session ? refreshProfile() : resetIdentity());
   const n = profile?.unknown_number ?? 0;
   const posts = usePaged<FeedPost>((o) => getUserPosts(n, o), String(n));
-  const [challenges, setChallenges] = useState<ChallengeState | null>(null);
-  useFocusEffect(useCallback(() => { getMyChallenges().then(setChallenges).catch(() => {}); }, []));
-  if (!profile) return <Screen><ErrorState message="Your anonymous identity is still connecting." onRetry={() => { resetIfNeeded(); }} /></Screen>;
+  const [xp, setXp] = useState<ChallengeState | null>(null);
+  const [photos, setPhotos] = useState<MyPhotos | null>(null);
+  const [photoMenu, setPhotoMenu] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const loadPhotos = useCallback(() => { getMyPhotos().then(setPhotos).catch(() => {}); }, []);
+  useFocusEffect(useCallback(() => { getMyChallenges().then(setXp).catch(() => {}); loadPhotos(); }, [loadPhotos]));
+
+  if (!profile) return <Screen><ErrorState message="Your anonymous identity is still connecting." onRetry={() => { (session ? refreshProfile() : resetIdentity()); }} /></Screen>;
+
+  const pick = async (aspect: [number, number]) => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.82, allowsEditing: true, aspect });
+    return !res.canceled && res.assets[0] ? { uri: res.assets[0].uri, mime: res.assets[0].mimeType ?? 'image/jpeg' } : null;
+  };
+  const run = async (fn: () => Promise<void>, done: string) => {
+    setBusy(true);
+    try { await fn(); loadPhotos(); haptic.success(); toast(done, 'success'); } catch (e) { toast(friendlyError(e), 'error'); } finally { setBusy(false); }
+  };
+  const changePhoto = async () => {
+    setPhotoMenu(false);
+    const img = await pick([4, 5]);
+    if (img) run(() => setProfilePhoto(img.uri, img.mime), 'Profile photo updated');
+  };
+  const addToGallery = async () => {
+    const img = await pick([1, 1]);
+    if (img) run(() => addGalleryPhoto(img.uri, img.mime), 'Added to your gallery');
+  };
+  const galleryOptions = (path: string) => {
+    Alert.alert('Gallery photo', undefined, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => run(() => removeGalleryPhoto(path), 'Photo removed') },
+    ]);
+  };
 
   const header = (
     <View style={{ gap: spacing.md, marginBottom: spacing.md }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ flex: 1 }}><ScreenTitle overline="YOUR MYSTERY PROFILE" title="Profile" /></View>
+        <T style={s.title}>Profile</T>
+        <View style={{ flex: 1 }} />
         <IconButton label="Share profile" name="share-outline" onPress={() => Share.share({ message: `Find me on THE UNKNOWN as ${unknownName(n)}` }).catch(() => {})} />
         <IconButton label="Settings" name="settings-outline" onPress={() => router.push('/settings')} />
       </View>
       <ProfileHeader number={n} seed={profile.avatar_seed} country={profile.country_code}
         age={profile.birth_date ? String(ageFromDate(profile.birth_date)) : null} interests={profile.interests} tags={profile.personality_tags}
-        languages={profile.languages} tagline={profile.tagline} premium={profile.is_premium}
-        stats={[{ label: 'Posts', value: posts.items.length + (posts.done ? '' : '+') }, { label: 'Member since', value: new Date(profile.created_at).getFullYear() }]} />
-      <PremiumButton icon="create-outline" label="Edit profile" onPress={() => router.push('/edit-profile')} />
-      <Pressable accessibilityRole="button" accessibilityLabel="Open challenges" onPress={() => router.push('/challenges')}>
-        <LinearGradient colors={['#7C3AED', '#4F46E5', '#1D4ED8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 26, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
-          <Trophy size={50} />
-          <View style={{ flex: 1 }}>
-            <T style={{ fontFamily: fonts.display, fontSize: 18 }} color={colors.white}>Daily challenges</T>
-            <T v="caption" color="rgba(255,255,255,0.85)">
-              {challenges ? `Level ${challenges.level} · ${challenges.xp} XP · ${challenges.challenges.filter((c) => c.done).length}/${challenges.challenges.length} done today` : 'Earn points by winning challenges'}
-            </T>
-          </View>
-          <Star3D size={34} />
-        </LinearGradient>
+        tagline={profile.tagline} theme={profile.profile_theme}
+        photoUrlOverride={photos ? photos.photoUrl : undefined}
+        galleryOverride={photos ? photos.gallery.map((p, i) => ({ path: p, url: photos.galleryUrls[i] })).filter((g) => g.url) : []}
+        onPhotoPress={() => setPhotoMenu(true)} onAddGalleryPhoto={addToGallery} onGalleryPress={(p) => galleryOptions(p)}
+        stats={[
+          { label: 'Posts', value: posts.items.length + (posts.done ? '' : '+') },
+          { label: 'Level', value: xp?.level ?? 1 },
+          { label: 'Points', value: xp?.xp ?? 0 },
+        ]}
+        footer={<GradientButton icon="create-outline" label="Edit Profile" onPress={() => router.push('/edit-profile')} style={{ marginTop: 10 }} />} />
+      {busy && <ActivityIndicator color={colors.violet} />}
+      <Pressable onPress={() => router.push('/privacy')} style={s.vis} accessibilityRole="button">
+        <Ionicons name={profile.photo_visibility === 'public' ? 'eye-outline' : profile.photo_visibility === 'hidden' ? 'eye-off-outline' : 'lock-closed-outline'} size={18} color={colors.violet} />
+        <T v="caption" color={colors.textSecondary} style={{ flex: 1 }}>{VIS_LABEL[profile.photo_visibility ?? 'revealed']}</T>
+        <T v="caption" color={colors.violetDeep} style={{ fontFamily: fonts.semibold }}>Change</T>
       </Pressable>
-      <T v="overline" color={colors.textMuted} style={{ marginTop: spacing.sm }}>YOUR POSTS</T>
+      <View style={s.shortcuts}>
+        <Shortcut icon="trophy-outline" label="Rewards" onPress={() => router.push('/rewards')} />
+        <Shortcut icon="bookmark-outline" label="Saved" onPress={() => router.push('/saved')} />
+        <Shortcut icon="people-outline" label="People" onPress={() => router.push('/people')} />
+        <Shortcut icon="diamond-outline" label={plan && plan.tier !== 'free' ? TIER_LABEL[plan.tier] : 'Premium'} gold onPress={() => router.push('/premium')} />
+      </View>
+      <T v="section" style={{ marginTop: spacing.sm }}>Your posts</T>
     </View>
   );
 
@@ -61,9 +113,23 @@ export default function MyProfile() {
         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         renderItem={({ item, index }) => <PostCard post={item} index={index} onChange={posts.update} onRemoved={posts.remove} />}
         onEndReached={posts.loadMore}
-        refreshControl={<RefreshControl refreshing={posts.refreshing} onRefresh={() => { refreshProfile(); posts.refresh(); }} tintColor={colors.violet} />}
+        refreshControl={<RefreshControl refreshing={posts.refreshing} onRefresh={() => { refreshProfile(); loadPhotos(); posts.refresh(); }} tintColor={colors.violet} />}
         ListEmptyComponent={posts.loading ? <ActivityIndicator color={colors.violet} /> :
           <EmptyState icon="create-outline" title="Your story starts here" body="Share a thought, a question or a secret. Someone, somewhere, may be waiting for it." action="Create a post" onAction={() => router.push('/create')} />} />
+      <BottomSheet visible={photoMenu} onClose={() => setPhotoMenu(false)} title="Profile photo">
+        <SheetAction icon="image-outline" label={photos?.photoUrl ? 'Change photo' : 'Upload a photo'} onPress={changePhoto} />
+        <SheetAction icon="shield-checkmark-outline" label="Who can see my photos" onPress={() => { setPhotoMenu(false); router.push('/privacy'); }} />
+        {photos?.photoUrl && <SheetAction icon="trash-outline" label="Remove photo" danger onPress={() => { setPhotoMenu(false); run(removeProfilePhoto, 'Photo removed'); }} />}
+      </BottomSheet>
     </Screen>
   );
 }
+
+const s = StyleSheet.create({
+  title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
+  vis: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
+  shortcuts: { flexDirection: 'row', gap: 10 },
+  short: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
+  shortIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blush },
+  shortText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.text },
+});

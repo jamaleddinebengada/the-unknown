@@ -27,24 +27,28 @@ Deno.serve(async (req) => {
   if (!ids.length) return Response.json({ ok: true, skipped: 'no supabase user id' });
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
-  const entitled = (ev.entitlement_ids ?? []).includes('plus') || ev.entitlement_id === 'plus';
-  let status: 'active' | 'inactive' | null = null;
-  if (ACTIVE.has(ev.type) && entitled) status = 'active';
-  else if (INACTIVE.has(ev.type)) status = 'inactive';
-  else if (ev.type === 'CANCELLATION' || ev.type === 'BILLING_ISSUE') status = null; // keeps access until EXPIRATION
+  // Entitlements: 'vip' (VIP) and 'plus' (PLUS). VIP includes everything in PLUS.
+  const ents: string[] = [...(ev.entitlement_ids ?? []), ...(ev.entitlement_id ? [ev.entitlement_id] : [])];
+  const eventTier: 'vip' | 'plus' | null = ents.includes('vip') ? 'vip' : ents.includes('plus') ? 'plus' : null;
+  let tier: 'free' | 'plus' | 'vip' | null = null; // null = leave unchanged
+  if (ACTIVE.has(ev.type) && eventTier) tier = eventTier;
+  else if (INACTIVE.has(ev.type)) tier = 'free';
+  // CANCELLATION / BILLING_ISSUE keep access until EXPIRATION arrives.
 
   for (const id of [...new Set(ids)]) {
-    const { data: exists } = await admin.from('profiles').select('id').eq('id', id).maybeSingle();
+    const { data: exists } = await admin.from('profiles').select('id, tier').eq('id', id).maybeSingle();
     if (!exists) continue;
+    // An expiring lower plan must not downgrade someone who has since upgraded.
+    if (tier === 'free' && eventTier && exists.tier !== eventTier) continue;
     await admin.from('subscriptions').upsert({
       user_id: id,
       product_id: ev.product_id ?? null,
-      status: status ?? (ev.type === 'CANCELLATION' ? 'cancelled' : ev.type === 'BILLING_ISSUE' ? 'billing_issue' : 'active'),
+      status: tier === 'free' ? 'inactive' : ev.type === 'CANCELLATION' ? 'cancelled' : ev.type === 'BILLING_ISSUE' ? 'billing_issue' : 'active',
       provider: 'revenuecat',
       current_period_end: ev.expiration_at_ms ? new Date(ev.expiration_at_ms).toISOString() : null,
       updated_at: new Date().toISOString(),
     });
-    if (status) await admin.from('profiles').update({ is_premium: status === 'active' }).eq('id', id);
+    if (tier) await admin.from('profiles').update({ tier, is_premium: tier !== 'free' }).eq('id', id);
   }
-  return Response.json({ ok: true, type: ev.type, status });
+  return Response.json({ ok: true, type: ev.type, tier });
 });
