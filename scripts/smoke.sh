@@ -23,6 +23,7 @@ for m in re.finditer(r'<node [^>]*>', x):
         print((a + c) // 2, (b + d) // 2); break
 PY
 )
+  if [ -z "$XY" ] && [ -n "${2:-}" ]; then XY="$2"; fi
   if [ -n "$XY" ]; then adb shell input tap $XY; echo "tapped '$1' at $XY"; else echo "not found: '$1'"; fi
 }
 
@@ -36,7 +37,7 @@ tapText "Continue" ; sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
 sleep 10; shot 03-home; echo "at home: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
-tapText "Mystery Match"; sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
+tapText "Mystery Match" "$((W*72/100)) $((H*17/100))"; sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
 tab 30 04-challenges
 tab 70 05-messages
 tab 90 06-profile

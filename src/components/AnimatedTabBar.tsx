@@ -33,7 +33,7 @@ function TabItem({ name, focused, onPress, badge }: { name: string; focused: boo
         <Ionicons name={focused ? m.iconOn : m.icon} size={23} color={focused ? colors.violetDeep : colors.textMuted} />
         {!!badge && <NotificationBadge count={badge} style={{ position: 'absolute', top: -5, right: -11 }} />}
       </Animated.View>
-      <Animated.Text style={[s.label, focused && { color: colors.violetDeep, fontFamily: fonts.semibold }, label]}>{m.label}</Animated.Text>
+      <Animated.Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={[s.label, focused && { color: colors.violetDeep, fontFamily: fonts.semibold }, label]}>{m.label}</Animated.Text>
     </Pressable>
   );
 }

@@ -63,7 +63,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, tag
 
       <Animated.View entering={FadeInDown.delay(80).springify().damping(18)} style={s.card}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <Text style={s.name}>{unknownName(number)}</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={[s.name, { flexShrink: 1 }]}>{unknownName(number)}</Text>
           {tier !== 'free' && <PremiumBadge label={tier === 'vip' ? 'VIP' : 'PLUS'} />}
         </View>
         <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>
