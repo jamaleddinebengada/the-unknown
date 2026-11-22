@@ -35,14 +35,14 @@ export default function Welcome() {
         <Animated.View entering={FadeInDown.springify().damping(14)}><MaskLogo size={96} /></Animated.View>
         <Animated.View entering={FadeInDown.delay(120).springify().damping(16)} style={{ alignItems: 'center' }}>
           <Text style={styles.the}>THE</Text>
-          <Text style={styles.unknown}>UNKNOWN</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.unknown, { fontSize: Math.min(48, width / 7.6), lineHeight: Math.min(56, width / 6.4) }]}>UNKNOWN</Text>
         </Animated.View>
         <Animated.View entering={FadeInDown.delay(220)}>
           <T style={styles.tag}>Meet the unknown.{'\n'}Discover the unexpected.</T>
         </Animated.View>
       </View>
 
-      <View style={[styles.cards, { top: Math.min(height * 0.42, 360) }]} pointerEvents="none">
+      {height >= 720 && <View style={[styles.cards, { top: Math.min(height * 0.42, 360) }]} pointerEvents="none">
         {FEATURES.map((f, i) => (
           <Animated.View key={f.label} entering={FadeInDown.delay(380 + i * 120).springify().damping(16)} style={{ alignSelf: i === 1 ? 'flex-end' : 'flex-start', marginLeft: i === 2 ? 36 : 0 }}>
             <Float index={i} amplitude={5}>
@@ -53,7 +53,7 @@ export default function Welcome() {
             </Float>
           </Animated.View>
         ))}
-      </View>
+      </View>}
 
       <Animated.View entering={FadeInUp.delay(300).springify().damping(18)} style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
         <GradientButton label="Get Started" arrow onPress={() => { haptic.soft(); router.push('/vibe'); }} />
