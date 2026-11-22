@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
 import { MaskLogo } from '@/components/Brand';
+import { DiscoveryRings } from '@/components/Effects';
 import { BottomSheet, useToast } from '@/components/Overlay';
 import { ErrorState, GradientButton, PremiumBadge, T } from '@/components/ui';
 import { interestLabel, MATCH_MODES } from '@/constants/content';
@@ -47,16 +48,16 @@ function MatchCardFace({ m, width, isSuper }: { m: MysteryMatch | null; width: n
       {photo ? (
         <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} accessibilityLabel="Profile photo" />
       ) : (
-        <LinearGradient colors={['#F7B7CF', '#C13A9F', '#6E1A6B']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+        <LinearGradient colors={['#FFF6D6', '#FFE466', '#FFD83D']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
           <View style={s.faceGlow} />
-          <View style={{ marginTop: m ? -70 : 0 }}><MaskLogo size={width * 0.55} tone="white" /></View>
-          {!m && <T style={{ fontFamily: fonts.serifItalic, fontSize: 18, marginTop: 14 }} color="rgba(255,255,255,0.9)">Who will you meet today?</T>}
+          <View style={{ marginTop: m ? -70 : 0 }}><MaskLogo size={width * 0.55} tone="ink" /></View>
+          {!m && <T style={{ fontFamily: fonts.serifItalic, fontSize: 18, marginTop: 14 }} color={colors.text}>Who will you meet today?</T>}
         </LinearGradient>
       )}
       <View pointerEvents="none" style={s.faceSheen} />
       {m && (
-        <LinearGradient colors={['rgba(42,20,48,0)', 'rgba(42,20,48,0.78)']} style={s.faceInfo}>
-          {isSuper && <View style={s.superTag}><Ionicons name="star" size={12} color="#5A3A0C" /><Text style={s.superText}>SUPER CONNECT</Text></View>}
+        <View style={s.faceInfo}>
+          {isSuper && <View style={s.superTag}><Ionicons name="star" size={12} color="#5A4100" /><Text style={s.superText}>SUPER CONNECT</Text></View>}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={s.faceName}>{unknownName(m.other_number)}</Text>
             {meta && meta.tier !== 'free' && <PremiumBadge label={TIER_LABEL[meta.tier].toUpperCase()} />}
@@ -64,8 +65,8 @@ function MatchCardFace({ m, width, isSuper }: { m: MysteryMatch | null; width: n
           <Text style={s.faceMeta}>
             {flagOf(m.other_country)} {m.other_country ? countryName(m.other_country) : 'Somewhere'}{m.other_age ? ` · ${m.other_age}` : ''} · {m.compatibility}% match
           </Text>
-          {m.is_incoming && <Text style={[s.faceMeta, { color: '#F7B7CF' }]}>Someone found you</Text>}
-        </LinearGradient>
+          {m.is_incoming && <Text style={[s.faceMeta, { color: colors.coral, fontFamily: fonts.semibold }]}>Someone found you</Text>}
+        </View>
       )}
       <Animated.View style={[s.qBadge, { left: width / 2 - 34, bottom: m ? 104 : 26 }, q]}>
         <LinearGradient colors={gradients.pill} style={s.qInner}><Text style={s.qText}>?</Text></LinearGradient>
@@ -187,9 +188,10 @@ export function MatchesView({ top }: { top?: ReactNode }) {
 
         {loading ? <ActivityIndicator color={colors.violet} style={{ marginVertical: 60 }} /> : error ? <ErrorState message={error} onRetry={load} /> : (
           <View style={{ alignItems: 'center' }}>
+            <DiscoveryRings size={cardW * 1.9} style={{ top: cardW * 0.61 - cardW * 0.95 }} />
             {/* stacked cards behind */}
             <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '-7deg' }, { translateX: -14 }] }]} />
-            <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '6deg' }, { translateX: 14 }], backgroundColor: '#E9B8D3' }]} />
+            <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '6deg' }, { translateX: 14 }], backgroundColor: '#FFF6D6' }]} />
             <GestureDetector gesture={pan}>
               <Animated.View entering={ZoomIn.springify().damping(15)} key={featured?.match_id ?? 'empty'} style={[s.cardShadow, cardStyle]}>
                 <MatchCardFace m={featured} width={cardW} isSuper={!!featured && supers.has(featured.match_id)} />
@@ -210,8 +212,8 @@ export function MatchesView({ top }: { top?: ReactNode }) {
               </View>
             )}
             <View style={s.actions}>
-              <RoundAction label="Pass" icon="close" colors={['#FFFFFF', '#FFF5F8']} iconColor={colors.violetDeep} onPress={() => act('pass')} disabled={busy} />
-              <RoundAction label="Super Connect (VIP)" icon="star" size={56} colors={gradients.gold} iconColor="#7A4E12" onPress={() => act('super')} disabled={busy} />
+              <RoundAction label="Pass" icon="close" colors={['#FFFFFF', '#FFFDF7']} iconColor={colors.violetDeep} onPress={() => act('pass')} disabled={busy} />
+              <RoundAction label="Super Connect (VIP)" icon="star" size={56} colors={gradients.gold} iconColor="#5A4100" onPress={() => act('super')} disabled={busy} />
               <RoundAction label="Join" icon="heart" colors={gradients.rose} onPress={() => act('join')} disabled={busy} />
             </View>
             <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>Swipe right to join, left to pass. The chat opens when you both join.</T>
@@ -223,8 +225,8 @@ export function MatchesView({ top }: { top?: ReactNode }) {
                 const on = mode === m.key;
                 return (
                   <Pressable key={m.key} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => { haptic.tap(); setMode(m.key); }} style={[s.mode, on && s.modeOn]}>
-                    <Ionicons name={m.icon} size={15} color={on ? colors.white : colors.violet} />
-                    <Text style={[s.modeText, on && { color: colors.white }]}>{m.label}</Text>
+                    <Ionicons name={m.icon} size={15} color={on ? colors.onPrimary : colors.coral} />
+                    <Text style={[s.modeText, on && { color: colors.onPrimary, fontFamily: fonts.bold }]}>{m.label}</Text>
                   </Pressable>
                 );
               })}
@@ -275,10 +277,10 @@ export function MatchesView({ top }: { top?: ReactNode }) {
         <View style={{ gap: spacing.md }}>
           <T v="caption" color={colors.textSecondary}>Country</T>
           <View style={s.wrap}>
-            <Pressable onPress={() => setFilters((f) => ({ ...f, country: null }))} style={[s.fchip, !filters.country && s.fchipOn]}><Text style={[s.fchipText, !filters.country && { color: colors.white }]}>Anywhere</Text></Pressable>
+            <Pressable onPress={() => setFilters((f) => ({ ...f, country: null }))} style={[s.fchip, !filters.country && s.fchipOn]}><Text style={[s.fchipText, !filters.country && { color: colors.onPrimary, fontFamily: fonts.bold }]}>Anywhere</Text></Pressable>
             {FILTER_COUNTRIES.map((c) => (
               <Pressable key={c} onPress={() => setFilters((f) => ({ ...f, country: c }))} style={[s.fchip, filters.country === c && s.fchipOn]}>
-                <Text style={[s.fchipText, filters.country === c && { color: colors.white }]}>{flagOf(c)} {countryName(c)}</Text>
+                <Text style={[s.fchipText, filters.country === c && { color: colors.onPrimary, fontFamily: fonts.bold }]}>{flagOf(c)} {countryName(c)}</Text>
               </Pressable>
             ))}
           </View>
@@ -288,7 +290,7 @@ export function MatchesView({ top }: { top?: ReactNode }) {
               const on = (filters.minAge ?? null) === a.min && (filters.maxAge ?? null) === a.max;
               return (
                 <Pressable key={a.label} onPress={() => setFilters((f) => ({ ...f, minAge: a.min, maxAge: a.max }))} style={[s.fchip, on && s.fchipOn]}>
-                  <Text style={[s.fchipText, on && { color: colors.white }]}>{a.label}</Text>
+                  <Text style={[s.fchipText, on && { color: colors.onPrimary, fontFamily: fonts.bold }]}>{a.label}</Text>
                 </Pressable>
               );
             })}
@@ -304,36 +306,36 @@ export function MatchesView({ top }: { top?: ReactNode }) {
 
 const s = StyleSheet.create({
   title: { fontFamily: fonts.bold, fontSize: 28, letterSpacing: -0.6, color: colors.text },
-  face: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.violet, borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
-  faceGlow: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(255,255,255,0.14)' },
+  face: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.primary, borderWidth: 3, borderColor: 'rgba(255,255,255,0.9)' },
+  faceGlow: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(255,255,255,0.35)' },
   faceSheen: { position: 'absolute', top: 0, left: 0, right: 0, height: '38%', backgroundColor: 'rgba(255,255,255,0.08)' },
-  faceInfo: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 18, paddingTop: 50, paddingBottom: 18, gap: 4 },
-  faceName: { fontFamily: fonts.bold, fontSize: 22, color: colors.white },
-  faceMeta: { fontFamily: fonts.medium, fontSize: 13.5, color: 'rgba(255,255,255,0.88)' },
-  superTag: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: '#F6E3B4' },
-  superText: { fontFamily: fonts.bold, fontSize: 10.5, color: '#5A3A0C', letterSpacing: 0.6 },
-  qBadge: { position: 'absolute', width: 68, height: 68, borderRadius: 34, padding: 4, backgroundColor: 'rgba(255,255,255,0.75)' },
+  faceInfo: { position: 'absolute', left: 12, right: 12, bottom: 12, paddingHorizontal: 16, paddingVertical: 12, gap: 3, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.93)' },
+  faceName: { fontFamily: fonts.display, fontSize: 20, color: colors.text },
+  faceMeta: { fontFamily: fonts.medium, fontSize: 13, color: colors.textSecondary },
+  superTag: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1B8' },
+  superText: { fontFamily: fonts.bold, fontSize: 10.5, color: '#5A4100', letterSpacing: 0.6 },
+  qBadge: { position: 'absolute', width: 68, height: 68, borderRadius: 34, padding: 4, backgroundColor: '#FFFFFF', shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
   qInner: { flex: 1, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
-  qText: { fontFamily: fonts.serif, fontSize: 34, lineHeight: 40, color: colors.white },
-  behind: { position: 'absolute', top: 6, borderRadius: 30, backgroundColor: '#D68BB8', opacity: 0.55 },
-  cardShadow: { shadowColor: '#7B1E74', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 14 }, elevation: 12, borderRadius: 30 },
+  qText: { fontFamily: fonts.serif, fontSize: 34, lineHeight: 40, color: colors.onPrimary },
+  behind: { position: 'absolute', top: 6, borderRadius: 30, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
+  cardShadow: { shadowColor: '#243047', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 14 }, elevation: 12, borderRadius: 30 },
   hint: { position: 'absolute', top: 22, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10, borderWidth: 3, backgroundColor: 'rgba(255,255,255,0.85)' },
   hintText: { fontFamily: fonts.extrabold, fontSize: 20, letterSpacing: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.violetDeep },
   actions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 26 },
-  round: { alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', shadowColor: '#7B1E74', shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  round: { alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', shadowColor: '#243047', shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
   mode: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  modeOn: { backgroundColor: colors.violet, borderColor: colors.violet },
+  modeOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep },
   modeText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textSecondary },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  upsell: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: '#FFF6E6', borderWidth: 1, borderColor: colors.goldSoft },
+  upsell: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.lg, backgroundColor: '#FFF8E1', borderWidth: 1, borderColor: colors.goldSoft },
   mini: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   pct: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, backgroundColor: colors.blush },
   pctText: { fontFamily: fonts.bold, fontSize: 13, color: colors.violetDeep },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   fchip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  fchipOn: { backgroundColor: colors.violet, borderColor: colors.violet },
+  fchipOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep },
   fchipText: { fontFamily: fonts.medium, fontSize: 13, color: colors.text },
 });

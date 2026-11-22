@@ -1,87 +1,97 @@
 import { Platform } from 'react-native';
 
 /**
- * THE UNKNOWN — premium identity.
- * Warm ivory & blush backgrounds, rose pink + plum purple, champagne gold accents.
+ * THE UNKNOWN — bright premium identity.
+ * Warm ivory & soft cream, sunshine yellow, soft coral, deep slate text. No dark surfaces.
  * (Legacy key names such as `violet` are kept so every screen picks up the new palette.)
  */
 export const colors = {
-  bg: '#FFF7F3',
-  bgSecondary: '#FFFFFF',
+  /** Warm ivory page, soft cream sections, pure white cards. */
+  bg: '#FFFDF7',
+  bgSecondary: '#F3F1E9',
   card: '#FFFFFF',
-  elevated: '#FCEEF3',
-  blush: '#FBE4EC',
-  ivory: '#FFFBF6',
-  hairline: 'rgba(74,20,64,0.07)',
-  hairlineStrong: 'rgba(74,20,64,0.13)',
+  elevated: '#F3F1E9',
+  cream: '#F3F1E9',
+  blush: '#FFF6D6',
+  ivory: '#FFFDF7',
+  hairline: 'rgba(36,48,71,0.07)',
+  hairlineStrong: 'rgba(36,48,71,0.12)',
   white: '#FFFFFF',
-  surface: 'rgba(255,255,255,0.9)',
-  surfaceBorder: 'rgba(176,58,140,0.14)',
+  surface: 'rgba(255,255,255,0.94)',
+  surfaceBorder: 'rgba(36,48,71,0.08)',
 
-  /** plum family */
-  violet: '#A3288E',
-  violetDeep: '#7B1E74',
-  violetSoft: '#C77DB8',
-  plum: '#6B1A68',
-  /** rose family */
-  rose: '#E2508A',
-  roseSoft: '#F7B7CF',
-  /** champagne gold */
-  gold: '#C9974A',
-  goldSoft: '#F3E2BC',
+  /** Sunshine yellow (primary) — always with slate text on top. */
+  primary: '#FFD83D',
+  primaryDeep: '#F5C518',
+  primarySoft: '#FFF1B8',
+  onPrimary: '#243047',
+  /** Soft coral (secondary accent: icons, links, hearts). */
+  coral: '#FF775E',
+  coralSoft: '#FFD3C9',
+  sky: '#CFE8F7',
+  skyDeep: '#7FB8DD',
 
-  blue: '#5B8DEF',
+  /* legacy names, remapped so every screen follows the new identity */
+  violet: '#FF775E',
+  violetDeep: '#243047',
+  violetSoft: '#FFB4A4',
+  plum: '#243047',
+  rose: '#FF775E',
+  roseSoft: '#FFD3C9',
+  gold: '#E5A800',
+  goldSoft: '#FFF1B8',
+
+  blue: '#4A9CC9',
   cyan: '#62C4D9',
 
-  text: '#2A1430',
-  textSecondary: '#6F5A72',
-  textMuted: '#A9939F',
+  text: '#243047',
+  textSecondary: '#55627A',
+  textMuted: '#8290A3',
 
-  success: '#2FBF8A',
-  warning: '#E0A43A',
-  danger: '#E0466E',
+  success: '#22B07D',
+  warning: '#E59A1A',
+  danger: '#E5484D',
 
-  overlay: 'rgba(42,20,48,0.45)',
-  violetGlow: 'rgba(163,40,142,0.35)',
-  violetTint: 'rgba(163,40,142,0.08)',
-  blueTint: 'rgba(91,141,239,0.1)',
+  overlay: 'rgba(36,48,71,0.4)',
+  violetGlow: 'rgba(255,216,61,0.45)',
+  violetTint: 'rgba(255,216,61,0.18)',
+  blueTint: 'rgba(74,156,201,0.12)',
 } as const;
 
 export const gradients = {
-  primary: ['#B5309A', '#7B1E74'] as const,
-  secondary: ['#E2508A', '#A3288E'] as const,
+  primary: ['#FFE266', '#FFD83D'] as const,
+  secondary: ['#FF9A85', '#FF775E'] as const,
   /** page background wash */
-  mystery: ['#FFFBF6', '#FDEFF2', '#F9E9F3'] as const,
-  /** headline gradient (rose → plum) */
-  candy: ['#E2508A', '#B5309A', '#6B1A68'] as const,
-  /** the main glossy plum pill button */
-  pill: ['#C13A9F', '#9B2386', '#6E1A6B'] as const,
-  rose: ['#F27BA8', '#E2508A', '#C2336F'] as const,
-  gold: ['#F6E3B4', '#E2BE74', '#C9974A'] as const,
-  /** kept for older call sites */
-  orange: ['#F27BA8', '#E2508A', '#C2336F'] as const,
-  blueBtn: ['#C13A9F', '#9B2386', '#6E1A6B'] as const,
-  green: ['#43D19B', '#2FBF8A', '#1F9E70'] as const,
-  cardSheen: ['rgba(226,80,138,0.07)', 'rgba(255,255,255,0)'] as const,
+  mystery: ['#FFFDF7', '#FFFBEF', '#F7F4EA'] as const,
+  candy: ['#FFB547', '#FF775E', '#F05A40'] as const,
+  /** the main button: sunshine yellow (slate label) */
+  pill: ['#FFE466', '#FFD83D', '#F7C92B'] as const,
+  rose: ['#FF9A85', '#FF775E', '#F05A40'] as const,
+  gold: ['#FFF1B8', '#FFD83D', '#F5C518'] as const,
+  orange: ['#FF9A85', '#FF775E', '#F05A40'] as const,
+  blueBtn: ['#FFE466', '#FFD83D', '#F7C92B'] as const,
+  green: ['#3DCB95', '#22B07D', '#17936A'] as const,
+  sky: ['#E6F4FC', '#CFE8F7'] as const,
+  cardSheen: ['rgba(255,216,61,0.10)', 'rgba(255,255,255,0)'] as const,
 };
 
 /** Accent colour per post type. */
 export const typeAccent: Record<string, readonly [string, string]> = {
-  thought: ['#B5309A', '#E2508A'],
-  question: ['#E2508A', '#F7B7CF'],
-  secret: ['#6B1A68', '#B5309A'],
-  story: ['#A3288E', '#C77DB8'],
-  advice: ['#2FBF8A', '#62C4D9'],
-  debate: ['#E0466E', '#E0A43A'],
-  dream: ['#C77DB8', '#F7B7CF'],
-  challenge: ['#C9974A', '#E2508A'],
-  travel: ['#62C4D9', '#5B8DEF'],
-  business: ['#C9974A', '#A3288E'],
+  thought: ['#FFD83D', '#FFB547'],
+  question: ['#4A9CC9', '#7FB8DD'],
+  secret: ['#243047', '#55627A'],
+  story: ['#FF775E', '#FF9A85'],
+  advice: ['#22B07D', '#62C4D9'],
+  debate: ['#E5484D', '#FF775E'],
+  dream: ['#7FB8DD', '#CFE8F7'],
+  challenge: ['#F5C518', '#FF775E'],
+  travel: ['#4A9CC9', '#62C4D9'],
+  business: ['#E5A800', '#243047'],
 };
 
 export const glass = {
-  fill: ['rgba(255,255,255,0.97)', 'rgba(255,250,252,0.95)'] as const,
-  border: ['rgba(226,80,138,0.32)', 'rgba(201,151,74,0.2)', 'rgba(163,40,142,0.08)'] as const,
+  fill: ['rgba(255,255,255,0.98)', 'rgba(255,253,247,0.96)'] as const,
+  border: ['rgba(255,216,61,0.45)', 'rgba(255,119,94,0.15)', 'rgba(36,48,71,0.06)'] as const,
   highlight: 'rgba(255,255,255,0.9)',
 };
 
@@ -95,8 +105,8 @@ export const fonts = {
   bold: 'Inter_700Bold',
   extrabold: 'Inter_800ExtraBold',
   /** Headlines and numbers: clean, confident sans. */
-  display: 'Inter_700Bold',
-  displaySemi: 'Inter_600SemiBold',
+  display: 'Inter_800ExtraBold',
+  displaySemi: 'Inter_700Bold',
   /** Brand and premium moments ("THE UNKNOWN", "Premium", levels): elegant serif. */
   serif: 'PlayfairDisplay_700Bold',
   serifSemi: 'PlayfairDisplay_600SemiBold',
@@ -116,9 +126,9 @@ export const type = {
 } as const;
 
 export const shadow = Platform.select({
-  ios: { shadowColor: '#7B1E74', shadowOpacity: 0.1, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
-  android: { elevation: 5, shadowColor: '#7B1E74' },
-  default: { boxShadow: '0 10px 28px rgba(123,30,116,0.10)' } as object,
+  ios: { shadowColor: '#243047', shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  android: { elevation: 5, shadowColor: '#243047' },
+  default: { boxShadow: '0 10px 28px rgba(36,48,71,0.08)' } as object,
 });
 
 export const glow = (color: string = colors.violet) =>

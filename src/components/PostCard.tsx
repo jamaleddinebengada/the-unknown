@@ -146,7 +146,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
           <View style={{ gap: spacing.sm }}>
             <View style={s.head}>
               <Pressy scaleTo={0.92} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(post.author_number) } })} accessibilityLabel={`Open ${unknownName(post.author_number)}`}>
-                <View style={[s.avatarRing, { borderColor: `${accent[0]}88` }]}>
+                <View style={[s.avatarRing, { borderColor: colors.primary }]}>
                   <AnonymousAvatar seed={post.author_avatar_seed} number={post.author_number} size={40} />
                 </View>
               </Pressy>
@@ -157,10 +157,10 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                   {post.author_age ? ` · ${post.author_age}` : ''} · {timeAgo(post.created_at)}
                 </T>
               </View>
-              <LinearGradient colors={[`${accent[0]}55`, `${accent[1]}22`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.typeBadge}>
-                <View style={[s.typeDot, { backgroundColor: accent[1] }]} />
-                <T v="caption" style={{ fontFamily: fonts.semibold, fontSize: 11.5, letterSpacing: 0.4 }}>{postTypeLabel(post.type)}</T>
-              </LinearGradient>
+              <View style={s.typeBadge}>
+                <View style={[s.typeDot, { backgroundColor: accent[0] }]} />
+                <T v="caption" style={{ fontFamily: fonts.bold, fontSize: 10.5, letterSpacing: 1.2 }} color={colors.text}>{postTypeLabel(post.type).toUpperCase()}</T>
+              </View>
               <Pressy scaleTo={0.9} hitSlop={10} accessibilityLabel="More options" onPress={() => { haptic.tap(); setMenu(true); }} style={s.more}>
                 <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
               </Pressy>
@@ -171,7 +171,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 <LinearGradient colors={[accent[0], accent[1]]} style={s.quoteBar} />
               )}
               <T v={post.type === 'question' || post.type === 'debate' ? 'cardTitle' : 'body'} numberOfLines={detailed ? undefined : 8}
-                style={[{ flex: 1 }, (post.type === 'question' || post.type === 'debate') ? { fontSize: 19, lineHeight: 27, fontFamily: fonts.semibold } : { fontSize: 16, lineHeight: 24 }]}>
+                style={[{ flex: 1 }, (post.type === 'question' || post.type === 'debate' || post.type === 'secret') ? { fontSize: 21, lineHeight: 29, fontFamily: fonts.serif } : { fontSize: 16.5, lineHeight: 25 }]}>
                 {post.content}
               </T>
             </View>
@@ -187,7 +187,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
             <View style={s.actions}>
               <Pressy scaleTo={0.88} accessibilityLabel={post.liked_by_me ? 'Unlike' : 'Like'} onPress={toggleLike} style={[s.action, post.liked_by_me && s.actionOn]}>
                 <Animated.View style={heartStyle}>
-                  <Ionicons name={post.liked_by_me ? 'heart' : 'heart-outline'} size={19} color={post.liked_by_me ? colors.danger : colors.textSecondary} />
+                  <Ionicons name={post.liked_by_me ? 'heart' : 'heart-outline'} size={19} color={post.liked_by_me ? colors.coral : colors.textSecondary} />
                 </Animated.View>
                 <T v="caption" color={post.liked_by_me ? colors.text : colors.textSecondary} style={{ fontFamily: fonts.semibold }}>{compact(post.like_count)}</T>
               </Pressy>
@@ -201,11 +201,11 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
               </Pressy>
               )}
               <Pressy scaleTo={0.85} accessibilityLabel={saved ? 'Remove from favorites' : 'Save to favorites'} onPress={onSave} style={s.action}>
-                <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={saved ? colors.violet : colors.textSecondary} />
+                <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={18} color={saved ? colors.coral : colors.textSecondary} />
               </Pressy>
               <View style={{ flex: 1 }} />
               <Pressy accessibilityLabel={interestLabelText} onPress={onInterested} scaleTo={0.94}
-                style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: colors.violet, shadowOpacity: 0.6, shadowRadius: 12, elevation: 6 }]}>
+                style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: '#E5A800', shadowOpacity: 0.4, shadowRadius: 10, elevation: 4 }]}>
                 {post.my_interest || post.is_mine ? (
                   <View style={[s.interested, s.interestedOn]}>
                     <Ionicons name={post.is_mine ? 'people' : post.my_interest === 'accepted' ? 'chatbubbles' : 'checkmark-circle'} size={15} color={colors.violetDeep} />
@@ -213,8 +213,8 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                   </View>
                 ) : (
                   <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={s.interested}>
-                    <Ionicons name="sparkles" size={15} color={colors.white} />
-                    <T v="caption" style={{ fontFamily: fonts.bold }} color={colors.white}>{interestLabelText}</T>
+                    <Ionicons name="sparkles" size={15} color={colors.onPrimary} />
+                    <T v="caption" style={{ fontFamily: fonts.bold }} color={colors.onPrimary}>{interestLabelText}</T>
                   </LinearGradient>
                 )}
               </Pressy>
@@ -257,16 +257,16 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
 const s = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarRing: { padding: 2, borderRadius: 24, borderWidth: 1.5 },
-  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(176,58,140,0.15)' },
+  typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.cream },
   typeDot: { width: 6, height: 6, borderRadius: 3 },
   more: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
   quoteBar: { width: 3, borderRadius: 2 },
   image: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.lg, backgroundColor: colors.elevated },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.hairlineStrong, marginTop: 4 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: colors.elevated },
-  actionOn: { backgroundColor: 'rgba(251,113,133,0.14)' },
+  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: colors.bg },
+  actionOn: { backgroundColor: 'rgba(255,119,94,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
   interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },
-  interestedOn: { backgroundColor: 'rgba(163,40,142,0.16)', borderWidth: 1, borderColor: 'rgba(226,80,138,0.45)' },
+  interestedOn: { backgroundColor: 'rgba(255,119,94,0.16)', borderWidth: 1, borderColor: 'rgba(255,216,61,0.45)' },
 });

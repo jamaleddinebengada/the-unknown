@@ -33,7 +33,7 @@ function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) =>
           <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={o.label}
             onPress={() => { if (!on) { haptic.tap(); onChange(o.key); } }} style={styles.switchItem}>
             {on && <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} />}
-            <T style={{ fontFamily: fonts.semibold, fontSize: 15 }} color={on ? colors.white : colors.textSecondary}>{o.label}</T>
+            <T style={{ fontFamily: on ? fonts.bold : fonts.semibold, fontSize: 15 }} color={on ? colors.onPrimary : colors.textSecondary}>{o.label}</T>
           </Pressable>
         );
       })}
@@ -147,7 +147,7 @@ export default function Discover() {
           feed.done && feed.items.length > 0 ? <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', margin: spacing.xl }}>You reached the edge of the known. Pull to discover more.</T> : undefined}
       />
       <Animated.View pointerEvents="box-none" style={[styles.compact, { paddingTop: insets.top + 6 }, compactBar]}>
-        <LinearGradient colors={['rgba(255,247,243,0.98)', 'rgba(255,247,243,0.9)', 'rgba(255,247,243,0)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
+        <LinearGradient colors={['rgba(255,253,247,0.98)', 'rgba(255,253,247,0.9)', 'rgba(255,253,247,0)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
         <View style={[styles.top, { paddingBottom: 10 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
             <PortalMark size={30} spin={false} />

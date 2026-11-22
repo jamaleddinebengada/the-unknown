@@ -42,15 +42,15 @@ function TierCard({ tier, selected, current, price, period, onPress }: {
       {plus && <View style={s.popular}><LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.popularIn}><Text style={s.popularText}>Most Popular</Text></LinearGradient></View>}
       {vip && <View style={s.crownTop}><Text style={{ fontSize: 22 }}>👑</Text></View>}
       <LinearGradient
-        colors={vip ? ['#FFF8E8', '#FBEFD2'] : plus ? ['#FFF1F6', '#F8E3F0'] : ['#FFFFFF', '#FFFBF8']}
+        colors={vip ? ['#FFFBEA', '#FFF1B8'] : plus ? ['#FFFBEA', '#FFF6D6'] : ['#FFFFFF', '#FFFBF8']}
         style={[s.tier, selected && { borderColor: vip ? colors.gold : colors.violet, borderWidth: 2 }, selected && s.tierShadow]}>
-        <Text style={[s.tierName, vip && { color: '#9A6B1E' }, plus && { color: colors.violetDeep }]}>{TIER_LABEL[tier]}</Text>
-        <Text adjustsFontSizeToFit numberOfLines={1} style={[s.tierPrice, vip && { color: '#9A6B1E' }, plus && { color: colors.violetDeep }]}>{price}</Text>
+        <Text style={[s.tierName, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{TIER_LABEL[tier]}</Text>
+        <Text adjustsFontSizeToFit numberOfLines={1} style={[s.tierPrice, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{price}</Text>
         <Text style={s.tierPeriod}>{period}</Text>
         <View style={{ gap: 7, marginTop: 10 }}>
           {FEATURES[tier].map((f) => (
             <View key={f} style={{ flexDirection: 'row', gap: 5 }}>
-              <Ionicons name="checkmark" size={13} color={vip ? colors.gold : colors.violet} style={{ marginTop: 1 }} />
+              <Ionicons name="checkmark-circle" size={13} color={vip ? colors.gold : colors.coral} style={{ marginTop: 1 }} />
               <Text style={s.feature}>{f}</Text>
             </View>
           ))}
@@ -147,7 +147,7 @@ export default function Premium() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
-      <Scenery width={width} height={260} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.9 }} />
+      <Scenery width={width} height={170} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.7 }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 4, paddingHorizontal: spacing.md, paddingBottom: insets.bottom + 30, gap: spacing.md }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <IconButton label="Close" name="close" onPress={() => (router.canGoBack() ? router.back() : router.replace('/discover'))} />
@@ -219,14 +219,14 @@ export default function Premium() {
 
 const s = StyleSheet.create({
   tier: { flex: 1, borderRadius: 20, paddingHorizontal: 10, paddingTop: 22, paddingBottom: 14, borderWidth: 1, borderColor: colors.surfaceBorder, minHeight: 250 },
-  tierShadow: { shadowColor: '#7B1E74', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  tierShadow: { shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
   tierName: { fontFamily: fonts.serif, fontSize: 21, color: colors.text, textAlign: 'center' },
   tierPrice: { fontFamily: fonts.bold, fontSize: 21, color: colors.text, textAlign: 'center', marginTop: 6 },
   tierPeriod: { fontFamily: fonts.medium, fontSize: 11, color: colors.textMuted, textAlign: 'center' },
   feature: { flex: 1, fontFamily: fonts.medium, fontSize: 11.5, lineHeight: 15, color: colors.textSecondary },
   popular: { position: 'absolute', top: -12, left: 0, right: 0, alignItems: 'center', zIndex: 2 },
   popularIn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill },
-  popularText: { fontFamily: fonts.bold, fontSize: 10.5, color: colors.white },
+  popularText: { fontFamily: fonts.bold, fontSize: 10.5, color: colors.onPrimary },
   crownTop: { position: 'absolute', top: -16, left: 0, right: 0, alignItems: 'center', zIndex: 2 },
   current: { marginTop: 'auto', alignSelf: 'center', paddingHorizontal: 10, paddingVertical: 3, borderRadius: radius.pill, backgroundColor: 'rgba(47,191,138,0.14)' },
   currentText: { fontFamily: fonts.bold, fontSize: 10.5, color: colors.success },
@@ -235,7 +235,7 @@ const s = StyleSheet.create({
   toggleOn: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: radius.pill, backgroundColor: colors.blush },
   toggleText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textSecondary },
   save: { paddingHorizontal: 12, height: 32, borderRadius: radius.pill, justifyContent: 'center', marginLeft: 4 },
-  saveText: { fontFamily: fonts.bold, fontSize: 12.5, color: colors.white },
+  saveText: { fontFamily: fonts.bold, fontSize: 12.5, color: colors.onPrimary },
   trust: { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', gap: 14 },
   trustItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   status: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.goldSoft },

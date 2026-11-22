@@ -50,7 +50,7 @@ function CreateButton() {
         <View style={s.createRing}>
           <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.create}>
             <View style={s.createSheen} />
-            <Ionicons name="add" size={30} color={colors.white} />
+            <Ionicons name="add" size={30} color={colors.onPrimary} />
           </LinearGradient>
         </View>
       </Animated.View>
@@ -77,13 +77,13 @@ export function AnimatedTabBar({ state, navigateToTab, insets, badges = {} }: Bo
     <View pointerEvents="box-none" style={[s.outer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={s.bar} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
         {Platform.OS === 'ios' && <BlurView tint="light" intensity={60} style={StyleSheet.absoluteFill} />}
-        <LinearGradient colors={['rgba(226,80,138,0.22)', 'rgba(201,151,74,0.12)', 'rgba(255,255,255,0.04)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+        <LinearGradient colors={['rgba(255,216,61,0.22)', 'rgba(255,216,61,0.12)', 'rgba(255,255,255,0.04)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={[StyleSheet.absoluteFill, { borderRadius: 28 }]} pointerEvents="none" />
         <LinearGradient colors={['rgba(255,255,255,0.98)', 'rgba(248,246,255,0.98)']} pointerEvents="none"
           style={[StyleSheet.absoluteFill, { margin: 1, borderRadius: 27 }]} />
         {w > 0 && (
           <Animated.View pointerEvents="none" style={[s.indicator, { width: slotW }, ind]}>
-            <LinearGradient colors={['rgba(163,40,142,0.18)', 'rgba(163,40,142,0)']} start={{ x: 0.5, y: 1 }} end={{ x: 0.5, y: 0 }} style={s.indicatorGlow} />
+            <LinearGradient colors={['rgba(255,119,94,0.18)', 'rgba(255,119,94,0)']} start={{ x: 0.5, y: 1 }} end={{ x: 0.5, y: 0 }} style={s.indicatorGlow} />
             <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={s.indicatorLine} />
           </Animated.View>
         )}
@@ -102,7 +102,7 @@ export function AnimatedTabBar({ state, navigateToTab, insets, badges = {} }: Bo
 
 const s = StyleSheet.create({
   outer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 14 },
-  bar: { height: 66, borderRadius: 28, overflow: 'hidden', shadowColor: '#7B1E74', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 14 },
+  bar: { height: 66, borderRadius: 28, overflow: 'hidden', shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 14 },
   row: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, height: '100%' },
   label: { fontFamily: fonts.medium, fontSize: 10.5, color: colors.textMuted },

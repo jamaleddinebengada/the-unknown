@@ -7,7 +7,7 @@ function rng(seed: number) {
   return () => { t += 0x6d2b79f5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
 }
 const uid = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '');
-const PINKS = ['#E2508A', '#F27BA8', '#C13A9F', '#F7B7CF', '#D63F86', '#B5309A'];
+const PINKS = ['#FF775E', '#FF9A85', '#FFD83D', '#FFB547', '#FFC2B4', '#F05A40'];
 
 /** A cluster of bougainvillea blossoms with a few leaves. */
 function Blossoms({ cx, cy, r, n, seed }: { cx: number; cy: number; r: number; n: number; seed: number }) {
@@ -47,15 +47,15 @@ function Village({ w, h, base }: { w: number; h: number; base: number }) {
   });
   return (
     <G>
-      <Path d={`M ${w * 0.42} ${base + 4} Q ${w * 0.62} ${base - h * 0.2} ${w * 1.02} ${base - h * 0.26} L ${w * 1.02} ${base + 30} Z`} fill="#E9C9B5" />
+      <Path d={`M ${w * 0.42} ${base + 4} Q ${w * 0.62} ${base - h * 0.2} ${w * 1.02} ${base - h * 0.26} L ${w * 1.02} ${base + 30} Z`} fill="#F1E4CF" />
       {houses.map((p, i) => (
         <G key={i}>
           <Rect x={p.x} y={p.y} width={p.ww} height={p.hh} rx={2} fill="#FFFDFB" />
-          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#F2E4E8" />
+          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#F3F1E9" />
           {p.win && <Rect x={p.x + p.ww * 0.35} y={p.y + p.hh * 0.35} width={p.ww * 0.22} height={p.hh * 0.3} rx={1} fill="#5C86C6" opacity={0.75} />}
           {p.dome && (
             <G>
-              <Path d={`M ${p.x + p.ww * 0.15} ${p.y} A ${p.ww * 0.35} ${p.ww * 0.35} 0 0 1 ${p.x + p.ww * 0.85} ${p.y} Z`} fill="#3F6FB5" />
+              <Path d={`M ${p.x + p.ww * 0.15} ${p.y} A ${p.ww * 0.35} ${p.ww * 0.35} 0 0 1 ${p.x + p.ww * 0.85} ${p.y} Z`} fill="#3B7FB0" />
               <Rect x={p.x + p.ww * 0.48} y={p.y - p.ww * 0.5} width={1.5} height={p.ww * 0.18} fill="#FFFDFB" />
             </G>
           )}
@@ -89,27 +89,27 @@ export const Scenery = memo(function Scenery({ width, height, village = true, fl
       <Svg width={w} height={h} style={StyleSheet.absoluteFill}>
         <Defs>
           <SvgLinear id={`${id}sky`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#FCE7E6" />
-            <Stop offset="0.45" stopColor="#F9C9CF" />
-            <Stop offset="1" stopColor="#F3A9B9" />
+            <Stop offset="0" stopColor="#BFE1F5" />
+            <Stop offset="0.55" stopColor="#E3F2FB" />
+            <Stop offset="1" stopColor="#FFF2CF" />
           </SvgLinear>
           <SvgLinear id={`${id}sea`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#E6A3BE" />
-            <Stop offset="0.6" stopColor="#B88BC2" />
-            <Stop offset="1" stopColor="#8E6AAE" />
+            <Stop offset="0" stopColor="#8CC6E6" />
+            <Stop offset="0.6" stopColor="#4A9CC9" />
+            <Stop offset="1" stopColor="#3B7FB0" />
           </SvgLinear>
           <RadialGradient id={`${id}sun`} cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor="#FFF6E0" stopOpacity="1" />
-            <Stop offset="0.35" stopColor="#FFD9A8" stopOpacity="0.9" />
-            <Stop offset="1" stopColor="#F7A8B8" stopOpacity="0" />
+            <Stop offset="0" stopColor="#FFF8D6" stopOpacity="1" />
+            <Stop offset="0.35" stopColor="#FFE466" stopOpacity="0.85" />
+            <Stop offset="1" stopColor="#FFD83D" stopOpacity="0" />
           </RadialGradient>
         </Defs>
         {backdrop && <Rect x={0} y={0} width={w} height={horizon} fill={`url(#${id}sky)`} />}
         {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.02} r={h * 0.28} fill={`url(#${id}sun)`} />}
-        {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.01} r={h * 0.055} fill="#FFF3DA" />}
+        {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.01} r={h * 0.055} fill="#FFE466" />}
         {backdrop && <Rect x={0} y={horizon} width={w} height={h - horizon} fill={`url(#${id}sea)`} />}
         {backdrop && sun && [0, 1, 2, 3, 4].map((i) => (
-          <Rect key={i} x={w * 0.38 - (w * 0.12) / (i + 1)} y={horizon + 6 + i * h * 0.04} width={(w * 0.24) / (i + 1)} height={2.5} rx={1.2} fill="#FFF1D6" opacity={0.7 - i * 0.12} />
+          <Rect key={i} x={w * 0.38 - (w * 0.12) / (i + 1)} y={horizon + 6 + i * h * 0.04} width={(w * 0.24) / (i + 1)} height={2.5} rx={1.2} fill="#FFF8D6" opacity={0.8 - i * 0.12} />
         ))}
         {backdrop && village && <Village w={w} h={h} base={horizon + h * 0.08} />}
         {clusters.map((c, i) => <Blossoms key={i} {...c} />)}

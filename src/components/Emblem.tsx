@@ -18,10 +18,10 @@ export function ShieldEmblem({ size = 150, icon = '👑' }: { size?: number; ico
       <Svg width={size} height={size} viewBox="0 0 200 200" style={{ position: 'absolute' }}>
         <Defs>
           <SvgLinear id={`${id}p`} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor="#C13A9F" /><Stop offset="0.55" stopColor="#7B1E74" /><Stop offset="1" stopColor="#4A1046" />
+            <Stop offset="0" stopColor="#FFB4A4" /><Stop offset="0.55" stopColor="#FF775E" /><Stop offset="1" stopColor="#F05A40" />
           </SvgLinear>
           <SvgLinear id={`${id}g`} x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor="#F6E3B4" /><Stop offset="0.5" stopColor="#E2BE74" /><Stop offset="1" stopColor="#B07C2E" />
+            <Stop offset="0" stopColor="#FFF1B8" /><Stop offset="0.5" stopColor="#FFD83D" /><Stop offset="1" stopColor="#C79200" />
           </SvgLinear>
         </Defs>
         <G>{leaves(1)}{leaves(-1)}</G>

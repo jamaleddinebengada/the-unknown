@@ -102,7 +102,7 @@ export default function Rewards() {
 const s = StyleSheet.create({
   level: { fontFamily: fonts.serif, fontSize: 36, lineHeight: 44, color: colors.plum, marginTop: 4 },
   rank: { fontFamily: fonts.semibold, fontSize: 17, color: colors.textSecondary },
-  bar: { height: 14, borderRadius: 999, backgroundColor: '#F3DCE8', overflow: 'hidden' },
+  bar: { height: 14, borderRadius: 999, backgroundColor: '#F1EEE2', overflow: 'hidden' },
   stats: { flexDirection: 'row', gap: 10 },
   stat: { flex: 1, alignItems: 'center', gap: 2, paddingVertical: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   statValue: { fontFamily: fonts.bold, fontSize: 20, color: colors.text },

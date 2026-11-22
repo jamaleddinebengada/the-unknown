@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { Extrapolation, FadeIn, FadeInDown, interpolate, useAnimatedStyle, useSharedValue, ZoomIn, type SharedValue } from 'react-native-reanimated';
 import { MaskAvatar } from '@/components/PersonAvatar';
 import { Scenery } from '@/components/Scenery';
 import { PremiumBadge, T } from '@/components/ui';
@@ -15,19 +15,21 @@ import { unknownName } from '@/utils/format';
 
 /** VIP exclusive profile themes (the default "rose" is everyone's). */
 export const PROFILE_THEMES: Record<string, { label: string; colors: [string, string] }> = {
-  rose: { label: 'Rose', colors: ['#F7B7CF', '#C13A9F'] },
-  plum: { label: 'Plum Night', colors: ['#C77DB8', '#4A1046'] },
-  gold: { label: 'Champagne', colors: ['#F6E3B4', '#B07C2E'] },
-  ocean: { label: 'Aegean', colors: ['#BFE3F0', '#2F5FA5'] },
-  sunset: { label: 'Sunset', colors: ['#FBD5C4', '#E2508A'] },
+  rose: { label: 'Sunshine', colors: ['#FFF1B8', '#FFD83D'] },
+  plum: { label: 'Coral', colors: ['#FFD3C9', '#FF775E'] },
+  gold: { label: 'Champagne', colors: ['#FFF6D6', '#E5A800'] },
+  ocean: { label: 'Aegean', colors: ['#E6F4FC', '#4A9CC9'] },
+  sunset: { label: 'Sunset', colors: ['#FFE2D6', '#FFB547'] },
 };
 
-export function ProfileHeader({ number, seed, country, age, interests, tags, tagline, stats, online = false, theme: themeOverride, photoUrlOverride, galleryOverride, onPhotoPress, onAddGalleryPhoto, onGalleryPress, footer }: {
+export function ProfileHeader({ number, seed, country, age, interests, tags, tagline, stats, online = false, theme: themeOverride, photoUrlOverride, galleryOverride, onPhotoPress, onAddGalleryPhoto, onGalleryPress, footer, scrollY }: {
   number: number; seed: string; country: string | null; age: string | null; interests: string[]; tags: string[]; languages?: string[];
   tagline: string | null; premium?: boolean; stats?: { label: string; value: string | number }[]; online?: boolean; theme?: string;
   /** own profile: show my photos even before the batched lookup returns */
   photoUrlOverride?: string | null; galleryOverride?: { url: string; path: string }[];
   onPhotoPress?: () => void; onAddGalleryPhoto?: () => void; onGalleryPress?: (path: string, url: string) => void; footer?: React.ReactNode;
+  /** list scroll offset — drives the soft parallax of the cover */
+  scrollY?: SharedValue<number>;
 }) {
   const { width } = useWindowDimensions();
   const meta = usePersonMeta(number);
@@ -38,27 +40,35 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, tag
   const heroW = width - spacing.md * 2;
   const heroH = Math.min(340, heroW * 0.95);
   const tile = Math.floor((heroW - 16) / 3);
+  const zero = useSharedValue(0);
+  const sy = scrollY ?? zero;
+  const parallax = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: interpolate(sy.value, [-200, 0, 400], [-60, 0, 120], Extrapolation.CLAMP) },
+      { scale: interpolate(sy.value, [-200, 0], [1.25, 1.08], Extrapolation.CLAMP) },
+    ],
+  }));
 
   return (
     <Animated.View entering={FadeIn.duration(450)} style={{ gap: spacing.md }}>
       <Pressable disabled={!onPhotoPress} onPress={onPhotoPress} accessibilityRole={onPhotoPress ? 'button' : undefined} accessibilityLabel={onPhotoPress ? 'Change profile photo' : undefined}
         style={[s.hero, { height: heroH }]}>
         {photo ? (
-          <Animated.View entering={FadeIn.duration(500)} style={StyleSheet.absoluteFill}>
+          <Animated.View entering={FadeIn.duration(500)} style={[StyleSheet.absoluteFill, parallax]}>
             <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} accessibilityLabel="Profile photo" />
           </Animated.View>
         ) : (
           <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
-            <Scenery width={heroW} height={heroH} flowers="both" />
-            <LinearGradient colors={[`${theme.colors[0]}55`, `${theme.colors[1]}66`]} style={StyleSheet.absoluteFill} />
+            <Animated.View style={[StyleSheet.absoluteFill, parallax]}><Scenery width={heroW} height={heroH} flowers="both" /></Animated.View>
+            <LinearGradient colors={[`${theme.colors[0]}33`, `${theme.colors[1]}44`]} style={StyleSheet.absoluteFill} />
             <Animated.View entering={ZoomIn.springify().damping(12)} style={s.maskWrap}><MaskAvatar seed={seed} size={128} /></Animated.View>
           </View>
         )}
-        <LinearGradient colors={['rgba(42,20,48,0)', 'rgba(42,20,48,0.35)']} style={[StyleSheet.absoluteFill, { top: '60%' }]} />
+        <LinearGradient colors={['rgba(255,253,247,0)', 'rgba(255,253,247,0.35)']} style={[StyleSheet.absoluteFill, { top: '60%' }]} />
         {onPhotoPress && (
           <View style={s.camera}><Ionicons name="camera" size={18} color={colors.violetDeep} /><T v="caption" style={{ fontFamily: fonts.semibold }}>{photo ? 'Edit photo' : 'Add your photo'}</T></View>
         )}
-        {online && <View style={s.online}><View style={s.onlineDot} /><T v="caption" color={colors.white} style={{ fontFamily: fonts.semibold }}>Online</T></View>}
+        {online && <View style={s.online}><View style={s.onlineDot} /><T v="caption" color={colors.text} style={{ fontFamily: fonts.semibold }}>Online</T></View>}
       </Pressable>
 
       <Animated.View entering={FadeInDown.delay(80).springify().damping(18)} style={s.card}>
@@ -113,12 +123,12 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, tag
 }
 
 const s = StyleSheet.create({
-  hero: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.blush, shadowColor: '#7B1E74', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  hero: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.blush, shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   maskWrap: { position: 'absolute', padding: 5, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.85)' },
   camera: { position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
-  online: { position: 'absolute', left: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(42,20,48,0.45)' },
+  online: { position: 'absolute', left: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
   onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
-  card: { marginTop: -46, marginHorizontal: 6, padding: spacing.lg, gap: 8, borderRadius: 28, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#7B1E74', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  card: { marginTop: -46, marginHorizontal: 6, padding: spacing.lg, gap: 8, borderRadius: 28, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
   name: { fontFamily: fonts.bold, fontSize: 26, letterSpacing: -0.5, color: colors.text },
   quote: { fontFamily: fonts.serifItalic, fontSize: 16.5, lineHeight: 24, color: colors.textSecondary, textAlign: 'center', marginTop: 2 },
   stats: { flexDirection: 'row', marginTop: 8 },

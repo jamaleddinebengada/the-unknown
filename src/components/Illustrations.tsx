@@ -30,7 +30,7 @@ export function GlobeIllustration({ size = 260 }: { size?: number }) {
         <Defs>
           <RadialGradient id="globe" cx="40%" cy="35%" r="70%">
             <Stop offset="0" stopColor="#FFFFFF" />
-            <Stop offset="0.7" stopColor="#FBE4EC" />
+            <Stop offset="0.7" stopColor="#FFF6D6" />
             <Stop offset="1" stopColor="#C7D2FE" />
           </RadialGradient>
         </Defs>
@@ -102,5 +102,5 @@ export function ConnectIllustration({ size = 280 }: { size?: number }) {
 }
 
 const ill = StyleSheet.create({
-  post: { position: 'absolute', width: 190, padding: 12, gap: 8, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(163,40,142,0.4)' },
+  post: { position: 'absolute', width: 190, padding: 12, gap: 8, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(255,119,94,0.4)' },
 });

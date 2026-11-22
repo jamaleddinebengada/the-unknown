@@ -148,10 +148,10 @@ export default function Conversation() {
       {!isGroup && (
         <Pressable accessibilityRole="button" onPress={() => setReveal(true)} style={{ paddingHorizontal: spacing.md, paddingBottom: 6 }}>
           <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={st.banner}>
-            <Ionicons name={conv.stage >= 4 ? 'lock-open' : 'lock-closed'} size={18} color={colors.white} />
+            <Ionicons name={conv.stage >= 4 ? 'lock-open' : 'lock-closed'} size={18} color={colors.onPrimary} />
             <View style={{ flex: 1 }}>
-              <T style={{ fontFamily: fonts.semibold, fontSize: 14 }} color={colors.white}>{conv.stage >= 4 ? 'Identities revealed' : 'You are both anonymous'}</T>
-              <T v="caption" color="rgba(255,255,255,0.85)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
+              <T style={{ fontFamily: fonts.bold, fontSize: 14 }} color={colors.onPrimary}>{conv.stage >= 4 ? 'Identities revealed' : 'You are both anonymous'}</T>
+              <T v="caption" color="rgba(36,48,71,0.75)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
             </View>
           </LinearGradient>
         </Pressable>
@@ -183,7 +183,7 @@ export default function Conversation() {
             if (item.kind === 'prompt') {
               return (
                 <Animated.View entering={FadeInUp} style={st.prompt}>
-                  <T v="overline" color={colors.cyan}>✨ MYSTERY QUESTION{mine ? '' : ` · ${unknownName(item.sender_number)}`}</T>
+                  <T v="overline" color={colors.coral}>✨ MYSTERY QUESTION{mine ? '' : ` · ${unknownName(item.sender_number)}`}</T>
                   <T v="cardTitle" style={{ textAlign: 'center' }}>{item.body}</T>
                 </Animated.View>
               );
@@ -194,8 +194,8 @@ export default function Conversation() {
                 <Pressable onLongPress={() => !mine && setReportTarget({ type: 'message', targetId: item.id })} accessibilityHint={mine ? undefined : 'Long press to report'}
                   style={[st.bubble, mine ? st.mine : st.theirs]}>
                   {mine && <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20, borderBottomRightRadius: 6 }]} />}
-                  <T color={mine ? colors.white : colors.text}>{item.body}</T>
-                  <T v="caption" color={mine ? 'rgba(255,255,255,0.75)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
+                  <T color={colors.text}>{item.body}</T>
+                  <T v="caption" color={mine ? 'rgba(36,48,71,0.6)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
                     {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </T>
                 </Pressable>
@@ -220,7 +220,7 @@ export default function Conversation() {
               <TextInput value={text} onChangeText={onType} placeholder="Write something real…" placeholderTextColor={colors.textMuted}
                 selectionColor={colors.violet} style={st.input} multiline maxLength={4000} accessibilityLabel="Message" />
               <Pressable accessibilityLabel="Send" disabled={!text.trim() || sending} onPress={() => send()} style={[st.send, (!text.trim() || sending) && { opacity: 0.4 }]}>
-                {sending ? <ActivityIndicator size="small" color={colors.white} /> : <Ionicons name="arrow-up" size={20} color={colors.white} />}
+                {sending ? <ActivityIndicator size="small" color={colors.onPrimary} /> : <Ionicons name="arrow-up" size={20} color={colors.onPrimary} />}
               </Pressable>
             </View>
           </>
@@ -247,12 +247,12 @@ const st = StyleSheet.create({
   stages: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingBottom: 8 },
   stage: { width: 22, height: 3, borderRadius: 2, backgroundColor: colors.elevated },
   bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, gap: 2, overflow: 'hidden' },
-  mine: { borderBottomRightRadius: 6 },
-  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: 'rgba(226,80,138,0.2)' },
-  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: colors.white, borderWidth: 1, borderColor: 'rgba(226,80,138,0.45)', shadowColor: colors.cyan, shadowOpacity: 0.35, shadowRadius: 16, elevation: 6 },
+  mine: { borderBottomRightRadius: 6, shadowColor: '#E5A800', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: '#FFF8DC', borderWidth: 1.5, borderColor: colors.primary, shadowColor: '#E5A800', shadowOpacity: 0.2, shadowRadius: 14, elevation: 4 },
   assist: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, minHeight: 34, justifyContent: 'center' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 130, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },
-  send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.violetDeep, alignItems: 'center', justifyContent: 'center' },
+  send: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   ended: { flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
 });

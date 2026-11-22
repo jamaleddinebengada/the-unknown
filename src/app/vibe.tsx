@@ -25,11 +25,11 @@ function Tile({ slug, on, size, onPress }: { slug: string; on: boolean; size: nu
   return (
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onPress}>
       <Animated.View style={[{ width: size, height: size }, a]}>
-        <LinearGradient colors={on ? ['#F3C6DA', '#C77DB8'] : art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tile, on && styles.tileOn]}>
+        <LinearGradient colors={on ? ['#FFE466', '#FFD83D'] : art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tile, on && styles.tileOn]}>
           <Text style={{ fontSize: size * 0.4 }}>{art.emoji}</Text>
-          <Text style={[styles.label, on && { color: colors.white }]}>{label}</Text>
+          <Text style={[styles.label, on && { color: colors.onPrimary, fontFamily: fonts.bold }]}>{label}</Text>
         </LinearGradient>
-        {on && <View style={styles.check}><Ionicons name="checkmark" size={14} color={colors.white} /></View>}
+        {on && <View style={styles.check}><Ionicons name="checkmark" size={14} color={colors.onPrimary} /></View>}
       </Animated.View>
     </Pressable>
   );
@@ -99,9 +99,9 @@ export default function Vibe() {
 const styles = StyleSheet.create({
   title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.6, color: colors.text },
   tile: { flex: 1, borderRadius: 22, alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)' },
-  tileOn: { borderColor: colors.violet, borderWidth: 2 },
+  tileOn: { borderColor: colors.text, borderWidth: 2 },
   label: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
-  check: { position: 'absolute', top: -5, right: -5, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.violet, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white },
+  check: { position: 'absolute', top: -5, right: -5, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white },
   more: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, paddingTop: 12, backgroundColor: 'rgba(255,247,243,0.94)' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, paddingTop: 12, backgroundColor: 'rgba(255,253,247,0.94)' },
 });

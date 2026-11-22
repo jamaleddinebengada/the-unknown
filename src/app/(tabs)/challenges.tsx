@@ -17,8 +17,8 @@ import { rankOf } from '@/features/challenges/ranks';
 type IconName = keyof typeof Ionicons.glyphMap;
 const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/messages', like: '/discover' };
 const TINT: Record<string, [string, string]> = {
-  post: ['#FCE4EE', '#E2508A'], chat: ['#F3E3F5', '#A3288E'], like: ['#FDE6EC', '#E0466E'], match: ['#F7E9D7', '#C9974A'],
-  interest: ['#EFE6FB', '#9B2386'], reply: ['#E8F3F7', '#3F8FB5'],
+  post: ['#FFF1D6', '#FF775E'], chat: ['#FFF6D6', '#FF775E'], like: ['#FFE8E2', '#E0466E'], match: ['#FFF1D6', '#E5A800'],
+  interest: ['#E6F4FC', '#F5C518'], reply: ['#E6F4FC', '#3F8FB5'],
 };
 
 function resetIn() {
@@ -42,7 +42,7 @@ function Bar({ pct, delay }: { pct: number; delay: number }) {
 }
 
 function Row({ c, i, onPress }: { c: Challenge; i: number; onPress: () => void }) {
-  const t = TINT[c.key] ?? ['#FCEEF3', colors.violet];
+  const t = TINT[c.key] ?? ['#F3F1E9', colors.violet];
   return (
     <Animated.View entering={FadeInDown.delay(80 + i * 50).springify().damping(18)}>
       <Pressable accessibilityRole="button" accessibilityLabel={`${c.title}, ${c.xp} XP${c.done ? ', completed' : ''}`} disabled={c.done} onPress={onPress}
@@ -127,13 +127,13 @@ const s = StyleSheet.create({
   title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
   level: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 24, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   levelBadge: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  levelNum: { fontFamily: fonts.serif, fontSize: 22, color: colors.white },
+  levelNum: { fontFamily: fonts.serif, fontSize: 22, color: colors.onPrimary },
   head: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  daily: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.violet },
-  dailyText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.white },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#7B1E74', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  daily: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.primary },
+  dailyText: { fontFamily: fonts.bold, fontSize: 14, color: colors.onPrimary },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   xp: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1D6' },
-  xpText: { fontFamily: fonts.bold, fontSize: 12, color: '#9A6B1E' },
-  bar: { height: 8, borderRadius: 999, backgroundColor: '#F3DCE8', overflow: 'hidden' },
+  xpText: { fontFamily: fonts.bold, fontSize: 12, color: '#7A5600' },
+  bar: { height: 8, borderRadius: 999, backgroundColor: '#F1EEE2', overflow: 'hidden' },
 });

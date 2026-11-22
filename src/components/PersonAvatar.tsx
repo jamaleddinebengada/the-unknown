@@ -8,8 +8,8 @@ import { MaskLogo } from './Brand';
 
 /** Warm, seed-based gradient pairs so anonymous members stay recognisable without a photo. */
 const PALETTES: [string, string][] = [
-  ['#F7B7CF', '#C13A9F'], ['#F6E3B4', '#C9974A'], ['#F3C6DA', '#7B1E74'], ['#FBD5C4', '#E2508A'],
-  ['#E8D5F2', '#9B2386'], ['#FCE1E8', '#C2336F'], ['#F4E4D0', '#A3288E'],
+  ['#FFF1B8', '#FFD83D'], ['#FFE2D6', '#FF9A85'], ['#E6F4FC', '#7FB8DD'], ['#F3F1E9', '#E0D9C2'],
+  ['#FFF6D6', '#F5C518'], ['#EAF7F1', '#7FD3B0'], ['#FFEDE8', '#FF775E'],
 ];
 function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 
@@ -18,8 +18,8 @@ export const MaskAvatar = memo(function MaskAvatar({ seed, size }: { seed: strin
   const p = PALETTES[hash(seed || 'x') % PALETTES.length];
   return (
     <LinearGradient colors={p} start={{ x: 0.15, y: 0 }} end={{ x: 0.85, y: 1 }} style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.12)', height: size * 0.5 }]} />
-      <MaskLogo size={size * 0.62} tone="white" />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.22)', height: size * 0.5 }]} />
+      <MaskLogo size={size * 0.62} tone="ink" />
     </LinearGradient>
   );
 });
@@ -41,7 +41,7 @@ export const PersonAvatar = memo(function PersonAvatar({ seed, number, size = 42
   const vip = meta?.tier === 'vip';
   return (
     <View style={[{ width: size, height: size }, style]}>
-      <View style={[{ width: size, height: size, borderRadius: size / 2, padding: b, backgroundColor: vip ? '#E2BE74' : '#FFFFFF' }, ring && s.shadow]}>
+      <View style={[{ width: size, height: size, borderRadius: size / 2, padding: b, backgroundColor: vip ? '#FFD83D' : '#FFFFFF' }, ring && s.shadow]}>
         <MaskAvatar seed={seed} size={inner} />
         {url && (
           <Animated.View style={[{ position: 'absolute', left: b, top: b, width: inner, height: inner, borderRadius: inner / 2, overflow: 'hidden' }, fade]}>
@@ -55,6 +55,6 @@ export const PersonAvatar = memo(function PersonAvatar({ seed, number, size = 42
 });
 
 const s = StyleSheet.create({
-  shadow: { shadowColor: '#7B1E74', shadowOpacity: 0.16, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
+  shadow: { shadowColor: '#243047', shadowOpacity: 0.16, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
   dot: { position: 'absolute', right: 0, bottom: 0, backgroundColor: '#2FBF8A', borderWidth: 2, borderColor: '#FFFFFF' },
 });

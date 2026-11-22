@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useEffect, useId, useMemo, type ReactNode } from 'react';
 import { StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
-  Easing, interpolate, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
+  Easing, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, Stop, LinearGradient as SvgLinear, RadialGradient, Text as SvgText } from 'react-native-svg';
 import { colors, fonts, glass, gradients, radius } from '@/constants/theme';
@@ -49,12 +49,12 @@ const Spark = memo(function Spark({ x, y, s, delay, dur }: { x: number; y: numbe
     o.value = withDelay(delay, withRepeat(withSequence(withTiming(1, { duration: dur }), withTiming(0.1, { duration: dur })), -1));
   }, [o, delay, dur]);
   const a = useAnimatedStyle(() => ({ opacity: o.value, transform: [{ translateY: -6 * o.value }] }));
-  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#E2BE74' : '#F3C6DA' }, a]} />;
+  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#FFD83D' : '#FFEFB0' }, a]} />;
 });
 
 export function Aurora({ variant = 'default', stars = 26, style }: { variant?: 'default' | 'warm' | 'calm'; stars?: number; style?: StyleProp<ViewStyle> }) {
   const { width, height } = useWindowDimensions();
-  const palette = variant === 'warm' ? ['#F9C9D6', '#FBE4EC', '#F6E3B4'] : variant === 'calm' ? ['#F3D6E6', '#FBE4EC', '#F6E8D6'] : ['#F9D3DF', '#F3DDEB', '#F8E6CC'];
+  const palette = variant === 'warm' ? ['#FFE89A', '#FFF1B8', '#FFD3C9'] : variant === 'calm' ? ['#E6F4FC', '#FFF6D6', '#F3F1E9'] : ['#FFF1B8', '#E6F4FC', '#FFE2D6'];
   const sparks = useMemo(() => {
     const r = seeded(`aurora-${variant}`);
     return Array.from({ length: stars }, () => ({ x: r() * width, y: r() * height, s: r() > 0.8 ? 3 : 1.6, delay: r() * 3000, dur: 1800 + r() * 2600 }));
@@ -65,7 +65,7 @@ export function Aurora({ variant = 'default', stars = 26, style }: { variant?: '
       <Blob color={palette[0]} size={width * 1.3} x={width * 0.15} y={height * 0.05} dx={width * 0.25} dy={height * 0.06} dur={9000} delay={0} opacity={0.55} />
       <Blob color={palette[1]} size={width * 1.0} x={width * 0.95} y={height * 0.35} dx={-width * 0.3} dy={height * 0.08} dur={11000} delay={600} opacity={0.32} />
       <Blob color={palette[2]} size={width * 1.1} x={width * 0.2} y={height * 0.85} dx={width * 0.3} dy={-height * 0.1} dur={13000} delay={1200} opacity={0.3} />
-      <LinearGradient colors={['rgba(255,247,243,0)', 'rgba(255,247,243,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
+      <LinearGradient colors={['rgba(255,253,247,0)', 'rgba(255,253,247,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
       {sparks.map((p, i) => <Spark key={i} {...p} />)}
     </View>
   );
@@ -79,12 +79,12 @@ export function GlassCard({ children, style, accent, padding = 16, radius: r = r
 }) {
   const border = accent ? ([`${accent[0]}CC`, `${accent[1]}40`, 'rgba(255,255,255,0.05)'] as const) : glass.border;
   return (
-    <View style={[{ borderRadius: r }, glow && styles.glow, glow && accent && { shadowColor: accent[0] }, style]}>
+    <View style={[{ borderRadius: r }, styles.float, glow && styles.glow, style]}>
       <LinearGradient colors={border} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: r, padding: 1 }}>
         <LinearGradient colors={glass.fill} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={{ borderRadius: r - 1, padding, overflow: 'hidden' }}>
           <View pointerEvents="none" style={[styles.sheen, { borderTopLeftRadius: r, borderTopRightRadius: r }]} />
           {accent && (
-            <LinearGradient pointerEvents="none" colors={[`${accent[0]}2E`, 'rgba(0,0,0,0)']} start={{ x: 0, y: 0 }} end={{ x: 0.7, y: 0.7 }} style={StyleSheet.absoluteFill} />
+            <LinearGradient pointerEvents="none" colors={[`${accent[0]}1A`, 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0.7, y: 0.7 }} style={StyleSheet.absoluteFill} />
           )}
           {children}
         </LinearGradient>
@@ -96,7 +96,7 @@ export function GlassCard({ children, style, accent, padding = 16, radius: r = r
 /* =====================================================================
  * GradientText — headline text filled with a gradient (SVG, no native deps).
  * ===================================================================== */
-export function GradientText({ text, size = 30, colors: g = ['#E2508A', '#B5309A', '#6B1A68'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
+export function GradientText({ text, size = 30, colors: g = ['#FF775E', '#FF8C73', '#243047'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
   text: string; size?: number; colors?: readonly string[]; weight?: string; letterSpacing?: number; width?: number; align?: 'left' | 'center';
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -169,7 +169,7 @@ export function HeartBurst({ trigger, size = 90 }: { trigger: number; size?: num
 /* =====================================================================
  * GlowRing — rotating gradient ring (portal motif) around content.
  * ===================================================================== */
-export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#E2508A', '#A3288E', '#C13A9F'] }: {
+export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#FF775E', '#FF775E', '#FFD83D'] }: {
   size: number; children?: ReactNode; speed?: number; thickness?: number; colors?: readonly string[];
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -210,8 +210,9 @@ export function PulseDot({ color = colors.success, size = 10 }: { color?: string
 }
 
 const styles = StyleSheet.create({
+  float: { shadowColor: '#243047', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
   sheen: { position: 'absolute', left: 0, right: 0, top: 0, height: 1, backgroundColor: glass.highlight },
-  glow: { shadowColor: colors.violet, shadowOpacity: 0.22, shadowRadius: 22, shadowOffset: { width: 0, height: 8 }, elevation: 10 },
+  glow: { shadowColor: '#E5A800', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
 });
 
 /* =====================================================================
@@ -237,4 +238,31 @@ export function ScreenTitle({ overline, title, subtitle, right }: { overline?: s
       {subtitle && <Animated.Text style={{ fontFamily: fonts.regular, fontSize: 14.5, lineHeight: 21, color: colors.textSecondary }}>{subtitle}</Animated.Text>}
     </View>
   );
+}
+
+/** Concentric yellow discovery rings that expand and fade (static when Reduce Motion is on). */
+export function DiscoveryRings({ size, count = 3, color = '#FFD83D', style }: { size: number; count?: number; color?: string; style?: object }) {
+  return (
+    <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
+      {Array.from({ length: count }, (_, i) => <Ring key={i} size={size} delay={(i * 2600) / count} color={color} />)}
+    </View>
+  );
+}
+function Ring({ size, delay, color }: { size: number; delay: number; color: string }) {
+  const t = useSharedValue(0);
+  const reduce = useReducedMotion();
+  useEffect(() => { if (!reduce) t.set(withDelay(delay, withRepeat(withTiming(1, { duration: 2600, easing: Easing.out(Easing.quad) }), -1))); }, [t, delay, reduce]);
+  const a = useAnimatedStyle(() => ({ opacity: reduce ? 0.25 : 0.7 * (1 - t.value), transform: [{ scale: reduce ? 0.8 : 0.35 + t.value * 0.75 }] }));
+  return <Animated.View style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 3, borderColor: color, backgroundColor: `${color}22` }, a]} />;
+}
+
+/** Gentle floating motion for cards (phase-shifted by index). */
+export function Float({ children, index = 0, amplitude = 4, style }: { children: ReactNode; index?: number; amplitude?: number; style?: object }) {
+  const t = useSharedValue(0);
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    if (!reduce) t.set(withDelay((index % 4) * 450, withRepeat(withTiming(1, { duration: 3200 + (index % 3) * 400, easing: Easing.inOut(Easing.sin) }), -1, true)));
+  }, [t, index, reduce]);
+  const a = useAnimatedStyle(() => ({ transform: [{ translateY: -amplitude * t.value }] }));
+  return <Animated.View style={[style, a]}>{children}</Animated.View>;
 }

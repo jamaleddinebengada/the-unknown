@@ -35,7 +35,7 @@ export function Row({ icon, label, sub, value, onPress, danger, right, last }: {
 
 export const Toggle = ({ value, onChange, label }: { value: boolean; onChange: (v: boolean) => void; label: string }) => (
   <Switch accessibilityLabel={label} value={value} onValueChange={(v) => { haptic.tap(); onChange(v); }}
-    trackColor={{ true: colors.violet, false: '#EADDE4' }} thumbColor={colors.white} ios_backgroundColor="#EADDE4" />
+    trackColor={{ true: colors.primaryDeep, false: '#E4E1D6' }} thumbColor={colors.white} ios_backgroundColor="#E4E1D6" />
 );
 
 /** Single-choice list inside a group. */
@@ -61,7 +61,7 @@ export function Choice<V extends string>({ options, value, onChange }: { options
 }
 
 const s = StyleSheet.create({
-  group: { borderRadius: radius.xl, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, overflow: 'hidden', shadowColor: '#7B1E74', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  group: { borderRadius: radius.xl, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, overflow: 'hidden', shadowColor: '#243047', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 58 },
   sep: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.hairlineStrong },
   icon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blush },

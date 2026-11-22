@@ -50,6 +50,6 @@ export function useVoiceRecorder() {
 
 const s = StyleSheet.create({
   wrap: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, paddingRight: 14, borderRadius: radius.pill, backgroundColor: colors.elevated, alignSelf: 'flex-start' },
-  play: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.violetDeep, alignItems: 'center', justifyContent: 'center' },
+  play: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   bars: { flexDirection: 'row', alignItems: 'center', gap: 2, height: 28 },
 });

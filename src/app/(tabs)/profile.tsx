@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, Share, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { PostCard } from '@/components/PostCard';
 import { Screen } from '@/components/Screen';
@@ -40,6 +41,8 @@ export default function MyProfile() {
   const [photos, setPhotos] = useState<MyPhotos | null>(null);
   const [photoMenu, setPhotoMenu] = useState(false);
   const [busy, setBusy] = useState(false);
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => { scrollY.value = e.contentOffset.y; });
 
   const loadPhotos = useCallback(() => { getMyPhotos().then(setPhotos).catch(() => {}); }, []);
   useFocusEffect(useCallback(() => { getMyChallenges().then(setXp).catch(() => {}); loadPhotos(); }, [loadPhotos]));
@@ -80,7 +83,7 @@ export default function MyProfile() {
       </View>
       <ProfileHeader number={n} seed={profile.avatar_seed} country={profile.country_code}
         age={profile.birth_date ? String(ageFromDate(profile.birth_date)) : null} interests={profile.interests} tags={profile.personality_tags}
-        tagline={profile.tagline} theme={profile.profile_theme}
+        tagline={profile.tagline} theme={profile.profile_theme} scrollY={scrollY}
         photoUrlOverride={photos ? photos.photoUrl : undefined}
         galleryOverride={photos ? photos.gallery.map((p, i) => ({ path: p, url: photos.galleryUrls[i] })).filter((g) => g.url) : []}
         onPhotoPress={() => setPhotoMenu(true)} onAddGalleryPhoto={addToGallery} onGalleryPress={(p) => galleryOptions(p)}
@@ -108,7 +111,7 @@ export default function MyProfile() {
 
   return (
     <Screen>
-      <FlatList data={posts.items} keyExtractor={(p) => p.id} ListHeaderComponent={header}
+      <Animated.FlatList data={posts.items} onScroll={onScroll} scrollEventThrottle={16} keyExtractor={(p) => p.id} ListHeaderComponent={header}
         contentContainerStyle={{ padding: spacing.md, paddingBottom: 130 }}
         ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
         renderItem={({ item, index }) => <PostCard post={item} index={index} onChange={posts.update} onRemoved={posts.remove} />}

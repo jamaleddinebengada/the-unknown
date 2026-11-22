@@ -119,5 +119,5 @@ export default function Settings() {
 }
 
 const s = StyleSheet.create({
-  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FBEAF3', borderWidth: 1.5, borderColor: 'rgba(163,40,142,0.22)' },
+  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FFF6D6', borderWidth: 1.5, borderColor: 'rgba(255,119,94,0.22)' },
 });
