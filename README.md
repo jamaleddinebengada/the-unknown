@@ -28,8 +28,8 @@ Native modules such as audio recording and haptics need a **development build**:
 | Credential | Where | Needed for |
 |---|---|---|
 | `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` | `.env` | everything |
-| `ANTHROPIC_API_KEY` | Supabase secret | AI post / conversation assist |
-| RevenueCat keys | Phase 5 | UNKNOWN PLUS subscriptions |
+| `ANTHROPIC_API_KEY` | Supabase secret (Edge Functions → Secrets) | AI Characters chat + AI writing assist |
+| `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` + `REVENUECAT_WEBHOOK_AUTH` | GitHub secret / Supabase secret | UNKNOWN PLUS purchases |
 
 ## Security model
 - Every table has RLS enabled. Clients can read **only their own rows** directly.
@@ -53,18 +53,21 @@ src/hooks/ src/services/ src/lib/ src/constants/ src/types/ src/utils/
 supabase/           migration + ai-assist edge function
 ```
 
-## Build status
+## Build status (build-23, Android emulator smoke test passing)
 
-| Phase | Status |
+| Area | Status |
 |---|---|
-| 1. Design system, splash, onboarding, auth, profile setup, interests, Discover feed, navigation | ✅ |
-| 2. Create/edit post (image, voice, AI assist), post details, likes, comments, Interested system | ✅ |
-| 3. Mystery Match (6 modes), conversation requests, realtime chat (typing, presence, prompts), reveal | ✅ core. Image and voice messages in chat are still to do. |
-| 4. Messages center, notifications, search | ✅ Connections screen, topic pages and world map are still to do. |
-| 5. UNKNOWN PLUS (RevenueCat), translation UI | ⏳ |
-| 6. Settings (privacy, blocked users, delete account) | ✅ |
-| 6. Admin dashboard, push notifications, i18n (FR/AR RTL/ES), light mode | ⏳ |
-| 7. Device testing on Android/iOS | ⏳ |
+| Sunlight design system (Inter, #FFFEFA / #FFD633 / #FF806B / #25324A), all screens, no dark surfaces | ✅ |
+| Welcome, interests, Discover feed (categories, pagination, editorial cards), post details, create/edit post (drafts, media, voice, AI assist) | ✅ |
+| Mystery Match (6 modes, documented compatibility score), Interested requests, realtime chat (typing, read status, reactions, replies, photos, voice), mutual identity reveal | ✅ |
+| AI Characters (12 fictional, clearly labelled; server-side LLM via `ai-chat`, daily quota by tier, persistent history, delete) | ✅ code + deployed — **replies need `ANTHROPIC_API_KEY`** |
+| People Nearby (opt-in, PostGIS, grid-snapped location, distance bands only, rate limited, manual city, erase location) | ✅ |
+| Challenges (daily + weekly, streak, server-side XP), rewards & badges, world map, search, notifications | ✅ |
+| UNKNOWN PLUS (Free / Plus / VIP, monthly + yearly, restore, manage) | ✅ code — **store products + RevenueCat keys needed** |
+| Settings, privacy, Safety Center, Help, blocked users, delete data | ✅ |
+| Login / registration screens | intentionally none: instant anonymous access (owner decision) |
+| Push notifications, admin moderation dashboard, i18n of the UI | ⏳ |
+| Testing on a physical device / iOS | ⏳ |
 
 Account deletion removes all database rows through a cascade. Deleting the user's storage files still needs an `account-cleanup` edge function, because Supabase blocks direct deletes on `storage.objects`.
 
