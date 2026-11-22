@@ -38,6 +38,11 @@ sleep 10; shot 03-home; echo "at home: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
 tapText "Mystery Match" "$((W*72/100)) $((H*17/100))"; sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
+tapText "Feed" "$((W*28/100)) $((H*17/100))"; sleep 3
+tapText "AI Characters" "$((W*20/100)) $((H*27/100))"; sleep 6; shot 03c-ai-characters; echo "ai: $(alive)"
+adb shell input keyevent 4; sleep 3
+tapText "Nearby" "$((W*50/100)) $((H*27/100))"; sleep 6; shot 03d-nearby; echo "nearby: $(alive)"
+adb shell input keyevent 4; sleep 3
 tab 30 04-challenges
 tab 70 05-messages
 tab 90 06-profile

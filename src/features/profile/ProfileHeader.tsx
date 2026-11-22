@@ -15,10 +15,10 @@ import { unknownName } from '@/utils/format';
 
 /** VIP exclusive profile themes (the default "rose" is everyone's). */
 export const PROFILE_THEMES: Record<string, { label: string; colors: [string, string] }> = {
-  rose: { label: 'Sunshine', colors: ['#FFF1B8', '#FFD83D'] },
-  plum: { label: 'Coral', colors: ['#FFD3C9', '#FF775E'] },
+  rose: { label: 'Sunshine', colors: ['#FFF1B8', '#FFD633'] },
+  plum: { label: 'Coral', colors: ['#FFD3C9', '#FF806B'] },
   gold: { label: 'Champagne', colors: ['#FFF6D6', '#E5A800'] },
-  ocean: { label: 'Aegean', colors: ['#E6F4FC', '#4A9CC9'] },
+  ocean: { label: 'Aegean', colors: ['#EAF6FF', '#4A9CC9'] },
   sunset: { label: 'Sunset', colors: ['#FFE2D6', '#FFB547'] },
 };
 
@@ -64,7 +64,7 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, tag
             <Animated.View entering={ZoomIn.springify().damping(12)} style={s.maskWrap}><MaskAvatar seed={seed} size={128} /></Animated.View>
           </View>
         )}
-        <LinearGradient colors={['rgba(255,253,247,0)', 'rgba(255,253,247,0.35)']} style={[StyleSheet.absoluteFill, { top: '60%' }]} />
+        <LinearGradient colors={['rgba(255,254,250,0)', 'rgba(255,254,250,0.35)']} style={[StyleSheet.absoluteFill, { top: '60%' }]} />
         {onPhotoPress && (
           <View style={s.camera}><Ionicons name="camera" size={18} color={colors.violetDeep} /><T v="caption" style={{ fontFamily: fonts.semibold }}>{photo ? 'Edit photo' : 'Add your photo'}</T></View>
         )}
@@ -123,12 +123,12 @@ export function ProfileHeader({ number, seed, country, age, interests, tags, tag
 }
 
 const s = StyleSheet.create({
-  hero: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.blush, shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  hero: { borderRadius: 30, overflow: 'hidden', backgroundColor: colors.blush, shadowColor: '#25324A', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   maskWrap: { position: 'absolute', padding: 5, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.85)' },
   camera: { position: 'absolute', right: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
   online: { position: 'absolute', left: 12, top: 12, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.92)' },
   onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
-  card: { marginTop: -46, marginHorizontal: 6, padding: spacing.lg, gap: 8, borderRadius: 28, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  card: { marginTop: -46, marginHorizontal: 6, padding: spacing.lg, gap: 8, borderRadius: 28, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.1, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
   name: { fontFamily: fonts.bold, fontSize: 26, letterSpacing: -0.5, color: colors.text },
   quote: { fontFamily: fonts.serifItalic, fontSize: 16.5, lineHeight: 24, color: colors.textSecondary, textAlign: 'center', marginTop: 2 },
   stats: { flexDirection: 'row', marginTop: 8 },

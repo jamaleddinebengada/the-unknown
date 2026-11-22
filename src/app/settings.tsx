@@ -68,8 +68,11 @@ export default function Settings() {
           <Row icon="person-outline" label="Account & Security" sub={unknownName(profile?.unknown_number)} onPress={() => setSheet('account')} />
           <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
           <Row icon="shield-checkmark-outline" label="Identity & Privacy" onPress={() => router.push('/privacy')} />
+          <Row icon="location-outline" label="People Nearby" onPress={() => router.push('/nearby')} />
           <Row icon="ban-outline" label="Blocked members" onPress={() => setSheet('blocked')} />
-          <Row icon="help-circle-outline" label="Help & Community Guidelines" onPress={() => setSheet('guidelines')} />
+          <Row icon="medkit-outline" label="Safety Center" onPress={() => router.push('/safety')} />
+          <Row icon="help-circle-outline" label="Help Center" onPress={() => router.push('/help')} />
+          <Row icon="document-text-outline" label="Community Guidelines" onPress={() => setSheet('guidelines')} />
           <Row icon="information-circle-outline" label="About The Unknown" onPress={() => setSheet('about')} last />
         </Group>
         <Scenery width={width} height={190} flowers="bottom" style={{ marginHorizontal: -spacing.md, marginTop: spacing.md }} />
@@ -119,5 +122,5 @@ export default function Settings() {
 }
 
 const s = StyleSheet.create({
-  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FFF6D6', borderWidth: 1.5, borderColor: 'rgba(255,119,94,0.22)' },
+  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FFF6D6', borderWidth: 1.5, borderColor: 'rgba(255,128,107,0.22)' },
 });

@@ -7,7 +7,7 @@ function rng(seed: number) {
   return () => { t += 0x6d2b79f5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
 }
 const uid = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '');
-const PINKS = ['#FF775E', '#FF9A85', '#FFD83D', '#FFB547', '#FFC2B4', '#F05A40'];
+const PINKS = ['#FF806B', '#FF9A85', '#FFD633', '#FFB547', '#FFC2B4', '#F05A40'];
 
 /** A cluster of bougainvillea blossoms with a few leaves. */
 function Blossoms({ cx, cy, r, n, seed }: { cx: number; cy: number; r: number; n: number; seed: number }) {
@@ -51,7 +51,7 @@ function Village({ w, h, base }: { w: number; h: number; base: number }) {
       {houses.map((p, i) => (
         <G key={i}>
           <Rect x={p.x} y={p.y} width={p.ww} height={p.hh} rx={2} fill="#FFFDFB" />
-          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#F3F1E9" />
+          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#FFF8E7" />
           {p.win && <Rect x={p.x + p.ww * 0.35} y={p.y + p.hh * 0.35} width={p.ww * 0.22} height={p.hh * 0.3} rx={1} fill="#5C86C6" opacity={0.75} />}
           {p.dome && (
             <G>
@@ -101,7 +101,7 @@ export const Scenery = memo(function Scenery({ width, height, village = true, fl
           <RadialGradient id={`${id}sun`} cx="50%" cy="50%" r="50%">
             <Stop offset="0" stopColor="#FFF8D6" stopOpacity="1" />
             <Stop offset="0.35" stopColor="#FFE466" stopOpacity="0.85" />
-            <Stop offset="1" stopColor="#FFD83D" stopOpacity="0" />
+            <Stop offset="1" stopColor="#FFD633" stopOpacity="0" />
           </RadialGradient>
         </Defs>
         {backdrop && <Rect x={0} y={0} width={w} height={horizon} fill={`url(#${id}sky)`} />}

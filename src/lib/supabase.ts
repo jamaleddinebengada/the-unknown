@@ -45,6 +45,13 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('super_limit_reached')) return 'You have used today’s 3 Super Connects.';
   if (msg.includes('not_available')) return 'This person is not available right now.';
   if (msg.includes('gallery_full')) return 'Your gallery can hold 6 photos.';
+  if (msg.includes('ai_not_configured')) return 'AI conversations are not switched on yet. Please try again later.';
+  if (msg.includes('ai_unavailable')) return 'The AI is not answering right now. Please try again.';
+  if (msg.includes('ai_limit_reached')) return 'You reached today’s AI message allowance. Upgrade for more, or come back tomorrow.';
+  if (msg.includes('nearby_disabled')) return 'Turn on Nearby first.';
+  if (msg.includes('rate_limited')) return 'You searched a lot in a short time. Please wait a little.';
+  if (msg.includes('location_update_limit')) return 'You changed your area too many times today. Try again tomorrow.';
+  if (msg.includes('invalid_location')) return 'That location could not be used.';
   if (msg.includes('must_be_18')) return 'THE UNKNOWN is for adults 18 and over.';
   if (msg.includes('blocked')) return 'This conversation is no longer available.';
   if (msg.includes('conversation_ended')) return 'This conversation has ended.';

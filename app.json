@@ -24,6 +24,10 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "RECORD_AUDIO"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -59,6 +63,14 @@
         "expo-notifications",
         {
           "color": "#8B5CF6"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "THE UNKNOWN uses your approximate area only when you turn on People Nearby. Your exact position is never shown to anyone.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false
         }
       ]
     ],

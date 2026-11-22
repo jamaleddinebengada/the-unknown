@@ -1,6 +1,4 @@
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, useFonts } from '@expo-google-fonts/inter';
-import { Fredoka_600SemiBold, Fredoka_700Bold } from '@expo-google-fonts/fredoka';
-import { PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_700Bold_Italic } from '@expo-google-fonts/playfair-display';
 import { DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -43,6 +41,12 @@ function RootNavigator() {
         <Stack.Screen name="matches" options={{ animation: 'none' }} />
         <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="people" />
+        <Stack.Screen name="ai/index" />
+        <Stack.Screen name="ai/[id]" />
+        <Stack.Screen name="ai/chat/[id]" />
+        <Stack.Screen name="nearby" />
+        <Stack.Screen name="safety" />
+        <Stack.Screen name="help" />
         <Stack.Screen name="saved" />
         <Stack.Screen name="rewards" />
         <Stack.Screen name="privacy" />
@@ -52,7 +56,7 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, Fredoka_600SemiBold, Fredoka_700Bold, PlayfairDisplay_600SemiBold, PlayfairDisplay_700Bold, PlayfairDisplay_700Bold_Italic });
+  const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold });
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Short entrance animations always finish (with "remove animations" on, Android otherwise leaves

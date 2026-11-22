@@ -6,7 +6,7 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const MODEL = Deno.env.get('AI_MODEL') ?? 'claude-sonnet-5-5';
+const MODEL = Deno.env.get('AI_MODEL') ?? 'claude-haiku-5-5';
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   try {
     const key = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!key) return json({ error: 'AI is not configured (missing ANTHROPIC_API_KEY).' }, 503);
+    if (!key) return json({ error: 'ai_not_configured' }, 503);
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
       global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
@@ -48,12 +48,12 @@ Deno.serve(async (req) => {
         messages: [{ role: 'user', content: text }],
       }),
     });
-    if (!res.ok) return json({ error: `ai_error_${res.status}` }, 502);
+    if (!res.ok) return json({ error: 'ai_unavailable' }, 502);
     const data = await res.json();
     const result = (data.content ?? []).filter((b: { type: string }) => b.type === 'text').map((b: { text: string }) => b.text).join('').trim();
     return json({ result });
   } catch (e) {
-    return json({ error: String((e as Error).message ?? e) }, 500);
+    return json({ error: 'server_error' }, 500);
   }
 });
 

@@ -31,6 +31,8 @@ jobs:
           curl -s -X POST "$EXPO_PUBLIC_SUPABASE_URL/auth/v1/signup" -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" -H "Content-Type: application/json" -d '{}' -o resp.json -w "HTTP %{http_code}\n"
           python3 -c "import json;d=json.load(open('resp.json'));print('ANON_SIGNIN', 'OK' if d.get('access_token') else d.get('msg') or d.get('error_code') or d)"
       - run: npm ci
+      - name: Type-check and unit tests
+        run: npx tsc --noEmit && npm test
       - run: npx expo prebuild --platform android --no-install
       - name: Assemble release APK (signed with the debug key, for testing)
         working-directory: android

@@ -27,7 +27,7 @@ export default function Welcome() {
       <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
       <Animated.View entering={FadeIn.duration(900)} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: heroH + 120 }}>
         <Scenery width={width} height={heroH + 120} flowers="bottom" />
-        <LinearGradient colors={[colors.bg, 'rgba(255,253,247,0)']} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 140 }} />
+        <LinearGradient colors={[colors.bg, 'rgba(255,254,250,0)']} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 140 }} />
       </Animated.View>
       <Scenery width={width} height={Math.min(200, height * 0.2)} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.85 }} />
 
@@ -69,9 +69,9 @@ export default function Welcome() {
 
 const styles = StyleSheet.create({
   the: { fontFamily: fonts.serif, fontSize: 24, lineHeight: 28, color: colors.text, letterSpacing: 3 },
-  unknown: { fontFamily: fonts.serif, fontSize: 48, lineHeight: 56, color: colors.text, letterSpacing: 1, backgroundColor: 'rgba(255,216,61,0.55)', paddingHorizontal: 8, borderRadius: 6, overflow: 'hidden' },
+  unknown: { fontFamily: fonts.serif, fontSize: 48, lineHeight: 56, color: colors.text, letterSpacing: 1, backgroundColor: 'rgba(255,214,51,0.55)', paddingHorizontal: 8, borderRadius: 6, overflow: 'hidden' },
   cards: { position: 'absolute', left: 24, right: 24, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: '#FFFFFF', shadowColor: '#243047', shadowOpacity: 0.12, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: '#FFFFFF', shadowColor: '#25324A', shadowOpacity: 0.12, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
   tag: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 25, color: colors.text, textAlign: 'center', marginTop: 6 },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, gap: spacing.sm },
   note: { alignSelf: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.82)' },

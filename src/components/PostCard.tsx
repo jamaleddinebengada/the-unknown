@@ -40,6 +40,8 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
   const lastTap = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accent = typeAccent[post.type] ?? typeAccent.thought;
+  /** Editorial layouts: big-quote cards for questions/debates/secrets without media, photo cards, classic text cards. */
+  const editorial = (post.type === 'question' || post.type === 'debate' || post.type === 'secret') && !post.image_path && !post.voice_path;
   const narrow = useWindowDimensions().width < 412;
   const heart = useSharedValue(1);
   const heartStyle = useAnimatedStyle(() => ({ transform: [{ scale: heart.value }] }));
@@ -142,7 +144,8 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
   return (
     <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 60).springify().damping(18)}>
       <Pressy scaleTo={detailed ? 1 : 0.985} onPress={onCardPress} accessibilityRole={detailed ? undefined : 'button'} accessibilityHint="Double tap to like">
-        <GlassCard accent={accent} padding={spacing.md} radius={radius.xl} glow={!!post.my_interest || post.is_mine}>
+        <GlassCard accent={editorial ? undefined : accent} padding={spacing.md} radius={radius.xl} glow={!!post.my_interest || post.is_mine}
+          fill={editorial ? (post.type === 'secret' ? ['#F2F9FF', '#EAF6FF'] : ['#FFFBEF', '#FFF4D2']) : undefined}>
           <View style={{ gap: spacing.sm }}>
             <View style={s.head}>
               <Pressy scaleTo={0.92} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(post.author_number) } })} accessibilityLabel={`Open ${unknownName(post.author_number)}`}>
@@ -166,12 +169,10 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
               </Pressy>
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 12, marginTop: 2 }}>
-              {(post.type === 'question' || post.type === 'debate' || post.type === 'secret') && (
-                <LinearGradient colors={[accent[0], accent[1]]} style={s.quoteBar} />
-              )}
+            {editorial && <T style={s.bigQuote} color={post.type === 'secret' ? '#7FB8DD' : colors.primaryDeep}>“</T>}
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: editorial ? -18 : 2 }}>
               <T v={post.type === 'question' || post.type === 'debate' ? 'cardTitle' : 'body'} numberOfLines={detailed ? undefined : 8}
-                style={[{ flex: 1 }, (post.type === 'question' || post.type === 'debate' || post.type === 'secret') ? { fontSize: 21, lineHeight: 29, fontFamily: fonts.serif } : { fontSize: 16.5, lineHeight: 25 }]}>
+                style={[{ flex: 1 }, editorial ? { fontSize: 23, lineHeight: 31, fontFamily: fonts.extrabold, letterSpacing: -0.4 } : { fontSize: 16.5, lineHeight: 25 }]}>
                 {post.content}
               </T>
             </View>
@@ -255,6 +256,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
 });
 
 const s = StyleSheet.create({
+  bigQuote: { fontFamily: fonts.extrabold, fontSize: 64, lineHeight: 64, marginBottom: -8 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarRing: { padding: 2, borderRadius: 24, borderWidth: 1.5 },
   typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.cream },
@@ -265,8 +267,8 @@ const s = StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.hairlineStrong, marginTop: 4 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: colors.bg },
-  actionOn: { backgroundColor: 'rgba(255,119,94,0.14)' },
+  actionOn: { backgroundColor: 'rgba(255,128,107,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
   interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },
-  interestedOn: { backgroundColor: 'rgba(255,119,94,0.16)', borderWidth: 1, borderColor: 'rgba(255,216,61,0.45)' },
+  interestedOn: { backgroundColor: 'rgba(255,128,107,0.16)', borderWidth: 1, borderColor: 'rgba(255,214,51,0.45)' },
 });

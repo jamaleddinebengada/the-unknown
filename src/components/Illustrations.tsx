@@ -102,5 +102,5 @@ export function ConnectIllustration({ size = 280 }: { size?: number }) {
 }
 
 const ill = StyleSheet.create({
-  post: { position: 'absolute', width: 190, padding: 12, gap: 8, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(255,119,94,0.4)' },
+  post: { position: 'absolute', width: 190, padding: 12, gap: 8, borderRadius: radius.md, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(255,128,107,0.4)' },
 });

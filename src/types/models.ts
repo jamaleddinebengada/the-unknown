@@ -167,6 +167,9 @@ export interface AppNotification {
 export interface Challenge { key: string; title: string; subtitle: string; xp: number; done: boolean; icon: string }
 export interface ChallengeState {
   xp: number; level: number; level_xp: number; per_level: number; active_days: number; matched_today: boolean; challenges: Challenge[];
+  streak?: number;
+  weekly?: { key: string; title: string; progress: number; target: number; icon: string }[];
+  week_resets_at?: string;
 }
 
 export interface Plan { tier: 'free' | 'plus' | 'vip'; matches_today: number; match_limit: number; supers_today: number; super_limit: number; renews_at: string | null; sub_status: string | null }

@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
@@ -16,7 +18,8 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { RevealSheet } from '@/features/chat/RevealSheet';
 import { uniqueChannel } from '@/lib/realtime';
 import { friendlyError, supabase } from '@/lib/supabase';
-import { aiAssist, blockUser, endConversation, getConversation, getMessages, markRead, sendMessage, setArchived } from '@/services/api';
+import { aiAssist, blockUser, chatMediaUrls, endConversation, getConversation, getMessages, getReactions, markRead, REACTIONS, sendMessage, setArchived, setReaction, uploadChatMedia } from '@/services/api';
+import { VoicePlayer, useVoiceRecorder } from '@/components/VoiceNote';
 import type { ConversationDetail, Message } from '@/types/models';
 import { haptic, unknownName } from '@/utils/format';
 
@@ -54,12 +57,39 @@ export default function Conversation() {
   const [typing, setTyping] = useState(false);
   const [online, setOnline] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [actionFor, setActionFor] = useState<Message | null>(null);
+  const [reactions, setReactions] = useState<Record<string, { mine?: string; counts: Record<string, number> }>>({});
+  const [media, setMedia] = useState<Map<string, string>>(new Map());
+  const [uploading, setUploading] = useState(false);
+  const rec = useVoiceRecorder();
   const channel = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const lastTyping = useRef(0);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadConv = useCallback(() => getConversation(id).then(setConv), [id]);
-  const loadMessages = useCallback(async () => { setMessages(await getMessages(id)); markRead(id).catch(() => {}); }, [id]);
+  const loadExtras = useCallback(async (list: Message[]) => {
+    const ids = list.map((m) => m.id);
+    const [rx, urls] = await Promise.all([
+      getReactions(ids).catch(() => []),
+      chatMediaUrls(list.filter((m) => m.media_path).map((m) => m.media_path!)).catch(() => new Map<string, string>()),
+    ]);
+    const me = session?.user.id;
+    const agg: Record<string, { mine?: string; counts: Record<string, number> }> = {};
+    for (const r of rx) {
+      const a = (agg[r.message_id] ??= { counts: {} });
+      a.counts[r.emoji] = (a.counts[r.emoji] ?? 0) + 1;
+      if (r.user_id === me) a.mine = r.emoji;
+    }
+    setReactions(agg);
+    setMedia(urls);
+  }, [session]);
+  const loadMessages = useCallback(async () => {
+    const list = await getMessages(id);
+    setMessages(list);
+    markRead(id).catch(() => {});
+    loadExtras(list);
+  }, [id, loadExtras]);
 
   useEffect(() => {
     Promise.all([loadConv(), loadMessages()]).catch((e) => setError(friendlyError(e))).finally(() => setLoading(false));
@@ -97,11 +127,37 @@ export default function Conversation() {
     if (!body) return;
     setSending(true);
     try {
-      await sendMessage(id, body, kind);
+      await sendMessage(id, body, kind, undefined, kind === 'text' ? replyTo?.id : null);
       haptic.soft();
-      if (kind === 'text') setText('');
+      if (kind === 'text') { setText(''); setReplyTo(null); }
       await loadMessages();
     } catch (e) { toast(friendlyError(e), 'error'); } finally { setSending(false); }
+  };
+
+  const sendMedia = async (kind: 'image' | 'voice', uri: string, mime: string) => {
+    setUploading(true);
+    try {
+      const path = await uploadChatMedia(id, uri, kind, mime);
+      await sendMessage(id, kind === 'voice' ? '🎙️ Voice message' : '📷 Photo', kind, path, replyTo?.id);
+      setReplyTo(null); haptic.success();
+      await loadMessages();
+    } catch (e) { toast(friendlyError(e), 'error'); } finally { setUploading(false); }
+  };
+  const pickImage = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+    if (!res.canceled && res.assets[0]) sendMedia('image', res.assets[0].uri, res.assets[0].mimeType ?? 'image/jpeg');
+  };
+  const toggleVoice = async () => {
+    try {
+      if (rec.isRecording) { const uri = await rec.stop(); if (uri) sendMedia('voice', uri, 'audio/m4a'); }
+      else { await rec.start(); haptic.soft(); }
+    } catch (e) { toast(friendlyError(e), 'error'); }
+  };
+  const react = async (m: Message, emoji: string) => {
+    if (!session) return;
+    const cur = reactions[m.id]?.mine;
+    setActionFor(null); haptic.tap();
+    try { await setReaction(m.id, session.user.id, cur === emoji ? null : emoji); loadExtras(messages); } catch (e) { toast(friendlyError(e), 'error'); }
   };
 
   const mysteryQuestion = () => send(MYSTERY_QUESTIONS[Math.floor(Math.random() * MYSTERY_QUESTIONS.length)], 'prompt');
@@ -151,7 +207,7 @@ export default function Conversation() {
             <Ionicons name={conv.stage >= 4 ? 'lock-open' : 'lock-closed'} size={18} color={colors.onPrimary} />
             <View style={{ flex: 1 }}>
               <T style={{ fontFamily: fonts.bold, fontSize: 14 }} color={colors.onPrimary}>{conv.stage >= 4 ? 'Identities revealed' : 'You are both anonymous'}</T>
-              <T v="caption" color="rgba(36,48,71,0.75)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
+              <T v="caption" color="rgba(37,50,74,0.75)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
             </View>
           </LinearGradient>
         </Pressable>
@@ -191,14 +247,29 @@ export default function Conversation() {
             return (
               <Animated.View entering={FadeIn.duration(200)} style={{ alignItems: mine ? 'flex-end' : 'flex-start' }}>
                 {isGroup && !mine && <T v="caption" color={colors.textMuted} style={{ marginLeft: 6, marginBottom: 2 }}>{unknownName(item.sender_number)}</T>}
-                <Pressable onLongPress={() => !mine && setReportTarget({ type: 'message', targetId: item.id })} accessibilityHint={mine ? undefined : 'Long press to report'}
+                <Pressable onLongPress={() => { haptic.soft(); setActionFor(item); }} delayLongPress={280} accessibilityHint="Long press to react, reply or report"
                   style={[st.bubble, mine ? st.mine : st.theirs]}>
                   {mine && <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 20, borderBottomRightRadius: 6 }]} />}
-                  <T color={colors.text}>{item.body}</T>
-                  <T v="caption" color={mine ? 'rgba(36,48,71,0.6)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
+                  {item.reply_to && (() => {
+                    const q = messages.find((x) => x.id === item.reply_to);
+                    return <View style={st.quote}><T v="caption" numberOfLines={2} color={colors.textSecondary}>{q ? `${q.is_mine ? 'You' : unknownName(q.sender_number)}: ${q.body ?? ''}` : 'Earlier message'}</T></View>;
+                  })()}
+                  {item.kind === 'image' && item.media_path && media.get(item.media_path) ? (
+                    <Image source={{ uri: media.get(item.media_path) }} style={st.photo} contentFit="cover" transition={200} accessibilityLabel="Shared photo" />
+                  ) : item.kind === 'voice' && item.media_path && media.get(item.media_path) ? (
+                    <VoicePlayer uri={media.get(item.media_path)!} seed={item.id} />
+                  ) : <T color={colors.text}>{item.body}</T>}
+                  <T v="caption" color={mine ? 'rgba(37,50,74,0.6)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
                     {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </T>
                 </Pressable>
+                {reactions[item.id] && Object.keys(reactions[item.id].counts).length > 0 && (
+                  <View style={[st.reacts, mine ? { marginRight: 6 } : { marginLeft: 6 }]}>
+                    {Object.entries(reactions[item.id].counts).map(([e, n]) => (
+                      <Pressable key={e} onPress={() => react(item, e)} style={[st.react, reactions[item.id].mine === e && st.reactMine]}><T v="caption">{e}{n > 1 ? ` ${n}` : ''}</T></Pressable>
+                    ))}
+                  </View>
+                )}
               </Animated.View>
             );
           }}
@@ -216,9 +287,24 @@ export default function Conversation() {
                 {suggesting ? <ActivityIndicator size="small" color={colors.cyan} /> : <T v="caption" color={colors.cyan} style={{ fontFamily: fonts.semibold }}>What should I ask?</T>}
               </Pressable>
             </View>
+            {replyTo && (
+              <View style={st.replyBar}>
+                <Ionicons name="return-down-forward" size={16} color={colors.textSecondary} />
+                <T v="caption" numberOfLines={1} style={{ flex: 1 }}>Replying to {replyTo.is_mine ? 'yourself' : unknownName(replyTo.sender_number)}: {replyTo.body}</T>
+                <Pressable onPress={() => setReplyTo(null)} hitSlop={8} accessibilityLabel="Cancel reply"><Ionicons name="close" size={18} color={colors.textSecondary} /></Pressable>
+              </View>
+            )}
             <View style={st.composer}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Send a photo" onPress={pickImage} disabled={uploading || rec.isRecording} style={st.tool}>
+                {uploading ? <ActivityIndicator size="small" color={colors.text} /> : <Ionicons name="image-outline" size={21} color={colors.text} />}
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel={rec.isRecording ? 'Stop and send voice message' : 'Record a voice message'} onPress={toggleVoice} disabled={uploading}
+                style={[st.tool, rec.isRecording && { backgroundColor: colors.coral }]}>
+                <Ionicons name={rec.isRecording ? 'stop' : 'mic-outline'} size={20} color={rec.isRecording ? colors.white : colors.text} />
+              </Pressable>
+              {rec.isRecording ? <T style={{ flex: 1, fontFamily: fonts.semibold }} color={colors.coral}>Recording… {rec.seconds}s — tap ■ to send</T> : (
               <TextInput value={text} onChangeText={onType} placeholder="Write something real…" placeholderTextColor={colors.textMuted}
-                selectionColor={colors.violet} style={st.input} multiline maxLength={4000} accessibilityLabel="Message" />
+                selectionColor={colors.primaryDeep} style={st.input} multiline maxLength={4000} accessibilityLabel="Message" />)}
               <Pressable accessibilityLabel="Send" disabled={!text.trim() || sending} onPress={() => send()} style={[st.send, (!text.trim() || sending) && { opacity: 0.4 }]}>
                 {sending ? <ActivityIndicator size="small" color={colors.onPrimary} /> : <Ionicons name="arrow-up" size={20} color={colors.onPrimary} />}
               </Pressable>
@@ -234,6 +320,19 @@ export default function Conversation() {
         {!conv.ended && <SheetAction icon="exit-outline" label="End conversation" danger onPress={() => confirm('End this conversation?', 'Neither of you will be able to send new messages.', 'End', async () => { await endConversation(id); await loadConv(); await loadMessages(); })} />}
         {!isGroup && conv.other_number && <SheetAction icon="ban-outline" label="Block user" danger onPress={() => confirm(`Block ${unknownName(conv.other_number)}?`, 'The conversation ends and you won’t see each other again.', 'Block', async () => { await blockUser(conv.other_number!); toast('Blocked.', 'success'); router.back(); })} />}
       </BottomSheet>
+      <BottomSheet visible={!!actionFor} onClose={() => setActionFor(null)}>
+        {actionFor && (
+          <View style={{ gap: 6 }}>
+            <View style={st.reactBar}>
+              {REACTIONS.map((e) => (
+                <Pressable key={e} accessibilityLabel={`React ${e}`} onPress={() => react(actionFor, e)} style={[st.reactBig, reactions[actionFor.id]?.mine === e && st.reactMine]}><T style={{ fontSize: 26 }}>{e}</T></Pressable>
+              ))}
+            </View>
+            {!conv.ended && <SheetAction icon="return-down-forward-outline" label="Reply" onPress={() => { setReplyTo(actionFor); setActionFor(null); }} />}
+            {!actionFor.is_mine && <SheetAction icon="flag-outline" label="Report message" onPress={() => { setReportTarget({ type: 'message', targetId: actionFor.id }); setActionFor(null); }} />}
+          </View>
+        )}
+      </BottomSheet>
       {!isGroup && <RevealSheet conv={conv} visible={reveal} onClose={() => setReveal(false)} onChanged={loadConv} />}
       <ReportSheet target={reportTarget} onClose={() => setReportTarget(null)} />
     </Screen>
@@ -241,6 +340,15 @@ export default function Conversation() {
 }
 
 const st = StyleSheet.create({
+  quote: { borderLeftWidth: 3, borderLeftColor: colors.primaryDeep, paddingLeft: 8, marginBottom: 6, backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 6, paddingVertical: 4 },
+  photo: { width: 220, height: 220, borderRadius: 14, marginBottom: 4 },
+  reacts: { flexDirection: 'row', gap: 4, marginTop: -6 },
+  react: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  reactMine: { backgroundColor: colors.primarySoft, borderColor: colors.primaryDeep },
+  reactBar: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  reactBig: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
+  replyBar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: spacing.md, marginBottom: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 14, backgroundColor: colors.cream },
+  tool: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   banner: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md, paddingVertical: 6 },
   online: { position: 'absolute', right: 0, bottom: 0, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.success, borderWidth: 2, borderColor: colors.bg },
@@ -248,7 +356,7 @@ const st = StyleSheet.create({
   stage: { width: 22, height: 3, borderRadius: 2, backgroundColor: colors.elevated },
   bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, gap: 2, overflow: 'hidden' },
   mine: { borderBottomRightRadius: 6, shadowColor: '#E5A800', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
-  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: '#FFF8DC', borderWidth: 1.5, borderColor: colors.primary, shadowColor: '#E5A800', shadowOpacity: 0.2, shadowRadius: 14, elevation: 4 },
   assist: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, minHeight: 34, justifyContent: 'center' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },

@@ -56,8 +56,8 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
         <Defs>
           <RadialGradient id={`${id}h`} cx="50%" cy="50%" r="50%">
             <Stop offset="0.35" stopColor="#BFDBFE" stopOpacity="0.55" />
-            <Stop offset="0.7" stopColor="#243047" stopOpacity="0.18" />
-            <Stop offset="1" stopColor="#FF775E" stopOpacity="0" />
+            <Stop offset="0.7" stopColor="#25324A" stopOpacity="0.18" />
+            <Stop offset="1" stopColor="#FF806B" stopOpacity="0" />
           </RadialGradient>
         </Defs>
         <Circle cx={c} cy={c} r={c} fill={`url(#${id}h)`} />
@@ -68,7 +68,7 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
           <Defs>
             <SvgLinear id={`${id}a`} x1="0" y1="0" x2="1" y2="1">
               <Stop offset="0" stopColor="#FFE58A" />
-              <Stop offset="0.5" stopColor="#FFD83D" />
+              <Stop offset="0.5" stopColor="#FFD633" />
               <Stop offset="1" stopColor="#FB923C" />
             </SvgLinear>
           </Defs>
@@ -113,8 +113,8 @@ export const Vortex = memo(function Vortex({ size = 220 }: { size?: number }) {
             <RadialGradient id={`${id}k`} cx="50%" cy="50%" r="50%">
               <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
               <Stop offset="0.25" stopColor="#BFDBFE" stopOpacity="0.95" />
-              <Stop offset="0.6" stopColor="#FFD83D" stopOpacity="0.4" />
-              <Stop offset="1" stopColor="#243047" stopOpacity="0" />
+              <Stop offset="0.6" stopColor="#FFD633" stopOpacity="0.4" />
+              <Stop offset="1" stopColor="#25324A" stopOpacity="0" />
             </RadialGradient>
           </Defs>
           <Circle cx={c} cy={c} r={size * 0.17} fill={`url(#${id}k)`} />
@@ -137,7 +137,7 @@ const STAR = (cx: number, cy: number, R: number, r: number) =>
 export function Star3D({ size = 34, tone = 'gold', delay = 0, style }: { size?: number; tone?: 'gold' | 'violet' | 'blue'; delay?: number; style?: StyleProp<ViewStyle> }) {
   const id = uid(useId());
   const f = useFloat(5, 1800 + delay / 3, delay);
-  const g = tone === 'gold' ? ['#FFF3B0', '#FBBF24', '#D97706'] : tone === 'violet' ? ['#FFF6D6', '#FF775E', '#F5C518'] : ['#CFFAFE', '#FF775E', '#243047'];
+  const g = tone === 'gold' ? ['#FFF3B0', '#FBBF24', '#D97706'] : tone === 'violet' ? ['#FFF6D6', '#FF806B', '#FFC800'] : ['#CFFAFE', '#FF806B', '#25324A'];
   const c = size / 2;
   return (
     <Animated.View style={[{ width: size, height: size }, f, style]}>
@@ -217,7 +217,7 @@ export function IsoCubes({ size = 120 }: { size?: number }) {
     <Animated.View style={[{ width: size, height: size * 1.05 }, f]}>
       <Svg width={size} height={size * 1.05} viewBox={`0 0 ${size} ${size * 1.05}`}>
         <Cube x={u * 2} y={u * 2.6} s={u * 1.3} top="#F9A8D4" left="#EC4899" right="#BE185D" />
-        <Cube x={u * 4.1} y={u * 2.2} s={u * 1.2} top="#FFEFB0" left="#FF775E" right="#243047" />
+        <Cube x={u * 4.1} y={u * 2.2} s={u * 1.2} top="#FFEFB0" left="#FF806B" right="#25324A" />
         <Cube x={u * 3.1} y={u * 3.4} s={u * 1.2} top="#FDE68A" left="#F59E0B" right="#B45309" />
         <Cube x={u * 3.0} y={u * 0.9} s={u * 1.05} top="#FFE58A" left="#06B6D4" right="#0E7490" />
       </Svg>
@@ -265,9 +265,9 @@ export function StatusPill({ label, live = true }: { label: string; live?: boole
 const styles = StyleSheet.create({
   avatarShadow: { shadowColor: '#1E2540', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
   avatarGloss: { position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'rgba(255,255,255,0.22)' },
-  pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
+  pill: { flexDirection: 'row', alignItems: 'center', gap: 7, alignSelf: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  planet: { position: 'absolute', borderRadius: 999, shadowColor: '#FFD83D', shadowOpacity: 0.8, shadowRadius: 10, elevation: 4 },
+  planet: { position: 'absolute', borderRadius: 999, shadowColor: '#FFD633', shadowOpacity: 0.8, shadowRadius: 10, elevation: 4 },
   pillText: { fontFamily: fonts.display, fontSize: 12, letterSpacing: 1, color: colors.text },
 });
 
@@ -279,9 +279,9 @@ type TitleTone = 'gold' | 'pink' | 'orange' | 'navy' | 'blue';
 const TONES: Record<TitleTone, { g: [string, string, string]; depth: string }> = {
   gold: { g: ['#FFF1B8', '#FFC94A', '#F08A0C'], depth: '#6B3300' },
   pink: { g: ['#FFD1EC', '#F472B6', '#C026D3'], depth: '#6B0F4F' },
-  orange: { g: ['#FFB067', '#FF775E', '#F5C518'], depth: '#7A1F05' },
+  orange: { g: ['#FFB067', '#FF806B', '#FFC800'], depth: '#7A1F05' },
   navy: { g: ['#3B4566', '#1E2540', '#0F1428'], depth: '#9AA3C0' },
-  blue: { g: ['#FFE58A', '#F5C518', '#243047'], depth: '#0B2A7A' },
+  blue: { g: ['#FFE58A', '#FFC800', '#25324A'], depth: '#0B2A7A' },
 };
 export function GoldTitle({ lines, size = 34, width, pinkLast = false, tones }: { lines: string[]; size?: number; width: number; pinkLast?: boolean; tones?: TitleTone[] }) {
   const id = uid(useId());
@@ -326,7 +326,7 @@ export function GlassShard({ w = 18, h = 30, rotate = 20, delay = 0, style }: { 
   const a = useAnimatedStyle(() => ({ transform: [{ translateY: -8 * t.value }, { rotate: `${rotate + t.value * 18}deg` }], opacity: 0.55 + t.value * 0.35 }));
   return (
     <Animated.View style={[{ position: 'absolute', width: w, height: h }, a, style]}>
-      <LinearGradient colors={['rgba(255,255,255,0.75)', 'rgba(186,230,253,0.35)', 'rgba(255,216,61,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+      <LinearGradient colors={['rgba(255,255,255,0.75)', 'rgba(186,230,253,0.35)', 'rgba(255,214,51,0.25)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         style={{ flex: 1, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.8)' }} />
     </Animated.View>
   );
@@ -344,16 +344,16 @@ export function OrbitBackdrop({ width, height }: { width: number; height: number
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
       <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
         <G transform={`rotate(-14 ${cx} ${cy})`}>
-          <Path d={`M ${cx - width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx + width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx - width * 0.48} ${cy}`} stroke="rgba(255,216,61,0.35)" strokeWidth={1.2} fill="none" />
+          <Path d={`M ${cx - width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx + width * 0.48} ${cy} A ${width * 0.48} ${height * 0.3} 0 1 0 ${cx - width * 0.48} ${cy}`} stroke="rgba(255,214,51,0.35)" strokeWidth={1.2} fill="none" />
           <Path d={`M ${cx - width * 0.36} ${cy} A ${width * 0.36} ${height * 0.42} 0 1 0 ${cx + width * 0.36} ${cy} A ${width * 0.36} ${height * 0.42} 0 1 0 ${cx - width * 0.36} ${cy}`} stroke="rgba(255,229,138,0.22)" strokeWidth={1} fill="none" />
         </G>
       </Svg>
       <Animated.View style={[StyleSheet.absoluteFill, spin]}>
-        <View style={[styles.planet, { left: cx - width * 0.42, top: cy - 20, width: 22, height: 22, backgroundColor: '#FFD83D' }]} />
-        <View style={[styles.planet, { left: cx + width * 0.3, top: cy + height * 0.2, width: 10, height: 10, backgroundColor: '#FF775E' }]} />
+        <View style={[styles.planet, { left: cx - width * 0.42, top: cy - 20, width: 22, height: 22, backgroundColor: '#FFD633' }]} />
+        <View style={[styles.planet, { left: cx + width * 0.3, top: cy + height * 0.2, width: 10, height: 10, backgroundColor: '#FF806B' }]} />
       </Animated.View>
       <Animated.View style={[StyleSheet.absoluteFill, spin2]}>
-        <View style={[styles.planet, { left: cx + width * 0.15, top: cy - height * 0.36, width: 34, height: 34, backgroundColor: '#FFF6D6', borderWidth: 1, borderColor: 'rgba(36,48,71,0.3)' }]} />
+        <View style={[styles.planet, { left: cx + width * 0.15, top: cy - height * 0.36, width: 34, height: 34, backgroundColor: '#FFF6D6', borderWidth: 1, borderColor: 'rgba(37,50,74,0.3)' }]} />
         <View style={[styles.planet, { left: cx - width * 0.25, top: cy + height * 0.3, width: 8, height: 8, backgroundColor: '#FFE58A' }]} />
       </Animated.View>
       <Sparkle size={16} color="#FFEFB0" style={{ position: 'absolute', left: width * 0.2, top: height * 0.12 }} />

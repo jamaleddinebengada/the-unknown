@@ -89,7 +89,7 @@ export function RevealSheet({ conv, visible, onClose, onChanged }: { conv: Conve
           <View style={{ alignItems: 'center', gap: 6 }}>
             <View style={{ width: 96, height: 96, borderRadius: 48, overflow: 'hidden', borderWidth: 3, borderColor: colors.primary }}>
               <MaskAvatar seed={conv.other_avatar_seed ?? 'x'} size={90} />
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,253,247,0.55)', alignItems: 'center', justifyContent: 'center' }]}><Ionicons name="lock-closed" size={26} color={colors.text} /></View>
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,254,250,0.55)', alignItems: 'center', justifyContent: 'center' }]}><Ionicons name="lock-closed" size={26} color={colors.text} /></View>
             </View>
             <T v="section" style={{ textAlign: 'center' }}>Are you ready to discover who they are?</T>
             <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>

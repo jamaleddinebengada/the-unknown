@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Confetti, ProgressRing } from '@/components/Effects';
 import { Scenery } from '@/components/Scenery';
 import { ErrorState, T } from '@/components/ui';
 import { colors, fonts, gradients, spacing } from '@/constants/theme';
@@ -17,8 +19,8 @@ import { rankOf } from '@/features/challenges/ranks';
 type IconName = keyof typeof Ionicons.glyphMap;
 const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/messages', like: '/discover' };
 const TINT: Record<string, [string, string]> = {
-  post: ['#FFF1D6', '#FF775E'], chat: ['#FFF6D6', '#FF775E'], like: ['#FFE8E2', '#E0466E'], match: ['#FFF1D6', '#E5A800'],
-  interest: ['#E6F4FC', '#F5C518'], reply: ['#E6F4FC', '#3F8FB5'],
+  post: ['#FFF1D6', '#FF806B'], chat: ['#FFF6D6', '#FF806B'], like: ['#FFE8E2', '#E0466E'], match: ['#FFF1D6', '#E5A800'],
+  interest: ['#EAF6FF', '#FFC800'], reply: ['#EAF6FF', '#3F8FB5'],
 };
 
 function resetIn() {
@@ -42,7 +44,7 @@ function Bar({ pct, delay }: { pct: number; delay: number }) {
 }
 
 function Row({ c, i, onPress }: { c: Challenge; i: number; onPress: () => void }) {
-  const t = TINT[c.key] ?? ['#F3F1E9', colors.violet];
+  const t = TINT[c.key] ?? ['#FFF8E7', colors.violet];
   return (
     <Animated.View entering={FadeInDown.delay(80 + i * 50).springify().damping(18)}>
       <Pressable accessibilityRole="button" accessibilityLabel={`${c.title}, ${c.xp} XP${c.done ? ', completed' : ''}`} disabled={c.done} onPress={onPress}
@@ -85,32 +87,69 @@ export default function Challenges() {
   }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const done = state?.challenges.filter((c) => c.done).length ?? 0;
+  const weeklyDone = state?.weekly?.filter((w) => w.progress >= w.target).length ?? 0;
+  const [tab, setTab] = useState<'daily' | 'weekly'>('daily');
+  const [celebrate, setCelebrate] = useState(0);
+  // Reward celebration: when a challenge became complete since the last visit (progress itself comes from the server).
+  useEffect(() => {
+    if (!state) return;
+    const key = 'the-unknown:seen-done-v1';
+    const today = new Date().toISOString().slice(0, 10);
+    const nowDone = state.challenges.filter((c) => c.done).map((c) => `${today}:${c.key}`);
+    AsyncStorage.getItem(key).then((raw) => {
+      const seen = new Set<string>(raw ? JSON.parse(raw) : []);
+      const fresh = nowDone.filter((k) => !seen.has(k));
+      if (fresh.length && seen.size > 0) { setCelebrate((n) => n + 1); haptic.success(); }
+      AsyncStorage.setItem(key, JSON.stringify(nowDone)).catch(() => {});
+    }).catch(() => {});
+  }, [state]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
+      <Confetti trigger={celebrate} width={width} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.md, paddingBottom: 0, gap: spacing.md }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={colors.violet} />}>
         <T style={s.title}>Challenges</T>
         {error ? <ErrorState message={error} onRetry={load} /> : !state ? <ActivityIndicator color={colors.violet} style={{ marginTop: 40 }} /> : (
           <>
             <Pressable accessibilityRole="button" onPress={() => router.push('/rewards')} style={s.level}>
-              <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.levelBadge}><Text style={s.levelNum}>{state.level}</Text></LinearGradient>
+              <ProgressRing size={60} progress={state.level_xp / state.per_level}><Text style={s.levelNum}>{state.level}</Text></ProgressRing>
               <View style={{ flex: 1, gap: 6 }}>
                 <T style={{ fontFamily: fonts.bold }}>Level {state.level} · {rankOf(state.level)}</T>
                 <Bar pct={state.level_xp / state.per_level} delay={100} />
-                <T v="caption" color={colors.textMuted}>{state.level_xp}/{state.per_level} XP · 🔥 {state.active_days}/7 days</T>
+                <T v="caption" color={colors.textMuted}>{state.level_xp}/{state.per_level} XP · 🔥 {state.streak ?? 0}-day streak</T>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </Pressable>
 
             <View style={s.head}>
-              <View style={s.daily}><Text style={s.dailyText}>Daily</Text></View>
+              <View style={s.tabs}>
+                {(['daily', 'weekly'] as const).map((t) => (
+                  <Pressable key={t} accessibilityRole="tab" accessibilityState={{ selected: tab === t }} onPress={() => { haptic.tap(); setTab(t); }} style={[s.tab, tab === t && s.tabOn]}>
+                    <Text style={[s.tabText, tab === t && { fontFamily: fonts.extrabold }]}>{t === 'daily' ? 'Daily' : 'Weekly'}</Text>
+                  </Pressable>
+                ))}
+              </View>
               <View style={{ flex: 1 }} />
-              <T v="caption" color={colors.textSecondary}>{done}/{state.challenges.length} done · resets in {resetIn()}</T>
+              <T v="caption" color={colors.textSecondary}>{tab === 'daily' ? `${done}/${state.challenges.length} · resets in ${resetIn()}` : `${weeklyDone}/${state.weekly?.length ?? 0} this week`}</T>
             </View>
             <View style={{ gap: 10 }}>
-              {state.challenges.map((c, i) => <Row key={c.key} c={c} i={i} onPress={() => { haptic.tap(); router.push(ROUTE[c.key] as never); }} />)}
+              {tab === 'daily'
+                ? state.challenges.map((c, i) => <Row key={c.key} c={c} i={i} onPress={() => { haptic.tap(); router.push(ROUTE[c.key] as never); }} />)
+                : (state.weekly ?? []).map((w, i) => (
+                  <Animated.View key={w.key} entering={FadeInDown.delay(60 + i * 50).springify().damping(18)}>
+                    <Pressable accessibilityRole="button" onPress={() => { haptic.tap(); router.push(ROUTE[w.key] as never); }} style={s.row}>
+                      <ProgressRing size={48} stroke={5} progress={w.progress / w.target}>
+                        <Ionicons name={(w.progress >= w.target ? 'checkmark' : w.icon) as IconName} size={18} color={w.progress >= w.target ? colors.success : colors.text} />
+                      </ProgressRing>
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <T style={{ fontFamily: fonts.semibold }}>{w.title}</T>
+                        <T v="caption" color={colors.textMuted}>{w.progress}/{w.target}{w.progress >= w.target ? ' · completed' : ''}</T>
+                      </View>
+                    </Pressable>
+                  </Animated.View>
+                ))}
             </View>
           </>
         )}
@@ -127,11 +166,15 @@ const s = StyleSheet.create({
   title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
   level: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 24, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   levelBadge: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  levelNum: { fontFamily: fonts.serif, fontSize: 22, color: colors.onPrimary },
+  levelNum: { fontFamily: fonts.extrabold, fontSize: 20, color: colors.text },
+  tabs: { flexDirection: 'row', padding: 4, borderRadius: 999, backgroundColor: colors.cream },
+  tab: { paddingHorizontal: 18, paddingVertical: 7, borderRadius: 999 },
+  tabOn: { backgroundColor: colors.primary },
+  tabText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   head: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   daily: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.primary },
   dailyText: { fontFamily: fonts.bold, fontSize: 14, color: colors.onPrimary },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   xp: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1D6' },
   xpText: { fontFamily: fonts.bold, fontSize: 12, color: '#7A5600' },

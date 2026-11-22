@@ -2,12 +2,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AiPortrait } from '@/components/AiPortrait';
+import { MaskLogo } from '@/components/Brand';
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
+import { useAiCharacters } from '@/features/ai/useAiCharacters';
 import { Aurora } from '@/components/Effects';
-import { PortalMark } from '@/components/Logo';
 import { PostCard } from '@/components/PostCard';
 import { CategoryChip, EmptyState, ErrorState, IconButton, PostSkeleton, T } from '@/components/ui';
 import { FEED_CATEGORIES, type FeedCategory } from '@/constants/content';
@@ -67,6 +69,52 @@ function ActiveRow() {
   );
 }
 
+const HUB: { key: string; label: string; sub: string; icon: keyof typeof Ionicons.glyphMap; href: '/ai' | '/nearby' | '/people'; tint: string }[] = [
+  { key: 'ai', label: 'AI Characters', sub: 'Fictional', icon: 'sparkles', href: '/ai', tint: '#FFF4C2' },
+  { key: 'near', label: 'Nearby', sub: 'Opt-in', icon: 'location', href: '/nearby', tint: '#FFE8E2' },
+  { key: 'world', label: 'World', sub: 'Map', icon: 'earth', href: '/people', tint: '#EAF6FF' },
+];
+
+/** Entry points to the discovery features. */
+function DiscoverHub() {
+  const router = useRouter();
+  return (
+    <View style={styles.hub}>
+      {HUB.map((h) => (
+        <Pressable key={h.key} accessibilityRole="button" accessibilityLabel={h.label} onPress={() => { haptic.tap(); router.push(h.href); }} style={styles.hubTile}>
+          <View style={[styles.hubIcon, { backgroundColor: h.tint }]}><Ionicons name={h.icon} size={20} color={colors.text} /></View>
+          <T style={{ fontFamily: fonts.bold, fontSize: 13.5 }} numberOfLines={1}>{h.label}</T>
+          <T v="caption" color={colors.textMuted}>{h.sub}</T>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+/** AI Characters carousel — clearly labelled fictional personalities. */
+function AiRow() {
+  const router = useRouter();
+  const { list } = useAiCharacters();
+  if (!list?.length) return null;
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={styles.sectionHead}>
+        <T v="section">AI Characters</T>
+        <Pressable onPress={() => router.push('/ai')} hitSlop={8}><T v="caption" color={colors.coral} style={{ fontFamily: fonts.bold }}>See all</T></Pressable>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: spacing.md }}>
+        {list.slice(0, 8).map((c) => (
+          <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={`${c.name}, AI ${c.role}`} onPress={() => router.push({ pathname: '/ai/[id]', params: { id: c.id } })} style={styles.aiCard}>
+            <AiPortrait seed={c.avatar_seed} accent={c.accent} size={104} rounded="card" />
+            <T style={{ fontFamily: fonts.bold }}>{c.name}</T>
+            <T v="caption" color={colors.textMuted} numberOfLines={1}>{c.role}</T>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
+  );
+}
+
 export default function Discover() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -87,8 +135,10 @@ export default function Discover() {
   const topBar = (
     <View style={{ gap: spacing.md, paddingTop: insets.top + spacing.sm }}>
       <View style={styles.top}>
-        <T style={styles.title}>Discover</T>
-        <View style={{ flex: 1 }} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.brand}>THE <Text style={styles.brandHi}>UNKNOWN</Text></Text>
+          <T v="caption" color={colors.textSecondary}>Discover something unexpected.</T>
+        </View>
         <IconButton label="Premium" name="diamond-outline" color={colors.gold} onPress={() => router.push('/premium')} />
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
@@ -100,6 +150,8 @@ export default function Discover() {
   const header = (
     <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
       {topBar}
+      <DiscoverHub />
+      <AiRow />
       <ActiveRow />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: spacing.md }}>
         {FEED_CATEGORIES.map((c) => (
@@ -147,10 +199,10 @@ export default function Discover() {
           feed.done && feed.items.length > 0 ? <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', margin: spacing.xl }}>You reached the edge of the known. Pull to discover more.</T> : undefined}
       />
       <Animated.View pointerEvents="box-none" style={[styles.compact, { paddingTop: insets.top + 6 }, compactBar]}>
-        <LinearGradient colors={['rgba(255,253,247,0.98)', 'rgba(255,253,247,0.9)', 'rgba(255,253,247,0)']} style={StyleSheet.absoluteFill} pointerEvents="none" />
+        <View style={[StyleSheet.absoluteFill, styles.compactBg]} pointerEvents="none" />
         <View style={[styles.top, { paddingBottom: 10 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-            <PortalMark size={30} spin={false} />
+            <MaskLogo size={34} />
             <T style={{ fontFamily: fonts.extrabold, fontSize: 13, letterSpacing: 3 }}>
               {FEED_CATEGORIES.find((c) => c.key === category)?.label.toUpperCase()}
             </T>
@@ -167,7 +219,15 @@ export default function Discover() {
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md },
   compact: { position: 'absolute', left: 0, right: 0, top: 0 },
+  compactBg: { backgroundColor: colors.bg, borderBottomWidth: 1, borderBottomColor: colors.border, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
+  brand: { fontFamily: fonts.extrabold, fontSize: 26, letterSpacing: -0.8, color: colors.text },
+  brandHi: { backgroundColor: colors.primary },
+  hub: { flexDirection: 'row', gap: 10, paddingHorizontal: spacing.md },
+  hubTile: { flex: 1, gap: 4, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, shadowColor: '#25324A', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  hubIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md },
+  aiCard: { width: 124, gap: 4, padding: 10, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   story: { alignItems: 'center', gap: 5, width: 62 },
   storyRing: { padding: 2.5, borderRadius: 40, borderWidth: 2, borderColor: colors.rose },
   storyAdd: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.surfaceBorder, borderStyle: 'dashed' },

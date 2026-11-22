@@ -32,7 +32,7 @@ function PersonCard({ p, w, onConnect, onOpen, busy }: { p: Person; w: number; o
     <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`UNKNOWN #${p.unknown_number}`} style={[s.card, { width: w }]}>
       <View style={{ width: w, height: w * 1.12 }}>
         {photo ? <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={250} /> : (
-          <LinearGradient colors={['#FFF6D6', '#FFE466', '#FFD83D']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+          <LinearGradient colors={['#FFF6D6', '#FFE466', '#FFD633']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
             <MaskLogo size={w * 0.55} tone="ink" />
           </LinearGradient>
         )}
@@ -161,7 +161,7 @@ const s = StyleSheet.create({
   mapInfo: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.9)' },
   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
   filter: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, height: 44, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  card: { borderRadius: 22, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#243047', shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  card: { borderRadius: 22, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   info: { flexDirection: 'row', alignItems: 'center', padding: 10, gap: 6 },
   name: { fontFamily: fonts.bold, fontSize: 15, color: colors.text },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success },

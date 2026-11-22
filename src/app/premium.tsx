@@ -21,9 +21,9 @@ import { haptic } from '@/utils/format';
 
 type TierKey = 'free' | PaidTier;
 const FEATURES: Record<TierKey, string[]> = {
-  free: ['Discover feed & posting', '1 Mystery Match a day', 'Anonymous chat', 'All safety tools'],
-  plus: ['10 matches a day', 'Advanced filters', 'Save favorites', 'Plus badge'],
-  vip: ['All Plus features', '25 matches a day', 'Priority in Discover', '3 Super Connects / day', 'Exclusive themes', 'VIP badge'],
+  free: ['Feed & posting', '1 Mystery Match a day', '20 AI messages a day', 'Nearby up to 25 km', 'All safety tools'],
+  plus: ['10 matches a day', 'Advanced filters', '100 AI messages a day', 'Nearby up to 100 km', 'Save favorites', 'Plus badge'],
+  vip: ['All Plus features', '25 matches a day', '300 AI messages a day', 'Priority in Discover', '3 Super Connects / day', 'Exclusive themes', 'VIP badge'],
 };
 const ORDER: TierKey[] = ['free', 'plus', 'vip'];
 
@@ -31,8 +31,8 @@ function Crown({ size = 46 }: { size?: number }) {
   return <Text style={{ fontSize: size, lineHeight: size * 1.15 }}>👑</Text>;
 }
 
-function TierCard({ tier, selected, current, price, period, onPress }: {
-  tier: TierKey; selected: boolean; current: boolean; price: string; period: string; onPress: () => void;
+function TierCard({ tier, selected, current, price, period, onPress, live }: {
+  tier: TierKey; selected: boolean; current: boolean; price: string; period: string; onPress: () => void; live: boolean;
 }) {
   const vip = tier === 'vip';
   const plus = tier === 'plus';
@@ -46,7 +46,7 @@ function TierCard({ tier, selected, current, price, period, onPress }: {
         style={[s.tier, selected && { borderColor: vip ? colors.gold : colors.violet, borderWidth: 2 }, selected && s.tierShadow]}>
         <Text style={[s.tierName, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{TIER_LABEL[tier]}</Text>
         <Text adjustsFontSizeToFit numberOfLines={1} style={[s.tierPrice, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{price}</Text>
-        <Text style={s.tierPeriod}>{period}</Text>
+        <Text style={s.tierPeriod}>{period}{tier !== 'free' && !live ? ' · planned' : ''}</Text>
         <View style={{ gap: 7, marginTop: 10 }}>
           {FEATURES[tier].map((f) => (
             <View key={f} style={{ flexDirection: 'row', gap: 5 }}>
@@ -180,7 +180,7 @@ export default function Premium() {
           {ORDER.map((t) => (
             <TierCard key={t} tier={t} selected={selected === t} current={currentTier === t} price={priceOf(t)}
               period={t === 'free' ? 'forever' : billing === 'yearly' ? '/year' : '/month'}
-              onPress={() => { haptic.tap(); setSelected(t); }} />
+              live={!!storePlan(t)} onPress={() => { haptic.tap(); setSelected(t); }} />
           ))}
         </Animated.View>
 
@@ -208,7 +208,7 @@ export default function Premium() {
         <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', lineHeight: 18 }}>
           {ready
             ? `${chosen!.price} ${billing === 'yearly' ? 'per year' : 'per month'}, billed to your ${process.env.EXPO_OS === 'ios' ? 'App Store' : 'Google Play'} account. Your membership renews automatically until you cancel; cancel at least 24 hours before the renewal date in your store's subscription settings. Upgrades take effect right away; downgrades apply at the next renewal.`
-            : 'Memberships open when THE UNKNOWN is published on Google Play. Nothing is charged before then.'}
+            : 'Planned prices. Memberships open when THE UNKNOWN is published on Google Play — the final price is the one Google Play shows at checkout. Nothing is charged before then.'}
         </T>
         <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>Blocking, reporting and every safety control stay free for everyone.</T>
       </ScrollView>
@@ -219,7 +219,7 @@ export default function Premium() {
 
 const s = StyleSheet.create({
   tier: { flex: 1, borderRadius: 20, paddingHorizontal: 10, paddingTop: 22, paddingBottom: 14, borderWidth: 1, borderColor: colors.surfaceBorder, minHeight: 250 },
-  tierShadow: { shadowColor: '#243047', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  tierShadow: { shadowColor: '#25324A', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
   tierName: { fontFamily: fonts.serif, fontSize: 21, color: colors.text, textAlign: 'center' },
   tierPrice: { fontFamily: fonts.bold, fontSize: 21, color: colors.text, textAlign: 'center', marginTop: 6 },
   tierPeriod: { fontFamily: fonts.medium, fontSize: 11, color: colors.textMuted, textAlign: 'center' },

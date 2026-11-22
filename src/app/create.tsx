@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
@@ -29,6 +30,9 @@ const AI_ACTIONS: { key: AiAction; label: string }[] = [
   { key: 'clearer', label: 'Make it clearer' },
   { key: 'title', label: 'Suggest a title' },
 ];
+/** Most-used post types shown first; the rest live behind "More". */
+const POPULAR = ['thought', 'question', 'secret', 'story', 'advice'];
+const DRAFT_KEY = 'the-unknown:post-draft-v1';
 const MAX = 2000;
 
 export default function CreatePost() {
@@ -50,6 +54,28 @@ export default function CreatePost() {
   const [loadingEdit, setLoadingEdit] = useState(!!edit);
   const rec = useVoiceRecorder();
   const meta = POST_TYPES.find((p) => p.key === type)!;
+  const [moreTypes, setMoreTypes] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(!!edit);
+
+  // Draft persistence (new posts only): restored on open, saved as you type, cleared after publishing.
+  useEffect(() => {
+    if (edit) return;
+    AsyncStorage.getItem(DRAFT_KEY).then((raw) => {
+      if (!raw) return;
+      try {
+        const d = JSON.parse(raw) as { type?: PostType; content?: string; category?: string | null };
+        if (d.content) { setContent(d.content); if (d.type) setType(d.type); if (d.category !== undefined) setCategory(d.category); toast('Draft restored'); }
+      } catch { /* ignore broken draft */ }
+    }).finally(() => setDraftLoaded(true));
+  }, [edit, toast]);
+  useEffect(() => {
+    if (edit || !draftLoaded) return;
+    const t = setTimeout(() => {
+      if (content.trim()) AsyncStorage.setItem(DRAFT_KEY, JSON.stringify({ type, content, category })).catch(() => {});
+      else AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
+    }, 500);
+    return () => clearTimeout(t);
+  }, [edit, draftLoaded, type, content, category]);
 
   useEffect(() => {
     if (!edit) return;
@@ -96,6 +122,7 @@ export default function CreatePost() {
         image_path, voice_path, language: profile?.languages?.[0] ?? null,
       });
       haptic.success();
+      AsyncStorage.removeItem(DRAFT_KEY).catch(() => {});
       setPublished(true);
       setTimeout(() => router.back(), 2300);
     } catch (e) { toast(friendlyError(e), 'error'); } finally { setPublishing(false); }
@@ -132,19 +159,23 @@ export default function CreatePost() {
 
             {!edit && (
               <View style={s.typeGrid}>
-                {POST_TYPES.map((p) => {
+                {(moreTypes ? POST_TYPES : POST_TYPES.filter((p) => POPULAR.includes(p.key) || p.key === type)).map((p) => {
                   const on = p.key === type;
                   const [c1] = typeAccent[p.key];
                   return (
                     <Pressy key={p.key} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={p.action} onPress={() => { haptic.tap(); setType(p.key as PostType); }}
                       style={[s.type, on && s.typeOn]}>
                       <View style={[s.typeIcon, { backgroundColor: on ? colors.white : `${c1}22` }]}>
-                        <Ionicons name={p.icon} size={19} color={on ? colors.text : c1 === '#FFD83D' ? '#C79200' : c1} />
+                        <Ionicons name={p.icon} size={19} color={on ? colors.text : c1 === '#FFD633' ? '#C79200' : c1} />
                       </View>
                       <T v="caption" numberOfLines={1} color={colors.text} style={{ fontFamily: on ? fonts.bold : fonts.semibold }}>{p.label}</T>
                     </Pressy>
                   );
                 })}
+                <Pressy accessibilityRole="button" accessibilityLabel={moreTypes ? 'Fewer post types' : 'More post types'} onPress={() => { haptic.tap(); setMoreTypes((v) => !v); }} style={[s.type, { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream }]}>
+                  <Ionicons name={moreTypes ? 'chevron-up' : 'add'} size={22} color={colors.text} />
+                  <T v="caption" style={{ fontFamily: fonts.semibold }}>{moreTypes ? 'Less' : 'More'}</T>
+                </Pressy>
               </View>
             )}
 
@@ -250,7 +281,7 @@ export default function CreatePost() {
 const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
-  type: { width: '31%', flexGrow: 1, height: 86, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, justifyContent: 'space-between', shadowColor: '#243047', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  type: { width: '31%', flexGrow: 1, height: 86, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, justifyContent: 'space-between', shadowColor: '#25324A', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   typeOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep, shadowColor: '#E5A800', shadowOpacity: 0.35, shadowRadius: 12, elevation: 5 },
   typeIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   input: { minHeight: 150, color: colors.text, fontFamily: fonts.regular, fontSize: 17, lineHeight: 25, textAlignVertical: 'top', outlineStyle: 'none' } as object,

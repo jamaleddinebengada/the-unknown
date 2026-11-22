@@ -124,13 +124,29 @@ export const getConversation = (id: string) =>
   rpc<ConversationDetail[]>('get_conversation', { p_conv: id }).then((r) => r[0] ?? null);
 export const getMessages = (id: string, before?: string) =>
   rpc<Message[]>('get_messages', { p_conv: id, p_before: before ?? null, p_limit: 50 });
-export async function sendMessage(conversationId: string, body: string, kind: 'text' | 'prompt' | 'image' | 'voice' = 'text', mediaPath?: string) {
+export async function sendMessage(conversationId: string, body: string, kind: 'text' | 'prompt' | 'image' | 'voice' = 'text', mediaPath?: string, replyTo?: string | null) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error('not_authenticated');
   const { error } = await supabase.from('messages').insert({
-    conversation_id: conversationId, sender_id: u.user.id, body, kind, media_path: mediaPath ?? null,
+    conversation_id: conversationId, sender_id: u.user.id, body, kind, media_path: mediaPath ?? null, reply_to: replyTo ?? null,
   });
   if (error) throw error;
+}
+/** Private chat media (only the two participants can read it). */
+export async function uploadChatMedia(conversationId: string, localUri: string, kind: 'image' | 'voice', mime: string) {
+  const ext = kind === 'voice' ? 'm4a' : mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const body = await (await fetch(localUri)).arrayBuffer();
+  const { error } = await supabase.storage.from('chat-media').upload(path, body, { contentType: mime, upsert: false });
+  if (error) throw error;
+  return path;
+}
+export async function chatMediaUrls(paths: string[]) {
+  const out = new Map<string, string>();
+  if (!paths.length) return out;
+  const { data } = await supabase.storage.from('chat-media').createSignedUrls(paths, 3600);
+  for (const d of data ?? []) if (d.signedUrl && d.path) out.set(d.path, d.signedUrl);
+  return out;
 }
 export async function markRead(conversationId: string) {
   const { data: u } = await supabase.auth.getUser();
@@ -210,8 +226,73 @@ export async function uploadPostMedia(localUri: string, kind: 'image' | 'voice',
 
 /* ---------------- AI (edge function) ---------------- */
 export type AiAction = 'improve' | 'interesting' | 'question' | 'clearer' | 'title' | 'translate' | 'conversation';
+/** Calls an Edge Function and turns its JSON `{ error }` into a readable Error code. */
+async function invokeFn<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  if (error) {
+    let code = error.message;
+    const ctx = (error as { context?: Response }).context;
+    try { if (ctx && typeof ctx.json === 'function') code = ((await ctx.json()) as { error?: string }).error ?? code; } catch { /* keep message */ }
+    throw new Error(code);
+  }
+  return data as T;
+}
 export async function aiAssist(action: AiAction, text: string, extra?: Record<string, string>) {
-  const { data, error } = await supabase.functions.invoke('ai-assist', { body: { action, text, ...extra } });
+  return (await invokeFn<{ result: string }>('ai-assist', { action, text, ...extra })).result;
+}
+
+/* ---------------- AI characters ---------------- */
+export interface AiCharacter {
+  id: string; name: string; role: string; tagline: string; bio: string; personality: string; style: string;
+  interests: string[]; languages: string[]; starters: string[]; avatar_seed: string; accent: string; sort: number;
+}
+export interface AiMessage { id: string; role: 'user' | 'assistant'; content: string; created_at: string }
+export async function getAiCharacters(): Promise<AiCharacter[]> {
+  const { data, error } = await supabase.from('ai_characters').select('*').order('sort');
   if (error) throw error;
-  return (data as { result: string }).result;
+  return data as AiCharacter[];
+}
+export const getMyAiConversations = () =>
+  rpc<{ character_id: string; conversation_id: string; updated_at: string; last_message: string | null; last_role: string | null }[]>('get_my_ai_conversations');
+export const getAiQuota = () => rpc<{ used: number; msg_limit: number; tier: string }[]>('get_ai_quota').then((r) => r[0] ?? null);
+export async function getAiMessages(characterId: string): Promise<AiMessage[]> {
+  const { data: conv, error } = await supabase.from('ai_conversations').select('id').eq('character_id', characterId).maybeSingle();
+  if (error) throw error;
+  if (!conv) return [];
+  const { data, error: e2 } = await supabase.from('ai_messages').select('id, role, content, created_at').eq('conversation_id', conv.id).order('created_at').limit(200);
+  if (e2) throw e2;
+  return data as AiMessage[];
+}
+/** Sends a message; returns the stored user message + the character's reply. Never fabricates replies. */
+export const sendAiMessage = (characterId: string, message: string) =>
+  invokeFn<{ conversation_id: string; messages: AiMessage[] }>('ai-chat', { character_id: characterId, message }).then((r) => r.messages);
+export async function deleteAiConversation(characterId: string) {
+  const { error } = await supabase.from('ai_conversations').delete().eq('character_id', characterId);
+  if (error) throw error;
+}
+
+/* ---------------- People nearby (coarse, opt-in) ---------------- */
+export interface NearbyPerson { unknown_number: number; avatar_seed: string; distance_band: string; city: string | null; country_code: string | null; age: number | null; shared_interests: string[]; interests: string[]; tier: string; online: boolean }
+export const getNearbyStatus = () => rpc<{ enabled: boolean; city: string | null; max_radius: number; queries_left: number }[]>('get_nearby_status').then((r) => r[0] ?? null);
+export const setNearbyLocation = (lat: number, lng: number, city: string, country: string) =>
+  rpc<null>('set_nearby_location', { p_lat: lat, p_lng: lng, p_city: city, p_country: country });
+export const disableNearby = () => rpc<null>('disable_nearby');
+export const getNearby = (radiusKm: number) => rpc<NearbyPerson[]>('get_nearby', { p_radius_km: radiusKm });
+
+/* ---------------- message reactions ---------------- */
+export const REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🔥'] as const;
+export async function getReactions(messageIds: string[]) {
+  if (!messageIds.length) return [] as { message_id: string; user_id: string; emoji: string }[];
+  const { data, error } = await supabase.from('message_reactions').select('message_id, user_id, emoji').in('message_id', messageIds.slice(0, 200));
+  if (error) throw error;
+  return data as { message_id: string; user_id: string; emoji: string }[];
+}
+export async function setReaction(messageId: string, userId: string, emoji: string | null) {
+  if (!emoji) {
+    const { error } = await supabase.from('message_reactions').delete().eq('message_id', messageId).eq('user_id', userId);
+    if (error) throw error;
+    return;
+  }
+  const { error } = await supabase.from('message_reactions').upsert({ message_id: messageId, user_id: userId, emoji });
+  if (error) throw error;
 }

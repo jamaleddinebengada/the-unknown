@@ -72,6 +72,6 @@ export default function Notifications() {
 
 const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.md, backgroundColor: colors.card },
-  unread: { borderWidth: 1, borderColor: 'rgba(255,119,94,0.35)' },
+  unread: { borderWidth: 1, borderColor: 'rgba(255,128,107,0.35)' },
   icon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
 });
