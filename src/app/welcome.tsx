@@ -22,9 +22,9 @@ export default function Welcome() {
         <Scenery width={width} height={heroH + 120} flowers="bottom" />
         <LinearGradient colors={[colors.bg, 'rgba(255,247,243,0)']} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 140 }} />
       </Animated.View>
-      <Scenery width={width} height={200} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.9 }} />
+      <Scenery width={width} height={Math.min(200, height * 0.2)} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.85 }} />
 
-      <View style={{ paddingTop: insets.top + spacing.xxl, alignItems: 'center', gap: 6, paddingHorizontal: spacing.xl }}>
+      <View style={{ paddingTop: insets.top + Math.min(spacing.xxl, height * 0.03), alignItems: 'center', gap: 6, paddingHorizontal: spacing.xl }}>
         <Animated.View entering={FadeInDown.springify().damping(14)}><MaskLogo size={96} /></Animated.View>
         <Animated.View entering={FadeInDown.delay(120).springify().damping(16)} style={{ alignItems: 'center' }}>
           <Text style={styles.the}>THE</Text>

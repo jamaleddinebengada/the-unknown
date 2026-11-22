@@ -10,18 +10,33 @@ adb logcat -c
 adb shell monkey -p "$PKG" -c android.intent.category.LAUNCHER 1
 shot() { adb exec-out screencap -p > "smoke/$1.png"; }
 alive() { adb shell pidof "$PKG" >/dev/null && echo "ALIVE" || echo "DEAD"; }
+# tap the centre of the first element whose text or accessibility label matches $1
+tapText() {
+  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null 2>&1
+  XY=$(python3 - "$1" <<'PY'
+import re, sys
+t = sys.argv[1]; x = open('/tmp/ui.xml', encoding='utf-8').read()
+for m in re.finditer(r'<node [^>]*>', x):
+    n = m.group(0)
+    if f'text="{t}"' in n or f'content-desc="{t}"' in n:
+        a, b, c, d = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print((a + c) // 2, (b + d) // 2); break
+PY
+)
+  if [ -n "$XY" ]; then adb shell input tap $XY; echo "tapped '$1' at $XY"; else echo "not found: '$1'"; fi
+}
 
 sleep 15; shot 01-launch; echo "after launch: $(alive)"
 # Welcome → "Get Started", then Choose Your Vibe → pick one interest → "Continue"
 SIZE=$(adb shell wm size | tail -1 | awk '{print $NF}'); W=${SIZE%x*}; H=${SIZE#*x}
 echo "screen ${W}x${H}"
-adb shell input tap $((W/2)) $((H*84/100)); sleep 4; shot 02-vibe; echo "vibe: $(alive)"
-adb shell input tap $((W*20/100)) $((H*32/100)); sleep 1
-adb shell input tap $((W/2)) $((H*93/100)); sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
+tapText "Get Started"; sleep 4; shot 02-vibe; echo "vibe: $(alive)"
+tapText "Travel"; sleep 1
+tapText "Continue" ; sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
 sleep 10; shot 03-home; echo "at home: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
-adb shell input tap $((W*72/100)) $((H*15/100)); sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
+tapText "Mystery Match"; sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
 tab 30 04-challenges
 tab 70 05-messages
 tab 90 06-profile
