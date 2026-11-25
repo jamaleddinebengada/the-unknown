@@ -23,6 +23,8 @@ export interface Profile {
   onboarding_complete: boolean;
   is_premium: boolean;
   tier: 'free' | 'plus' | 'vip';
+  is_admin?: boolean;
+  boosted_until?: string | null;
   display_name: string | null;
   bio: string | null;
   looking_for: 'friendship' | 'conversation' | 'relationship' | null;
@@ -120,7 +122,7 @@ export interface ConversationDetail {
 
 export interface Message {
   id: string;
-  kind: 'text' | 'image' | 'voice' | 'system' | 'prompt';
+  kind: 'text' | 'image' | 'voice' | 'system' | 'prompt' | 'video' | 'gift';
   body: string | null;
   media_path: string | null;
   reply_to: string | null;

@@ -40,24 +40,29 @@ tapText "Continue"; sleep 6; shot 02-vibe; echo "vibe: $(alive)"
 tapText "Travel"; sleep 1
 tapText "Continue"; sleep 8; shot 03-nearby-home; echo "nearby home: $(alive)"
 # Nearby without location permission: use the manual city picker
-tapText "Choose a city instead"; sleep 3; tapText "Casablanca"; sleep 8; shot 03a-nearby-city; echo "nearby city: $(alive)"
+adb shell input swipe $((W/2)) $((H*70/100)) $((W/2)) $((H*40/100)) 400; sleep 2
+tapText "Choose a city instead"; sleep 3; shot 03-city-sheet; tapText "Casablanca"; sleep 8; shot 03a-nearby-city; echo "nearby city: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
 # deep links into stack screens (no Back key: it could leave the app)
 link() { adb shell am start -W -a android.intent.action.VIEW -d "theunknown://$1" "$PKG" >/dev/null 2>&1; sleep 7; shot "$2"; echo "$2: $(alive)"; }
-link mystery 03b-mystery-match
-link ai 03c-virtual-characters
-link ai/luna 03e-ai-profile
-link safety 03g-safety
-link premium 03h-premium
-link challenges 03i-challenges
-link favorites 03j-favorites
-link visitors 03k-visitors
 tab 30 04-discover
 tab 50 05-matches
 tab 70 06-messages
 tab 90 07-profile
 tab 10 08-nearby
+link mystery 09-mystery-match
+link ai 10-virtual-characters
+link ai/karim 11-ai-profile-karim
+link wallet 12-wallet
+link account 13-account
+link verify 14-verify
+link language 15-language
+link premium 16-premium
+link favorites 17-favorites
+link visitors 18-visitors
+link safety 19-safety
+link admin 20-admin-locked
 
 adb logcat -d > smoke/logcat-full.txt
 grep -E "ReactNativeJS|AndroidRuntime|FATAL|ReactNative|unknown|Supabase|SoLoader|libc " smoke/logcat-full.txt > smoke/logcat-app.txt || true

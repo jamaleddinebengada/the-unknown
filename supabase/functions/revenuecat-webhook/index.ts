@@ -27,6 +27,25 @@ Deno.serve(async (req) => {
   if (!ids.length) return Response.json({ ok: true, skipped: 'no supabase user id' });
 
   const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+
+  // Coins: consumable products coins_100 … coins_7000. Credited once per store transaction (idempotent ref).
+  const coinProduct = String(ev.product_id ?? '').split(':')[0].toLowerCase();
+  const COINS: Record<string, number> = { coins_100: 100, coins_500: 500, coins_1200: 1200, coins_3000: 3000, coins_7000: 7000 };
+  if (COINS[coinProduct]) {
+    const ref = `rc:${ev.transaction_id ?? ev.id}`;
+    const owner = ids[0];
+    if (ev.type === 'NON_RENEWING_PURCHASE' || ev.type === 'INITIAL_PURCHASE') {
+      if (ev.environment === 'SANDBOX' && Deno.env.get('BLOCK_SANDBOX_COINS') === 'true') return Response.json({ ok: true, skipped: 'sandbox' });
+      const { error } = await admin.rpc('coin_apply', { p_user: owner, p_delta: COINS[coinProduct], p_reason: 'purchase', p_ref: ref });
+      if (error) return new Response(error.message, { status: 500 });
+    } else if (ev.type === 'CANCELLATION' && ev.cancel_reason === 'CUSTOMER_SUPPORT') {
+      // refund: take the coins back as far as the balance allows
+      const { data: w } = await admin.from('wallets').select('balance').eq('user_id', owner).maybeSingle();
+      const take = Math.min(COINS[coinProduct], w?.balance ?? 0);
+      if (take > 0) await admin.rpc('coin_apply', { p_user: owner, p_delta: -take, p_reason: 'refund', p_ref: `${ref}:refund` });
+    }
+    return Response.json({ ok: true, coins: COINS[coinProduct] });
+  }
   // Entitlements: 'vip' (VIP) and 'plus' (PLUS). VIP includes everything in PLUS.
   const ents: string[] = [...(ev.entitlement_ids ?? []), ...(ev.entitlement_id ? [ev.entitlement_id] : [])];
   const eventTier: 'vip' | 'plus' | null = ents.includes('vip') ? 'vip' : ents.includes('plus') ? 'plus' : null;

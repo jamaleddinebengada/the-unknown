@@ -1,13 +1,14 @@
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, useFonts } from '@expo-google-fonts/inter';
 import { DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/Overlay';
 import { colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
+import { initI18n, useLanguage } from '@/i18n';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -18,11 +19,15 @@ const theme = {
 
 function RootNavigator() {
   const { ready, entered } = useAuth();
+  useLanguage(); // re-render screens when the language changes
   useEffect(() => { if (ready) SplashScreen.hideAsync().catch(() => {}); }, [ready]);
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'fade_from_bottom' }}>
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
+      <Stack.Screen name="account" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="auth-callback" options={{ animation: 'fade' }} />
       <Stack.Protected guard={!entered} redirectTo="/">
         <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
         <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
@@ -53,6 +58,9 @@ function RootNavigator() {
         <Stack.Screen name="saved" />
         <Stack.Screen name="rewards" />
         <Stack.Screen name="privacy" />
+        <Stack.Screen name="wallet" />
+        <Stack.Screen name="verify" />
+        <Stack.Screen name="admin" />
       </Stack.Protected>
     </Stack>
   );
@@ -60,6 +68,8 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold });
+  const [i18nReady, setI18nReady] = useState(false);
+  useEffect(() => { initI18n().finally(() => setI18nReady(true)); }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       {/* Short entrance animations always finish (with "remove animations" on, Android otherwise leaves
@@ -70,7 +80,7 @@ export default function RootLayout() {
           <AuthProvider>
             <ToastProvider>
               <StatusBar style="dark" />
-              {fontsLoaded ? <RootNavigator /> : null}
+              {fontsLoaded && i18nReady ? <RootNavigator /> : null}
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

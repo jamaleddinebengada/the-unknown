@@ -38,6 +38,16 @@ export const mediaUrl = (path?: string | null) =>
 export function friendlyError(e: unknown): string {
   const msg = (e as { message?: string })?.message ?? String(e);
   if (!isSupabaseConfigured) return 'The community is unreachable right now. Please try again in a moment.';
+  if (msg.includes('not_enough_coins')) return 'Not enough coins. Top up in your wallet.';
+  if (msg.includes('already_boosted')) return 'Your Boost is already running.';
+  if (msg.includes('free_boost_used')) return 'Your free weekly Boost was already used.';
+  if (msg.includes('verification_pending')) return 'Your verification is being reviewed.';
+  if (msg.includes('already_verified')) return 'You are already verified.';
+  if (msg.includes('Invalid login credentials')) return 'Wrong email or password.';
+  if (msg.includes('Email not confirmed')) return 'Please confirm your email first — check your inbox.';
+  if (msg.includes('already been registered') || msg.includes('already registered')) return 'This email already has an account. Sign in instead.';
+  if (msg.includes('Password should be')) return 'Use a password with at least 8 characters.';
+  if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet.';
   if (msg.includes('rate_limited')) return 'You are going a little fast. Take a breath and try again soon.';
   if (msg.includes('daily_limit_reached')) return 'You have used today’s matches. New ones arrive tomorrow — or upgrade for more.';
   if (msg.includes('plus_required')) return 'Saving favorites is part of UNKNOWN VIP.';

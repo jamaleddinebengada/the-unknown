@@ -124,7 +124,7 @@ export const getConversation = (id: string) =>
   rpc<ConversationDetail[]>('get_conversation', { p_conv: id }).then((r) => r[0] ?? null);
 export const getMessages = (id: string, before?: string) =>
   rpc<Message[]>('get_messages', { p_conv: id, p_before: before ?? null, p_limit: 50 });
-export async function sendMessage(conversationId: string, body: string, kind: 'text' | 'prompt' | 'image' | 'voice' = 'text', mediaPath?: string, replyTo?: string | null) {
+export async function sendMessage(conversationId: string, body: string, kind: 'text' | 'prompt' | 'image' | 'voice' | 'video' = 'text', mediaPath?: string, replyTo?: string | null) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error('not_authenticated');
   const { error } = await supabase.from('messages').insert({
@@ -133,8 +133,8 @@ export async function sendMessage(conversationId: string, body: string, kind: 't
   if (error) throw error;
 }
 /** Private chat media (only the two participants can read it). */
-export async function uploadChatMedia(conversationId: string, localUri: string, kind: 'image' | 'voice', mime: string) {
-  const ext = kind === 'voice' ? 'm4a' : mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+export async function uploadChatMedia(conversationId: string, localUri: string, kind: 'image' | 'voice' | 'video', mime: string) {
+  const ext = kind === 'voice' ? 'm4a' : kind === 'video' ? (mime.includes('quicktime') ? 'mov' : mime.includes('3gp') ? '3gp' : 'mp4') : mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const body = await (await fetch(localUri)).arrayBuffer();
   const { error } = await supabase.storage.from('chat-media').upload(path, body, { contentType: mime, upsert: false });
@@ -245,6 +245,8 @@ export async function aiAssist(action: AiAction, text: string, extra?: Record<st
 export interface AiCharacter {
   id: string; name: string; role: string; tagline: string; bio: string; personality: string; style: string;
   interests: string[]; languages: string[]; starters: string[]; avatar_seed: string; accent: string; sort: number;
+  /** optional realistic portrait (https, set by admins in Supabase) — falls back to the bundled illustration */
+  portrait_url?: string | null;
 }
 export interface AiMessage { id: string; role: 'user' | 'assistant'; content: string; created_at: string }
 export async function getAiCharacters(): Promise<AiCharacter[]> {
@@ -309,3 +311,46 @@ export const getFavorites = () => rpc<PersonCard[]>('get_favorites');
 export const getMyLikes = () => rpc<{ count: number; locked: boolean; people: PersonCard[] }>('get_my_likes');
 export const getMyVisitors = () => rpc<{ count: number; locked: boolean; people: PersonCard[] }>('get_my_visitors');
 export const getMyNearby = () => rpc<{ enabled: boolean; city: string | null; country_code: string | null; updated_at: string | null; expired: boolean }>('get_my_nearby');
+
+
+/* ---------------- coins, gifts & boosts (all balance changes happen on the server) ---------------- */
+export interface Wallet { balance: number; boosted_until: string | null; free_boost_available: boolean; history: { delta: number; reason: string; created_at: string }[] }
+export interface Gift { id: string; name: string; emoji: string; price: number }
+export const getWallet = () => rpc<Wallet>('get_wallet');
+export async function getGiftCatalog(): Promise<Gift[]> {
+  const { data, error } = await supabase.from('gift_catalog').select('id, name, emoji, price').order('sort');
+  if (error) throw error;
+  return data as Gift[];
+}
+export const sendGift = (number: number, giftId: string) => rpc<{ balance: number; conversation_id: string | null }>('send_gift', { p_number: number, p_gift: giftId });
+export const getReceivedGifts = () => rpc<{ total: number; by_gift: { emoji: string; name: string; count: number }[] }>('get_received_gifts');
+export const buyBoost = (useFree = false) => rpc<{ boosted_until: string; balance: number }>('buy_boost', { p_use_free: useFree });
+
+/* ---------------- identity verification ---------------- */
+export interface VerificationState { verified: boolean; request: { status: 'pending' | 'approved' | 'rejected'; note: string | null; created_at: string } | null }
+export const getMyVerification = () => rpc<VerificationState>('get_my_verification');
+export async function submitVerification(localUri: string, mime: string, gesture: string) {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error('not_authenticated');
+  const path = `${u.user.id}/${Date.now()}.${mime.includes('png') ? 'png' : 'jpg'}`;
+  const body = await (await fetch(localUri)).arrayBuffer();
+  const { error } = await supabase.storage.from('verifications').upload(path, body, { contentType: mime, upsert: false });
+  if (error) throw error;
+  return rpc<{ status: string }>('submit_verification', { p_path: path, p_gesture: gesture });
+}
+
+/* ---------------- admin & moderation (server checks profiles.is_admin) ---------------- */
+export interface AdminOverview { members: number; active_24h: number; new_7d: number; nearby_on: number; open_reports: number; pending_verifications: number; premium: number; suspended: number }
+export interface AdminReport { id: string; type: string; reason: string; details: string | null; status: string; created_at: string; reporter: number | null; target_number: number | null; target_name: string | null; target_status: string | null; target_reports: number; content: string | null }
+export interface AdminVerification { id: string; path: string; gesture: string; created_at: string; number: number; name: string | null }
+export const adminOverview = () => rpc<AdminOverview>('admin_overview');
+export const adminReports = (status: 'open' | 'all' = 'open') => rpc<AdminReport[]>('admin_reports', { p_status: status });
+export const adminResolveReport = (id: string, action: 'dismiss' | 'remove_content' | 'suspend_user' | 'ban_user', note?: string) => rpc<void>('admin_resolve_report', { p_report: id, p_action: action, p_note: note ?? null });
+export const adminSetUserStatus = (number: number, status: 'active' | 'suspended' | 'banned') => rpc<void>('admin_set_user_status', { p_number: number, p_status: status });
+export const adminVerifications = () => rpc<AdminVerification[]>('admin_verifications');
+export const adminReviewVerification = (id: string, approve: boolean, note?: string) => rpc<void>('admin_review_verification', { p_id: id, p_approve: approve, p_note: note ?? null });
+export const adminLookupUser = (number: number) => rpc<Record<string, unknown> | null>('admin_lookup_user', { p_number: number });
+export async function verificationSelfieUrl(path: string) {
+  const { data } = await supabase.storage.from('verifications').createSignedUrl(path, 600);
+  return data?.signedUrl ?? null;
+}

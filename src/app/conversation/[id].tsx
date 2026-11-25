@@ -4,7 +4,9 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { GiftSheet } from '@/features/wallet/GiftSheet';
 import Animated, { FadeIn, FadeInUp, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
 import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
@@ -47,6 +49,7 @@ export default function Conversation() {
   const { session } = useAuth();
   const [conv, setConv] = useState<ConversationDetail | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [giftOpen, setGiftOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [text, setText] = useState('');
@@ -134,18 +137,23 @@ export default function Conversation() {
     } catch (e) { toast(friendlyError(e), 'error'); } finally { setSending(false); }
   };
 
-  const sendMedia = async (kind: 'image' | 'voice', uri: string, mime: string) => {
+  const sendMedia = async (kind: 'image' | 'voice' | 'video', uri: string, mime: string) => {
     setUploading(true);
     try {
       const path = await uploadChatMedia(id, uri, kind, mime);
-      await sendMessage(id, kind === 'voice' ? '🎙️ Voice message' : '📷 Photo', kind, path, replyTo?.id);
+      await sendMessage(id, kind === 'voice' ? '🎙️ Voice message' : kind === 'video' ? '🎬 Video' : '📷 Photo', kind, path, replyTo?.id);
       setReplyTo(null); haptic.success();
       await loadMessages();
     } catch (e) { toast(friendlyError(e), 'error'); } finally { setUploading(false); }
   };
   const pickImage = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!res.canceled && res.assets[0]) sendMedia('image', res.assets[0].uri, res.assets[0].mimeType ?? 'image/jpeg');
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images', 'videos'], quality: 0.8, videoMaxDuration: 60 });
+    const a = res.canceled ? null : res.assets[0];
+    if (!a) return;
+    if (a.type === 'video') {
+      if ((a.fileSize ?? 0) > 25 * 1024 * 1024) { toast('Videos can be up to 25 MB.', 'error'); return; }
+      sendMedia('video', a.uri, a.mimeType ?? 'video/mp4');
+    } else sendMedia('image', a.uri, a.mimeType ?? 'image/jpeg');
   };
   const toggleVoice = async () => {
     try {
@@ -234,6 +242,12 @@ export default function Conversation() {
             setMessages((p) => [...p, ...older.filter((o) => !p.some((x) => x.id === o.id))]);
           }}
           renderItem={({ item }) => {
+            if (item.kind === 'gift') return (
+              <Animated.View entering={FadeInUp} style={[st.gift, { alignSelf: item.is_mine ? 'flex-end' : 'flex-start' }]}>
+                <Text style={{ fontSize: 44 }}>{item.body?.split(' ')[0]}</Text>
+                <T v="caption" color={colors.textSecondary}>{item.is_mine ? 'You sent' : 'Sent you'} {item.body?.split(' ').slice(1).join(' ')}</T>
+              </Animated.View>
+            );
             if (item.kind === 'system') return <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', marginVertical: 10, paddingHorizontal: spacing.xl }}>{item.body}</T>;
             const mine = !!item.is_mine;
             if (item.kind === 'prompt') {
@@ -256,6 +270,8 @@ export default function Conversation() {
                   })()}
                   {item.kind === 'image' && item.media_path && media.get(item.media_path) ? (
                     <Image source={{ uri: media.get(item.media_path) }} style={st.photo} contentFit="cover" transition={200} accessibilityLabel="Shared photo" />
+                  ) : item.kind === 'video' && item.media_path && media.get(item.media_path) ? (
+                    <ChatVideo uri={media.get(item.media_path)!} />
                   ) : item.kind === 'voice' && item.media_path && media.get(item.media_path) ? (
                     <VoicePlayer uri={media.get(item.media_path)!} seed={item.id} />
                   ) : <T color={colors.text}>{item.body}</T>}
@@ -295,7 +311,12 @@ export default function Conversation() {
               </View>
             )}
             <View style={st.composer}>
-              <Pressable accessibilityRole="button" accessibilityLabel="Send a photo" onPress={pickImage} disabled={uploading || rec.isRecording} style={st.tool}>
+              {!isGroup && conv.other_number && (
+                <Pressable accessibilityRole="button" accessibilityLabel="Send a gift" onPress={() => setGiftOpen(true)} disabled={uploading || rec.isRecording} style={st.tool}>
+                  <Ionicons name="gift-outline" size={21} color={colors.coral} />
+                </Pressable>
+              )}
+              <Pressable accessibilityRole="button" accessibilityLabel="Send a photo or video" onPress={pickImage} disabled={uploading || rec.isRecording} style={st.tool}>
                 {uploading ? <ActivityIndicator size="small" color={colors.text} /> : <Ionicons name="image-outline" size={21} color={colors.text} />}
               </Pressable>
               <Pressable accessibilityRole="button" accessibilityLabel={rec.isRecording ? 'Stop and send voice message' : 'Record a voice message'} onPress={toggleVoice} disabled={uploading}
@@ -335,11 +356,20 @@ export default function Conversation() {
       </BottomSheet>
       {!isGroup && <RevealSheet conv={conv} visible={reveal} onClose={() => setReveal(false)} onChanged={loadConv} />}
       <ReportSheet target={reportTarget} onClose={() => setReportTarget(null)} />
+      {!isGroup && conv.other_number ? <GiftSheet visible={giftOpen} onClose={() => setGiftOpen(false)} number={conv.other_number} onSent={() => loadMessages()} /> : null}
     </Screen>
   );
 }
 
+/** Inline video message (private signed URL, native controls, never autoplays). */
+function ChatVideo({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri, (p) => { p.loop = false; });
+  return <VideoView player={player} style={st.video} nativeControls contentFit="cover" />;
+}
+
 const st = StyleSheet.create({
+  gift: { alignItems: 'center', gap: 2, paddingVertical: 10, paddingHorizontal: 18, marginVertical: 4, borderRadius: 20, backgroundColor: '#FFF0F3', borderWidth: 1, borderColor: '#FFD1DB' },
+  video: { width: 230, height: 300, borderRadius: 14, backgroundColor: '#000', marginBottom: 4 },
   quote: { borderLeftWidth: 3, borderLeftColor: colors.primaryDeep, paddingLeft: 8, marginBottom: 6, backgroundColor: 'rgba(255,255,255,0.55)', borderRadius: 6, paddingVertical: 4 },
   photo: { width: 220, height: 220, borderRadius: 14, marginBottom: 4 },
   reacts: { flexDirection: 'row', gap: 4, marginTop: -6 },

@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -25,7 +26,7 @@ function Shortcut({ icon, label, onPress, gold }: { icon: keyof typeof Ionicons.
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => { haptic.tap(); onPress(); }} style={s.short}>
       <View style={[s.shortIcon, gold && { backgroundColor: '#FFF4DD' }]}><Ionicons name={icon} size={20} color={gold ? colors.gold : colors.violet} /></View>
-      <Text style={s.shortText}>{label}</Text>
+      <Text style={s.shortText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{label}</Text>
     </Pressable>
   );
 }
@@ -105,6 +106,19 @@ export default function MyProfile() {
         <Shortcut icon="trophy-outline" label="Challenges" onPress={() => router.push('/challenges')} />
         <Shortcut icon="diamond-outline" label={plan && plan.tier !== 'free' ? TIER_LABEL[plan.tier] : 'Premium'} gold onPress={() => router.push('/premium')} />
       </View>
+      <View style={s.shortcuts}>
+        <Shortcut icon="wallet-outline" label={t('profile.wallet')} onPress={() => router.push('/wallet')} />
+        <Shortcut icon={profile.is_verified ? 'checkmark-circle' : 'checkmark-circle-outline'} label={t('profile.verify')} onPress={() => router.push('/verify')} />
+        <Shortcut icon="shield-outline" label={t('profile.account')} onPress={() => router.push('/account')} />
+        <Shortcut icon="globe-outline" label={t('profile.language')} onPress={() => router.push('/language')} />
+      </View>
+      {profile.is_admin && (
+        <Pressable onPress={() => router.push('/admin')} style={s.vis} accessibilityRole="button">
+          <Ionicons name="hammer-outline" size={18} color={colors.primary} />
+          <T v="caption" color={colors.text} style={{ flex: 1, fontFamily: fonts.semibold }}>{t('profile.admin')}</T>
+          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+        </Pressable>
+      )}
       <T v="section" style={{ marginTop: spacing.sm }}>Your posts</T>
     </View>
   );
@@ -134,5 +148,5 @@ const s = StyleSheet.create({
   shortcuts: { flexDirection: 'row', gap: 10 },
   short: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 12, borderRadius: 18, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   shortIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blush },
-  shortText: { fontFamily: fonts.semibold, fontSize: 12.5, color: colors.text },
+  shortText: { fontFamily: fonts.semibold, fontSize: 12, color: colors.text },
 });

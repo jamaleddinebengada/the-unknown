@@ -15,11 +15,15 @@ const PORTRAITS: Record<string, number> = {
   'emma-ai': require('../../assets/ai/emma.png'), 'leo-ai': require('../../assets/ai/leo.png'),
   'sara-ai': require('../../assets/ai/sara.png'), 'oliver-ai': require('../../assets/ai/oliver.png'),
   'nina-ai': require('../../assets/ai/nina.png'), 'yuki-ai': require('../../assets/ai/yuki.png'),
+  'karim-ai': require('../../assets/ai/karim.png'), 'ines-ai': require('../../assets/ai/ines.png'),
+  'mateo-ai': require('../../assets/ai/mateo.png'), 'amara-ai': require('../../assets/ai/amara.png'),
+  'hugo-ai': require('../../assets/ai/hugo.png'), 'lea-ai': require('../../assets/ai/lea.png'),
+  'omar-ai': require('../../assets/ai/omar.png'), 'zara-ai': require('../../assets/ai/zara.png'),
 };
 
 /** Original illustrated portrait for a fictional AI character ("Notionists" by Zoish, CC0) + a visible AI badge. */
-export const AiPortrait = memo(function AiPortrait({ seed, accent = '#168AF7', size = 64, badge = false, rounded = 'circle', style }: {
-  seed: string; accent?: string; size?: number; badge?: boolean; rounded?: 'circle' | 'card'; style?: StyleProp<ViewStyle>;
+export const AiPortrait = memo(function AiPortrait({ seed, portrait, accent = '#168AF7', size = 64, badge = false, rounded = 'circle', style }: {
+  seed: string; portrait?: string | null; accent?: string; size?: number; badge?: boolean; rounded?: 'circle' | 'card'; style?: StyleProp<ViewStyle>;
 }) {
   // Android's SVG renderer drops DiceBear's viewBox <mask>, so strip it (it only clips to the viewBox) and the metadata.
   const asset = PORTRAITS[seed];
@@ -31,7 +35,7 @@ export const AiPortrait = memo(function AiPortrait({ seed, accent = '#168AF7', s
   return (
     <View style={[{ width: size, height: size }, style]} accessibilityLabel="AI character portrait">
       <LinearGradient colors={['#FFFFFF', `${accent}55`]} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={{ width: size, height: size, borderRadius: r, overflow: 'hidden', borderWidth: 1, borderColor: '#E2E8F0' }}>
-        {asset ? <Image source={asset} style={{ width: size, height: size }} contentFit="cover" /> : <SvgXml xml={xml} width={size} height={size} />}
+        {portrait?.startsWith('https://') ? <Image source={{ uri: portrait }} placeholder={asset} style={{ width: size, height: size }} contentFit="cover" transition={200} /> : asset ? <Image source={asset} style={{ width: size, height: size }} contentFit="cover" /> : <SvgXml xml={xml} width={size} height={size} />}
       </LinearGradient>
       {badge && <AiBadge small={size < 70} style={rounded === 'circle' ? { position: 'absolute', right: -4, bottom: -2 } : { position: 'absolute', left: 10, top: 10 }} />}
     </View>

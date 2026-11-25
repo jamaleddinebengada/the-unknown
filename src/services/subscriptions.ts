@@ -101,3 +101,38 @@ export async function restorePurchases(): Promise<'free' | PaidTier> {
 export async function manageSubscription() {
   if (subscriptionsAvailable) await Purchases.showManageSubscriptions();
 }
+
+/* ---------------- coins (consumable in-app products) ----------------
+ * Google Play one-time products: coins_100, coins_500, coins_1200, coins_3000, coins_7000.
+ * RevenueCat offering "coins" with one package per product. The coins are added on the server by the
+ * RevenueCat webhook (idempotent per store transaction) — the app never adds coins by itself. */
+export const COIN_AMOUNTS: Record<string, number> = { coins_100: 100, coins_500: 500, coins_1200: 1200, coins_3000: 3000, coins_7000: 7000 };
+export const coinAmountOf = (productId: string) => COIN_AMOUNTS[productId.split(':')[0].toLowerCase()] ?? 0;
+
+export interface CoinPack { productId: string; coins: number; price: string; pkg: PurchasesPackage }
+
+export async function getCoinPacks(): Promise<CoinPack[]> {
+  if (!subscriptionsAvailable) return [];
+  const offerings = await Purchases.getOfferings();
+  const pkgs = [...(offerings.all.coins?.availablePackages ?? []), ...(offerings.current?.availablePackages ?? [])];
+  const seen = new Set<string>();
+  return pkgs.flatMap((pkg) => {
+    const id = pkg.product.identifier;
+    const coins = coinAmountOf(id);
+    if (!coins || seen.has(id)) return [];
+    seen.add(id);
+    return [{ productId: id, coins, price: pkg.product.priceString, pkg }];
+  }).sort((a, b) => a.coins - b.coins);
+}
+
+/** Returns false when the user cancels. Success only means Google Play charged; coins arrive via the webhook. */
+export async function buyCoins(pack: CoinPack): Promise<boolean> {
+  try {
+    await Purchases.purchasePackage(pack.pkg);
+    return true;
+  } catch (e) {
+    const err = e as { userCancelled?: boolean; code?: string };
+    if (err.userCancelled || err.code === Purchases.PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) return false;
+    throw e;
+  }
+}

@@ -33,6 +33,14 @@ jobs:
       - run: npm ci
       - name: Type-check and unit tests
         run: npx tsc --noEmit && npm test
+      - name: Firebase config for push notifications (only when the GOOGLE_SERVICES_JSON secret exists)
+        env: { GOOGLE_SERVICES_JSON: '${{ secrets.GOOGLE_SERVICES_JSON }}' }
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json
+            node -e "const f='app.json',j=require('./'+f);j.expo.android.googleServicesFile='./google-services.json';require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+            echo "push: Firebase config added"
+          else echo "push: no GOOGLE_SERVICES_JSON secret — building without FCM"; fi
       - run: npx expo prebuild --platform android --no-install
       - name: Assemble release APK (signed with the debug key, for testing)
         working-directory: android

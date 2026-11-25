@@ -81,7 +81,7 @@ function AiRow() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: spacing.md }}>
         {list.slice(0, 8).map((c) => (
           <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={`${c.name}, fictional AI character, ${c.role}`} onPress={() => router.push({ pathname: '/ai/[id]', params: { id: c.id } })} style={styles.aiCard}>
-            <AiPortrait seed={c.avatar_seed} accent={c.accent} size={104} rounded="card" badge={false} />
+            <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={104} rounded="card" badge={false} />
             <T style={{ fontFamily: fonts.bold }}>{c.name}</T>
             <T v="caption" color={colors.textMuted} numberOfLines={1}>{c.role}</T>
           </Pressable>

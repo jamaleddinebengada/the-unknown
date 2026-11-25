@@ -1,3 +1,4 @@
+import { t, type TKey } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { useEffect, useState } from 'react';
@@ -22,14 +23,15 @@ function TabItem({ name, focused, onPress, badge }: { name: string; focused: boo
   useEffect(() => { v.set(withSpring(focused ? 1 : 0, { damping: 16, stiffness: 220 })); }, [focused, v]);
   const icon = useAnimatedStyle(() => ({ transform: [{ scale: 1 + 0.08 * v.value }] }));
   if (!m) return null;
+  const label = t(`tabs.${name}` as TKey);
   return (
-    <Pressable accessibilityRole="tab" accessibilityState={{ selected: focused }} accessibilityLabel={m.label}
+    <Pressable accessibilityRole="tab" accessibilityState={{ selected: focused }} accessibilityLabel={label}
       onPress={() => { haptic.tap(); onPress(); }} style={s.item}>
       <Animated.View style={icon}>
         <Ionicons name={focused ? m.iconOn : m.icon} size={24} color={focused ? colors.primary : colors.textMuted} />
         {!!badge && <NotificationBadge count={badge} style={{ position: 'absolute', top: -5, right: -11 }} />}
       </Animated.View>
-      <Animated.Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={[s.label, focused && { color: colors.primary, fontFamily: fonts.semibold }]}>{m.label}</Animated.Text>
+      <Animated.Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={[s.label, focused && { color: colors.primary, fontFamily: fonts.semibold }]}>{label}</Animated.Text>
     </Pressable>
   );
 }

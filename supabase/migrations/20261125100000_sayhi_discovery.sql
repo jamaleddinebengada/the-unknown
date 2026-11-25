@@ -29,7 +29,6 @@ create table if not exists public.swipes (
   primary key (swiper, target)
 );
 create index if not exists swipes_target_idx on public.swipes (target, action);
-create index if not exists favorites_target_idx on public.favorites (target_id);
 alter table public.swipes enable row level security;          -- RPC only
 
 create table if not exists public.favorites (
@@ -38,6 +37,7 @@ create table if not exists public.favorites (
   created_at timestamptz not null default now(),
   primary key (user_id, target_id)
 );
+create index if not exists favorites_target_idx on public.favorites (target_id);
 alter table public.favorites enable row level security;       -- RPC only
 
 create table if not exists public.profile_visits (

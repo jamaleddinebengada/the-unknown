@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GiftSheet } from '@/features/wallet/GiftSheet';
 import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { MaskAvatar } from '@/components/PersonAvatar';
 import { PostCard } from '@/components/PostCard';
@@ -37,6 +38,7 @@ export default function UserProfile() {
   const [page, setPage] = useState(0);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [liking, setLiking] = useState(false);
+  const [gift, setGift] = useState(false);
   const posts = usePaged<FeedPost>((o) => getUserPosts(n, o), String(n));
   const meta = usePersonMeta(p?.has_photo || p ? n : null);
   const actions = usePersonActions(setP);
@@ -108,6 +110,7 @@ export default function UserProfile() {
           <ActionBtn icon={p.i_liked ? 'heart' : 'heart-outline'} label={p.i_liked ? 'Liked' : 'Like'} color={colors.coral} onPress={like} disabled={p.i_liked || liking} />
           <ActionBtn icon="chatbubble-ellipses" label="Say hi" color={colors.white} bg={colors.primary} onPress={() => actions.sayHi(p)} busy={actions.busy === `hi${n}`} />
           <ActionBtn icon={p.is_favorite ? 'star' : 'star-outline'} label={p.is_favorite ? 'Favorite' : 'Add'} color={colors.vip} onPress={() => actions.favorite(p)} />
+          <ActionBtn icon="gift" label="Gift" color={colors.coral} onPress={() => setGift(true)} />
         </View>
         <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>“Say hi” sends a chat request. The conversation opens when they accept — or right away if you like each other.</T>
 
@@ -144,6 +147,7 @@ export default function UserProfile() {
         <SheetAction icon="ban-outline" label="Block" danger onPress={block} />
       </BottomSheet>
       <ReportSheet target={reportTarget} onClose={() => setReportTarget(null)} />
+      {!p.is_me && <GiftSheet visible={gift} onClose={() => setGift(false)} number={n} />}
     </View>
   );
 }

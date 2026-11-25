@@ -44,7 +44,7 @@ export default function AiCharacters() {
             <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * 45).springify().damping(18)}>
               <Float index={index} amplitude={3}>
                 <Pressable accessibilityRole="button" accessibilityLabel={`${item.name}, AI ${item.role}`} onPress={() => { haptic.tap(); router.push({ pathname: '/ai/[id]', params: { id: item.id } }); }} style={[s.card, { width: w }]}>
-                  <AiPortrait seed={item.avatar_seed} accent={item.accent} size={w - 20} rounded="card" />
+                  <AiPortrait seed={item.avatar_seed} portrait={item.portrait_url} accent={item.accent} size={w - 20} rounded="card" />
                   <View style={{ gap: 2, paddingHorizontal: 2 }}>
                     <Text style={s.name}>{item.name}</Text>
                     <T v="caption" color={colors.textSecondary} numberOfLines={1}>{item.role}</T>

@@ -22,7 +22,7 @@ export default function AiCharacterProfile() {
       {error ? <ErrorState message="Could not load this character." onRetry={reload} /> : !list ? <ActivityIndicator color={colors.primaryDeep} style={{ marginTop: 60 }} /> : !c ? <ErrorState message="This character is not available." /> : (
         <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: 40 }}>
           <Animated.View entering={ZoomIn.springify().damping(14)} style={{ alignItems: 'center' }}>
-            <AiPortrait seed={c.avatar_seed} accent={c.accent} size={220} rounded="card" badge={false} />
+            <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={220} rounded="card" badge={false} />
           </Animated.View>
           <View style={{ alignItems: 'center', gap: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={s.name}>{c.name}</Text><AiBadge /></View>

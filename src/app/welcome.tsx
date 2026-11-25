@@ -1,8 +1,9 @@
+import { getLanguage, t, type TKey } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeInUp, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaskLogo } from '@/components/Brand';
@@ -10,10 +11,10 @@ import { GradientButton, T } from '@/components/ui';
 import { colors, fonts, spacing } from '@/constants/theme';
 import { haptic } from '@/utils/format';
 
-const POINTS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
-  { icon: 'location', title: 'People nearby', body: 'Discover real people around you — only approximate distance is ever shown.' },
-  { icon: 'heart', title: 'Match & chat', body: 'Like each other to match, or say hi and start a conversation.' },
-  { icon: 'shield-checkmark', title: 'Private by design', body: 'Stay anonymous as long as you want. Reveal yourself only when you both agree.' },
+const POINTS: { icon: keyof typeof Ionicons.glyphMap; title: TKey; body: TKey }[] = [
+  { icon: 'location', title: 'welcome.p1', body: 'welcome.p1b' },
+  { icon: 'heart', title: 'welcome.p2', body: 'welcome.p2b' },
+  { icon: 'shield-checkmark', title: 'welcome.p3', body: 'welcome.p3b' },
 ];
 
 function Ring({ size, delay }: { size: number; delay: number }) {
@@ -39,22 +40,28 @@ export default function Welcome() {
           <Animated.View entering={FadeInDown.springify().damping(14)} style={s.logo}><MaskLogo size={78} tone="white" /></Animated.View>
         </View>
         <Text style={s.brand}>THE UNKNOWN</Text>
+        <Pressable onPress={() => router.push('/language')} style={[s.lang, { top: insets.top + 10 }]} accessibilityLabel="Language" hitSlop={8}>
+          <Ionicons name="globe-outline" size={16} color="#fff" /><Text style={s.langText}>{getLanguage().toUpperCase()}</Text>
+        </Pressable>
       </LinearGradient>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md, gap: spacing.md }} showsVerticalScrollIndicator={false}>
-        <Animated.Text entering={FadeInDown.delay(100)} style={s.title}>Meet new people near you</Animated.Text>
+        <Animated.Text entering={FadeInDown.delay(100)} style={s.title}>{t('welcome.title')}</Animated.Text>
         {POINTS.map((p, i) => (
           <Animated.View key={p.title} entering={FadeInDown.delay(180 + i * 90).duration(350)} style={s.point}>
             <View style={s.pointIcon}><Ionicons name={p.icon} size={18} color={colors.primary} /></View>
             <View style={{ flex: 1 }}>
-              <Text style={s.pointTitle}>{p.title}</Text>
-              <T v="caption" color={colors.textMuted}>{p.body}</T>
+              <Text style={s.pointTitle}>{t(p.title)}</Text>
+              <T v="caption" color={colors.textMuted}>{t(p.body)}</T>
             </View>
           </Animated.View>
         ))}
       </ScrollView>
       <Animated.View entering={FadeInUp.delay(400)} style={{ padding: spacing.lg, paddingBottom: insets.bottom + spacing.md, gap: 8 }}>
-        <GradientButton label="Get started" arrow onPress={() => { haptic.soft(); router.push('/setup'); }} />
-        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>For adults 18+ only. By continuing you accept the Community Guidelines.</T>
+        <GradientButton label={t('welcome.start')} arrow onPress={() => { haptic.soft(); router.push('/setup'); }} />
+        <Pressable onPress={() => router.push({ pathname: '/account', params: { mode: 'signin' } })} style={{ alignSelf: 'center', padding: 6 }} accessibilityRole="button">
+          <Text style={s.signIn}>{t('welcome.signIn')}</Text>
+        </Pressable>
+        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>{t('welcome.adults')}</T>
       </Animated.View>
     </View>
   );
@@ -64,6 +71,9 @@ const s = StyleSheet.create({
   hero: { alignItems: 'center', justifyContent: 'center', borderBottomLeftRadius: 32, borderBottomRightRadius: 32, paddingBottom: 20 },
   logo: { width: 120, height: 120, borderRadius: 60, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' },
   brand: { fontFamily: fonts.extrabold, fontSize: 24, letterSpacing: 4, color: colors.white, marginTop: -10 },
+  signIn: { fontFamily: fonts.semibold, fontSize: 14, color: colors.primary },
+  lang: { position: 'absolute', right: 16, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.18)' },
+  langText: { fontFamily: fonts.semibold, fontSize: 12, color: '#fff' },
   title: { fontFamily: fonts.extrabold, fontSize: 26, letterSpacing: -0.6, color: colors.text },
   point: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   pointIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },

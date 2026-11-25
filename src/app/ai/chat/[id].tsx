@@ -71,7 +71,7 @@ export default function AiChat() {
       <View style={s.header}>
         <IconButton label="Back" name="chevron-back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/ai'))} />
         {c && <Pressable onPress={() => router.push({ pathname: '/ai/[id]', params: { id: c.id } })} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-          <AiPortrait seed={c.avatar_seed} accent={c.accent} size={42} badge={false} />
+          <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={42} badge={false} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text style={s.name}>{c.name}</Text><AiBadge small /></View>
             <T v="caption" color={colors.textMuted}>{sending ? "typing…" : `Fictional AI character · ${c.role}`}</T>
@@ -86,7 +86,7 @@ export default function AiChat() {
             contentContainerStyle={{ padding: spacing.md, gap: 10, flexGrow: 1 }}
             ListEmptyComponent={c ? (
               <View style={{ alignItems: 'center', gap: 10, paddingTop: 30 }}>
-                <AiPortrait seed={c.avatar_seed} accent={c.accent} size={110} />
+                <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={110} />
                 <T style={{ fontFamily: fonts.bold }}>Say hi to {c.name}</T>
                 <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>{c.name} is a fictional AI. Don’t share private details like your address, phone or passwords.</T>
                 <View style={{ gap: 8, alignSelf: 'stretch', marginTop: 8 }}>

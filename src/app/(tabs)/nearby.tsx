@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -128,7 +129,13 @@ export default function Nearby() {
     } catch (e) { if (id === reqId.current) toast(friendlyError(e), 'error'); } finally { if (id === reqId.current) { setLoading(false); setRefreshing(false); } }
   }, [worldwide, km, filters, sort, people.length, status, toast]);
 
-  useFocusEffect(useCallback(() => { loadStatus(); }, [loadStatus]));
+  // refresh every time the screen is opened (status may have changed elsewhere; people come and go)
+  const searchRef = useRef(search);
+  useEffect(() => { searchRef.current = search; }, [search]);
+  const focused = useRef(false);
+  useFocusEffect(useCallback(() => {
+    loadStatus().then((st) => { if (focused.current && st) searchRef.current(true, st); focused.current = true; });
+  }, [loadStatus]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (status) search(true); }, [status?.enabled, status?.expired, km, sort, filters]);
 
@@ -173,7 +180,7 @@ export default function Nearby() {
     <View style={{ gap: spacing.sm, paddingBottom: spacing.sm }}>
       <View style={s.top}>
         <View style={{ flex: 1 }}>
-          <Text style={s.title}>Nearby</Text>
+          <Text style={s.title}>{t('nearby.title')}</Text>
           <Pressable onPress={() => setSheet('city')} hitSlop={6} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityRole="button" accessibilityLabel="Change area">
             <Ionicons name="location" size={14} color={colors.primary} />
             <Text style={s.sub} numberOfLines={1}>{worldwide ? 'Worldwide' : nearbyOn ? `${status?.city ?? 'Your area'}${status?.country_code ? ` ${flagOf(status.country_code)}` : ''}` : 'Location off'}</Text>
@@ -202,8 +209,8 @@ export default function Nearby() {
       {!status ? <ActivityIndicator color={colors.primary} style={{ marginTop: 60 }} /> : showEnable ? (
         <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120, alignItems: 'center', gap: spacing.md }}>
           <Animated.View entering={FadeIn.duration(500)}><Radar size={Math.min(width * 0.62, 260)} /></Animated.View>
-          <Text style={s.hero}>{status.expired ? 'Refresh your area' : 'Meet people near you'}</Text>
-          <T color={colors.textSecondary} style={{ textAlign: 'center' }}>Turn on Nearby to see real people around you and let them find you.</T>
+          <Text style={s.hero}>{status.expired ? 'Refresh your area' : t('nearby.heroTitle')}</Text>
+          <T color={colors.textSecondary} style={{ textAlign: 'center' }}>{t('nearby.heroBody')}</T>
           <View style={s.points}>
             {[
               ['shield-checkmark-outline', 'Only an approximate area (about 2 km) is stored — never your exact position.'],
@@ -216,17 +223,17 @@ export default function Nearby() {
               </View>
             ))}
           </View>
-          <GradientButton icon="location" label={status.expired ? 'Refresh location' : 'Enable location'} loading={busy === 'locate'} onPress={locate} style={{ alignSelf: 'stretch' }} />
+          <GradientButton icon="location" label={status.expired ? 'Refresh location' : t('nearby.enable')} loading={busy === 'locate'} onPress={locate} style={{ alignSelf: 'stretch' }} />
           {denied && (
             <Pressable onPress={() => Linking.openSettings()} accessibilityRole="button" style={s.linkBtn}>
               <Ionicons name="settings-outline" size={16} color={colors.primary} /><Text style={s.link}>Open phone settings</Text>
             </Pressable>
           )}
           <Pressable onPress={() => setSheet('city')} accessibilityRole="button" style={s.linkBtn}>
-            <Ionicons name="business-outline" size={16} color={colors.primary} /><Text style={s.link}>{busy === 'city' ? 'Saving…' : 'Choose a city instead'}</Text>
+            <Ionicons name="business-outline" size={16} color={colors.primary} /><Text style={s.link}>{busy === 'city' ? 'Saving…' : t('nearby.chooseCity')}</Text>
           </Pressable>
           <Pressable onPress={() => setKm(0)} accessibilityRole="button" style={s.linkBtn}>
-            <Ionicons name="earth-outline" size={16} color={colors.primary} /><Text style={s.link}>Browse worldwide</Text>
+            <Ionicons name="earth-outline" size={16} color={colors.primary} /><Text style={s.link}>{t('nearby.worldwide')}</Text>
           </Pressable>
         </ScrollView>
       ) : loading && people.length === 0 ? (
@@ -285,11 +292,9 @@ export default function Nearby() {
           <FilterGroup title={vip ? 'Interests' : 'Interests · VIP'}>
             {INTERESTS.slice(0, 12).map((i) => { const on = !!filters.interests?.includes(i.slug); return <Chip key={i.slug} label={i.label} lock={!vip} on={on} onPress={() => (vip ? setFilters((f) => ({ ...f, interests: on ? (f.interests ?? []).filter((x) => x !== i.slug) : [...(f.interests ?? []), i.slug] })) : router.push('/premium'))} />; })}
           </FilterGroup>
-          {worldwide && (
-            <FilterGroup title={vip ? 'Country' : 'Country · VIP'}>
-              {['MA', 'FR', 'ES', 'US', 'GB', 'DE', 'IT', 'AE', 'SA', 'EG', 'TR', 'CA'].map((c) => <Chip key={c} label={`${flagOf(c)} ${countryName(c)}`} lock={!vip} on={filters.country === c} onPress={() => (vip ? setFilters((f) => ({ ...f, country: f.country === c ? null : c })) : router.push('/premium'))} />)}
-            </FilterGroup>
-          )}
+          <FilterGroup title="Country">
+            {['MA', 'DZ', 'TN', 'EG', 'SA', 'AE', 'FR', 'ES', 'BE', 'GB', 'DE', 'IT', 'US', 'CA', 'TR'].map((c) => <Chip key={c} label={`${flagOf(c)} ${countryName(c)}`} on={filters.country === c} onPress={() => setFilters((f) => ({ ...f, country: f.country === c ? null : c }))} />)}
+          </FilterGroup>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <Pressable onPress={() => setFilters({})} style={[s.linkBtn, { flex: 1, justifyContent: 'center' }]}><Text style={s.link}>Reset</Text></Pressable>
             <GradientButton small label="Show results" onPress={() => setSheet(null)} style={{ flex: 2 }} />
