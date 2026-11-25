@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from '@/components/Overlay';
 import { CategoryChip, GradientButton, IconButton, T, TextField } from '@/components/ui';
@@ -73,7 +73,7 @@ export default function Setup() {
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <View style={{ flex: 1 }}><TextField value={dob.d} onChangeText={(t) => setDob((x) => ({ ...x, d: t.replace(/\D/g, '').slice(0, 2) }))} placeholder="DD" keyboardType="number-pad" accessibilityLabel="Day" /></View>
             <View style={{ flex: 1 }}><TextField value={dob.m} onChangeText={(t) => setDob((x) => ({ ...x, m: t.replace(/\D/g, '').slice(0, 2) }))} placeholder="MM" keyboardType="number-pad" accessibilityLabel="Month" /></View>
-            <View style={{ flex: 1.4 }}><TextField value={dob.y} onChangeText={(t) => setDob((x) => ({ ...x, y: t.replace(/\D/g, '').slice(0, 4) }))} placeholder="YYYY" keyboardType="number-pad" accessibilityLabel="Year" /></View>
+            <View style={{ flex: 1.4 }}><TextField value={dob.y} onChangeText={(t) => { const y = t.replace(/\D/g, '').slice(0, 4); setDob((x) => ({ ...x, y })); if (y.length === 4) Keyboard.dismiss(); }} placeholder="YYYY" keyboardType="number-pad" accessibilityLabel="Year" /></View>
           </View>
         </Field>
         <Field label="I am">
