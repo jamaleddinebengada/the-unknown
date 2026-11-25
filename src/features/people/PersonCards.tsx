@@ -1,3 +1,5 @@
+import { LinearGradient } from 'expo-linear-gradient';
+import { traitRows } from './traits';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -82,22 +84,44 @@ function HeartButton({ on, onPress, size = 34 }: { on: boolean; onPress: () => v
   );
 }
 
-/** Grid card: large photo, name & age, approximate place, favorite + say hi. */
+/** Grid card: full-bleed photo with name over a soft shade, a few characteristics, favorite + say hi. */
 export const PersonTile = memo(function PersonTile({ p, width, onOpen, onFavorite, onSayHi, busy }: {
   p: PersonCard; width: number; onOpen: () => void; onFavorite: () => void; onSayHi: () => void; busy?: boolean;
 }) {
+  const h = width * 1.34;
+  const chips = [
+    ...traitRows(p.traits).slice(0, 2).map((r) => ({ key: r.key, icon: r.icon, label: r.label, on: false })),
+    ...(p.shared_interests.length ? p.shared_interests : p.interests).slice(0, 2).map((i) => ({ key: i, icon: undefined, label: interestLabel(i), on: p.shared_interests.includes(i) })),
+  ].slice(0, 3);
   return (
     <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`${nameOf(p)}${p.age ? `, ${p.age}` : ''}`} style={({ pressed }) => [s.tile, { width }, pressed && { transform: [{ scale: 0.98 }] }]}>
       <View>
-        <PersonPhoto p={p} width={width} height={width * 1.28} radius={0} />
+        <PersonPhoto p={p} width={width} height={h} radius={0} />
+        <LinearGradient colors={['transparent', 'rgba(15,23,42,0.05)', 'rgba(15,23,42,0.72)']} style={[StyleSheet.absoluteFill, { top: h * 0.45 }]} pointerEvents="none" />
         <Badges p={p} />
+        {p.boosted && <View style={s.boost}><Ionicons name="flash" size={11} color="#fff" /></View>}
+        <View style={s.overlay} pointerEvents="none">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text numberOfLines={1} style={s.oName}>{nameOf(p)}{p.age ? `, ${p.age}` : ''}</Text>
+            {p.is_verified && <Ionicons name="checkmark-circle" size={16} color="#7CC4FF" />}
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <Ionicons name="location" size={11} color="rgba(255,255,255,0.9)" />
+            <Text numberOfLines={1} style={s.oPlace}>{placeOf(p)}</Text>
+          </View>
+        </View>
       </View>
       <View style={s.tileInfo}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Text numberOfLines={1} style={s.name}>{nameOf(p)}{p.age ? `, ${p.age}` : ''}</Text>
-          {p.is_verified && <Ionicons name="checkmark-circle" size={15} color={colors.primary} />}
-        </View>
-        <Text numberOfLines={1} style={s.place}>{placeOf(p)}</Text>
+        {chips.length > 0 && (
+          <View style={s.chips}>
+            {chips.map((c) => (
+              <View key={c.key} style={[s.chip, c.on && { backgroundColor: colors.primarySoft }]}>
+                {c.icon && <Ionicons name={c.icon} size={11} color={colors.textMuted} />}
+                <Text numberOfLines={1} style={[s.chipText, c.on && { color: colors.primary }]}>{c.label}</Text>
+              </View>
+            ))}
+          </View>
+        )}
         <View style={s.tileActions}>
           <HeartButton on={p.is_favorite} onPress={onFavorite} />
           <Pressable accessibilityRole="button" accessibilityLabel={`Say hi to ${nameOf(p)}`} onPress={onSayHi} disabled={busy} style={s.hiBtn}>
@@ -143,7 +167,14 @@ export const PersonRow = memo(function PersonRow({ p, onOpen, onFavorite, onSayH
 const s = StyleSheet.create({
   tile: { borderRadius: 18, overflow: 'hidden', backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, shadowColor: '#172339', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   tileInfo: { padding: 10, gap: 2 },
-  tileActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  overlay: { position: 'absolute', left: 10, right: 10, bottom: 9, gap: 1 },
+  oName: { fontFamily: fonts.bold, fontSize: 16, color: '#fff', flexShrink: 1, textShadowColor: 'rgba(0,0,0,0.25)', textShadowRadius: 4 },
+  oPlace: { fontFamily: fonts.medium, fontSize: 11.5, color: 'rgba(255,255,255,0.92)', flexShrink: 1 },
+  boost: { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, backgroundColor: '#7C3AED', alignItems: 'center', justifyContent: 'center' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 3, maxWidth: '100%', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 10, backgroundColor: colors.bg },
+  chipText: { fontFamily: fonts.medium, fontSize: 11, color: colors.textSecondary, flexShrink: 1 },
+  tileActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
   name: { fontFamily: fonts.bold, fontSize: 15, color: colors.text },
   place: { fontFamily: fonts.medium, fontSize: 12.5, color: colors.textMuted },
   badges: { position: 'absolute', top: 8, left: 8, right: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 4 },

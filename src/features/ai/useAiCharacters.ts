@@ -17,3 +17,6 @@ export function useAiCharacters() {
   return { list, error, reload: load };
 }
 export const LANG_LABEL: Record<string, string> = { en: 'English', fr: 'Français', ar: 'العربية', es: 'Español' };
+
+/** "Gentle, imaginative, curious about…" → ["Gentle", "Imaginative"] */
+export const traitsOf = (personality: string) => personality.split(/[,;.]| and /).map((x) => x.trim().split(' ').slice(0, 2).join(' ')).filter((x) => x && x.length <= 18).map((x) => x[0].toUpperCase() + x.slice(1));

@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
@@ -6,7 +8,7 @@ import { Screen, StackHeader } from '@/components/Screen';
 import { ErrorState, GradientButton, T } from '@/components/ui';
 import { interestLabel } from '@/constants/content';
 import { colors, fonts, spacing } from '@/constants/theme';
-import { LANG_LABEL, useAiCharacters } from '@/features/ai/useAiCharacters';
+import { LANG_LABEL, traitsOf, useAiCharacters } from '@/features/ai/useAiCharacters';
 
 /** AI character profile. */
 export default function AiCharacterProfile() {
@@ -21,14 +23,25 @@ export default function AiCharacterProfile() {
       <StackHeader title="Virtual Character" />
       {error ? <ErrorState message="Could not load this character." onRetry={reload} /> : !list ? <ActivityIndicator color={colors.primaryDeep} style={{ marginTop: 60 }} /> : !c ? <ErrorState message="This character is not available." /> : (
         <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: 40 }}>
-          <Animated.View entering={ZoomIn.springify().damping(14)} style={{ alignItems: 'center' }}>
-            <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={220} rounded="card" badge={false} />
+          <Animated.View entering={ZoomIn.springify().damping(14)}>
+            <LinearGradient colors={[`${c.accent}22`, `${c.accent}77`]} style={s.hero}>
+              <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={260} rounded="card" badge={false} />
+            </LinearGradient>
           </Animated.View>
           <View style={{ alignItems: 'center', gap: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={s.name}>{c.name}</Text><AiBadge /></View>
             <T color={colors.textSecondary}>{c.role} · {c.tagline}</T>
           </View>
           <View style={s.notice}><T v="caption" color={colors.text} style={{ textAlign: 'center' }}>{c.name} is a fictional AI character, not a real person.</T></View>
+          <View style={s.grid}>
+            {([['person-outline', 'Role', c.role], ['happy-outline', 'Mood', traitsOf(c.personality)[0] ?? '—'], ['sparkles-outline', 'Traits', traitsOf(c.personality).slice(1, 3).join(', ') || '—'],
+              ['language-outline', 'Speaks', c.languages.map((l) => LANG_LABEL[l] ?? l).join(', ')], ['heart-outline', 'Loves', c.interests.slice(0, 2).map(interestLabel).join(', ')], ['chatbubbles-outline', 'Replies', 'Instantly, any time']] as const).map(([icon, k, v]) => (
+              <View key={k} style={s.cell}>
+                <View style={[s.cellIcon, { backgroundColor: `${c.accent}22` }]}><Ionicons name={icon} size={16} color={colors.text} /></View>
+                <View style={{ flex: 1 }}><T v="caption" color={colors.textMuted}>{k}</T><Text style={s.cellV} numberOfLines={2}>{v}</Text></View>
+              </View>
+            ))}
+          </View>
           <Animated.View entering={FadeInDown.delay(80)} style={s.card}>
             <Section title="About">{c.bio}</Section>
             <Section title="Personality">{c.personality}</Section>
@@ -62,6 +75,11 @@ function Section({ title, children }: { title: string; children: string }) {
 }
 
 const s = StyleSheet.create({
+  hero: { alignItems: 'center', justifyContent: 'flex-end', paddingTop: 16, borderRadius: 24, overflow: 'hidden' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  cell: { width: '48%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 14, backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  cellIcon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  cellV: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   name: { fontFamily: fonts.extrabold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
   notice: { alignSelf: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.cream },
   card: { gap: 12, padding: spacing.md, borderRadius: 24, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },

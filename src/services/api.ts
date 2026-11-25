@@ -23,7 +23,8 @@ export async function fetchMyProfile(): Promise<Profile | null> {
 export type ProfileUpdate = Partial<Pick<Profile,
   'username' | 'birth_date' | 'country_code' | 'gender' | 'languages' | 'interests' | 'conversation_prefs' |
   'discover_topics' | 'personality_tags' | 'tagline' | 'show_age' | 'show_country' | 'show_online' | 'who_can_message' |
-  'onboarding_complete' | 'photo_visibility' | 'profile_theme' | 'display_name' | 'bio' | 'looking_for' | 'interested_in' | 'hide_visits'>>;
+  'onboarding_complete' | 'photo_visibility' | 'profile_theme' | 'display_name' | 'bio' | 'looking_for' | 'interested_in' | 'hide_visits' |
+  'height_cm' | 'zodiac' | 'job' | 'education' | 'smoking' | 'drinking' | 'exercise' | 'pets'>>;
 
 export async function updateMyProfile(patch: ProfileUpdate) {
   const { data: u } = await supabase.auth.getUser();

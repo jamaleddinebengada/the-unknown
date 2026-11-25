@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, ScrollView, Share, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { traitRows } from '@/features/people/traits';
 import { GiftSheet } from '@/features/wallet/GiftSheet';
 import { BottomSheet, SheetAction, useToast } from '@/components/Overlay';
 import { MaskAvatar } from '@/components/PersonAvatar';
@@ -123,6 +124,23 @@ export default function UserProfile() {
             {p.languages.map((l) => <Pill key={l} icon="language-outline" text={LANGUAGES.find((x) => x.code === l)?.label ?? l} />)}
           </View>
         </Section>
+        {traitRows(p.traits).length > 0 && (
+          <Section title="Characteristics">
+            <View style={s.traitGrid}>
+              {traitRows(p.traits).map((r) => (
+                <View key={r.key} style={s.trait}>
+                  <View style={s.traitIcon}><Ionicons name={r.icon} size={16} color={colors.primary} /></View>
+                  <Text style={s.traitText} numberOfLines={2}>{r.label}</Text>
+                </View>
+              ))}
+            </View>
+          </Section>
+        )}
+        {!!p.personality_tags?.length && (
+          <Section title="Personality">
+            <View style={s.wrap}>{p.personality_tags.map((t) => <Pill key={t} icon="sparkles-outline" text={t} />)}</View>
+          </Section>
+        )}
         {p.interests.length > 0 && (
           <Section title="Interests">
             <View style={s.wrap}>{p.interests.map((i) => <Pill key={i} text={interestLabel(i)} on={p.shared_interests.includes(i)} />)}</View>
@@ -190,6 +208,10 @@ const s = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.online },
   meta: { fontFamily: fonts.medium, fontSize: 13.5, color: colors.textMuted },
   actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
+  traitGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  trait: { width: '48%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 14, backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
+  traitIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  traitText: { flex: 1, fontFamily: fonts.medium, fontSize: 13, color: colors.text },
   action: { height: 50, borderRadius: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, shadowColor: '#172339', shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 },
   actionText: { fontFamily: fonts.semibold, fontSize: 14.5 },
   section: { fontFamily: fonts.bold, fontSize: 17, color: colors.text, marginTop: 6 },

@@ -24,6 +24,8 @@ export interface Profile {
   is_premium: boolean;
   tier: 'free' | 'plus' | 'vip';
   is_admin?: boolean;
+  height_cm?: number | null; zodiac?: string | null; job?: string | null; education?: string | null;
+  smoking?: string | null; drinking?: string | null; exercise?: string | null; pets?: string | null;
   boosted_until?: string | null;
   display_name: string | null;
   bio: string | null;
@@ -190,6 +192,7 @@ export interface PersonCard {
   bio: string | null; looking_for: string | null; languages: string[]; interests: string[]; shared_interests: string[];
   country_code: string | null; city: string | null; distance_band: string | null; online: boolean; recently_active: boolean;
   is_new: boolean; is_verified: boolean; tier: 'free' | 'plus' | 'vip'; has_photo: boolean; is_favorite: boolean; i_liked: boolean;
+  traits?: import('@/features/people/traits').Traits; boosted?: boolean;
   post_count?: number; member_since?: string; personality_tags?: string[]; is_me?: boolean; super?: boolean; visited_at?: string;
 }
 export interface DiscoverFilters { min_age?: number | null; max_age?: number | null; genders?: string[]; online?: boolean; recent?: boolean; new?: boolean; interests?: string[]; language?: string | null; country?: string | null; city?: string | null }

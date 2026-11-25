@@ -1,3 +1,4 @@
+import { DRINKING, EDUCATION, EXERCISE, PETS, SMOKING, ZODIAC } from '@/features/people/traits';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Switch, View } from 'react-native';
 import { CountryField } from '@/components/CountryPicker';
@@ -70,12 +71,21 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
   const [tags, setTags] = useState<string[]>(profile?.personality_tags ?? []);
   const [tagline, setTagline] = useState(profile?.tagline ?? '');
   const [showCountry, setShowCountry] = useState(profile?.show_country ?? true);
+  const [height, setHeight] = useState(profile?.height_cm ? String(profile.height_cm) : '');
+  const [job, setJob] = useState(profile?.job ?? '');
+  const [traits, setTraits] = useState<Record<string, string | null>>({
+    zodiac: profile?.zodiac ?? null, education: profile?.education ?? null, smoking: profile?.smoking ?? null,
+    drinking: profile?.drinking ?? null, exercise: profile?.exercise ?? null, pets: profile?.pets ?? null,
+  });
+  const one = (k: string) => ({ value: traits[k] ? [traits[k] as string] : [], onChange: (v: string[]) => setTraits((x) => ({ ...x, [k]: v.filter((y) => y !== x[k])[0] ?? null })) });
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
     const birth = parseBirthDate(dob.d, dob.m, dob.y);
     if (birth.error) { toast(birth.error, 'error'); return; }
     if (name.trim() && name.trim().length > 30) { toast('Your name can be 30 characters at most.', 'error'); return; }
+    const h = height ? Number(height) : null;
+    if (h !== null && (h < 120 || h > 230)) { toast('Height must be between 120 and 230 cm.', 'error'); return; }
     setBusy(true);
     try {
       const patch: ProfileUpdate = {
@@ -83,6 +93,8 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
         interested_in: seeking, looking_for: lookingFor as ProfileUpdate['looking_for'], bio: bio.trim() || null,
         country_code: country, gender, languages, interests, conversation_prefs: prefs,
         discover_topics: topics, personality_tags: tags, tagline: tagline.trim() || null, show_country: showCountry,
+        height_cm: h, job: job.trim() || null, zodiac: traits.zodiac, education: traits.education, smoking: traits.smoking,
+        drinking: traits.drinking, exercise: traits.exercise, pets: traits.pets,
       };
       await updateMyProfile(patch);
       onSaved();
@@ -122,6 +134,25 @@ export function ProfileForm({ profile, submitLabel, onSaved, showPrivacy }: {
 
         <Section title="About me" hint="Optional. Up to 500 characters.">
           <TextField value={bio} onChangeText={setBio} maxLength={500} multiline placeholder="What makes you, you?" />
+        </Section>
+
+        <Section title="More about me" hint="Optional characteristics shown on your profile.">
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ flex: 2 }}><TextField value={job} onChangeText={setJob} maxLength={60} placeholder="Job, e.g. Designer" icon="briefcase-outline" /></View>
+            <View style={{ flex: 1 }}><TextField value={height} onChangeText={(t) => setHeight(t.replace(/\D/g, '').slice(0, 3))} placeholder="cm" keyboardType="number-pad" icon="resize-outline" accessibilityLabel="Height in centimetres" /></View>
+          </View>
+          <T v="caption" color={colors.textMuted}>Education</T>
+          <Chips items={EDUCATION} {...one('education')} />
+          <T v="caption" color={colors.textMuted}>Zodiac</T>
+          <Chips items={ZODIAC} {...one('zodiac')} />
+          <T v="caption" color={colors.textMuted}>Exercise</T>
+          <Chips items={EXERCISE} {...one('exercise')} />
+          <T v="caption" color={colors.textMuted}>Smoking</T>
+          <Chips items={SMOKING} {...one('smoking')} />
+          <T v="caption" color={colors.textMuted}>Drinking</T>
+          <Chips items={DRINKING} {...one('drinking')} />
+          <T v="caption" color={colors.textMuted}>Pets</T>
+          <Chips items={PETS} {...one('pets')} />
         </Section>
 
         <Section title="Interests" hint="Shared interests help people find you.">
