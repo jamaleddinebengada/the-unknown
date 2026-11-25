@@ -32,9 +32,10 @@ sleep 15; shot 01-launch; echo "after launch: $(alive)"
 SIZE=$(adb shell wm size | tail -1 | awk '{print $NF}'); W=${SIZE%x*}; H=${SIZE#*x}
 echo "screen ${W}x${H}"
 tapText "Get started"; sleep 4; shot 02-setup; echo "setup: $(alive)"
-tapText "Day"; adb shell input text 15; tapText "Month"; adb shell input text 06; tapText "Year"; adb shell input text 1994
+adb shell input swipe $((W/2)) $((H*70/100)) $((W/2)) $((H*35/100)) 400; sleep 2; shot 02b-setup-scrolled
+tapText "Day" "$((W*20/100)) $((H*45/100))"; adb shell input text 15; tapText "Month"; adb shell input text 06; tapText "Year"; adb shell input text 1994
 adb shell input keyevent 111; sleep 1
-tapText "Woman"; sleep 1
+tapText "Woman"; sleep 1; shot 02c-setup-filled
 tapText "Continue"; sleep 6; shot 02-vibe; echo "vibe: $(alive)"
 tapText "Travel"; sleep 1
 tapText "Continue"; sleep 8; shot 03-nearby-home; echo "nearby home: $(alive)"

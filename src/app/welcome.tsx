@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeInUp, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaskLogo } from '@/components/Brand';
@@ -29,8 +29,8 @@ export default function Welcome() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const heroH = Math.min(height * 0.42, 380);
-  const ring = Math.min(width * 0.9, 340);
+  const heroH = Math.min(height * (height < 700 ? 0.32 : 0.42), 380);
+  const ring = Math.min(width * 0.9, heroH * 1.05, 340);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={['#3BA0FF', '#168AF7', '#0B6FD1']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[s.hero, { height: heroH + insets.top, paddingTop: insets.top }]}>
@@ -40,7 +40,7 @@ export default function Welcome() {
         </View>
         <Text style={s.brand}>THE UNKNOWN</Text>
       </LinearGradient>
-      <View style={{ flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.md }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md, gap: spacing.md }} showsVerticalScrollIndicator={false}>
         <Animated.Text entering={FadeInDown.delay(100)} style={s.title}>Meet new people near you</Animated.Text>
         {POINTS.map((p, i) => (
           <Animated.View key={p.title} entering={FadeInDown.delay(180 + i * 90).duration(350)} style={s.point}>
@@ -51,7 +51,7 @@ export default function Welcome() {
             </View>
           </Animated.View>
         ))}
-      </View>
+      </ScrollView>
       <Animated.View entering={FadeInUp.delay(400)} style={{ padding: spacing.lg, paddingBottom: insets.bottom + spacing.md, gap: 8 }}>
         <GradientButton label="Get started" arrow onPress={() => { haptic.soft(); router.push('/setup'); }} />
         <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>For adults 18+ only. By continuing you accept the Community Guidelines.</T>
