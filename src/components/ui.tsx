@@ -117,14 +117,14 @@ export function CategoryChip({ label, selected, onPress, icon }: { label: string
 
 export function InterestTag({ label, accent = false }: { label: string; accent?: boolean }) {
   return (
-    <View style={[s.tag, accent && { backgroundColor: colors.violetTint, borderColor: 'rgba(255,128,107,0.3)' }]}>
+    <View style={[s.tag, accent && { backgroundColor: colors.violetTint, borderColor: 'rgba(255,82,119,0.3)' }]}>
       <Text style={[s.tagLabel, accent && { color: colors.violet }]}>{label}</Text>
     </View>
   );
 }
 
-export function PremiumBadge({ label = 'PLUS' }: { label?: string }) {
-  const vip = label.toUpperCase() === 'VIP';
+export function PremiumBadge({ label = 'VIP' }: { label?: string }) {
+  const vip = label.toUpperCase() === 'SVIP';
   return (
     <LinearGradient colors={vip ? gradients.gold : gradients.secondary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.premium}>
       <Ionicons name={vip ? 'diamond' : 'sparkles'} size={10} color={vip ? '#5A4100' : colors.white} />
@@ -145,7 +145,7 @@ export function NotificationBadge({ count, style }: { count: number; style?: Sty
 /* ---------------- Surfaces ---------------- */
 export function Card({ children, style, glowing }: { children: ReactNode; style?: StyleProp<ViewStyle>; glowing?: boolean }) {
   return (
-    <View style={[s.card, glowing && { borderColor: 'rgba(255,214,51,0.35)' }, style]}>
+    <View style={[s.card, glowing && { borderColor: 'rgba(22,138,247,0.35)' }, style]}>
       {glowing && <LinearGradient pointerEvents="none" colors={gradients.cardSheen} style={StyleSheet.absoluteFill} />}
       {children}
     </View>
@@ -184,7 +184,7 @@ export function EmptyState({ icon = 'planet-outline', title, body, action, onAct
     <Animated.View entering={FadeIn.duration(400)} style={s.empty}>
       <GlowRing size={136}>
         <View style={s.emptyOrb}>
-          <LinearGradient colors={['rgba(255,214,51,0.35)', 'rgba(255,214,51,0.08)']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 60 }]} />
+          <LinearGradient colors={['rgba(22,138,247,0.35)', 'rgba(22,138,247,0.08)']} start={{ x: 0.2, y: 0 }} end={{ x: 0.8, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 60 }]} />
           <Ionicons name={icon} size={40} color={colors.violetSoft} />
         </View>
       </GlowRing>
@@ -229,9 +229,9 @@ const s = StyleSheet.create({
   btnRim: { borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.45)' },
   solid: { backgroundColor: colors.elevated },
   ghost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.hairlineStrong },
-  iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#172339', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 16, borderRadius: radius.pill, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surfaceBorder },
-  chipOn: { borderColor: 'rgba(255,128,107,0.5)', overflow: 'hidden' },
+  chipOn: { borderColor: 'rgba(255,82,119,0.5)', overflow: 'hidden' },
   chipLabel: { fontFamily: fonts.medium, fontSize: 14, color: colors.textSecondary },
   tag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: colors.elevated, borderWidth: 1, borderColor: colors.surfaceBorder },
   tagLabel: { fontFamily: fonts.medium, fontSize: 12, color: colors.textSecondary },

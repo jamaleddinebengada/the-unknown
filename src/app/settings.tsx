@@ -6,7 +6,6 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, Vi
 import { AnonymousAvatar } from '@/components/AnonymousAvatar';
 import { MaskLogo } from '@/components/Brand';
 import { BottomSheet, useToast } from '@/components/Overlay';
-import { Scenery } from '@/components/Scenery';
 import { Screen, StackHeader } from '@/components/Screen';
 import { Group, Row } from '@/components/SettingsUI';
 import { EmptyState, PremiumButton, T } from '@/components/ui';
@@ -40,12 +39,12 @@ export default function Settings() {
   const confirmDelete = () => Alert.alert('Delete all your data?', 'Your anonymous profile, photos, posts, messages and connections are permanently deleted. This cannot be undone. An active store subscription must be cancelled in your store settings.', [
     { text: 'Cancel', style: 'cancel' },
     { text: 'Delete forever', style: 'destructive', onPress: async () => {
-      try { await deleteMyAccount(); await resetIdentity(); toast('Your data was deleted. You now have a new anonymous identity.', 'success'); router.replace('/discover'); } catch (e) { toast(friendlyError(e), 'error'); }
+      try { await deleteMyAccount(); await resetIdentity(); toast('Your data was deleted. You now have a new anonymous identity.', 'success'); router.replace('/nearby'); } catch (e) { toast(friendlyError(e), 'error'); }
     } },
   ]);
   const newIdentity = () => Alert.alert('Start over with a new identity?', 'You will get a new UNKNOWN number. Your current conversations stay with the old identity and cannot be recovered.', [
     { text: 'Cancel', style: 'cancel' },
-    { text: 'Start over', style: 'destructive', onPress: () => resetIdentity().then(() => { toast('Welcome, new stranger.', 'success'); router.replace('/discover'); }) },
+    { text: 'Start over', style: 'destructive', onPress: () => resetIdentity().then(() => { toast('Welcome, new stranger.', 'success'); router.replace('/nearby'); }) },
   ]);
 
   const tier = plan?.tier ?? 'free';
@@ -75,7 +74,6 @@ export default function Settings() {
           <Row icon="document-text-outline" label="Community Guidelines" onPress={() => setSheet('guidelines')} />
           <Row icon="information-circle-outline" label="About The Unknown" onPress={() => setSheet('about')} last />
         </Group>
-        <Scenery width={width} height={190} flowers="bottom" style={{ marginHorizontal: -spacing.md, marginTop: spacing.md }} />
       </ScrollView>
 
       <BottomSheet visible={sheet === 'account'} onClose={() => setSheet(null)} title="Account & Security">
@@ -122,5 +120,5 @@ export default function Settings() {
 }
 
 const s = StyleSheet.create({
-  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#FFF6D6', borderWidth: 1.5, borderColor: 'rgba(255,128,107,0.22)' },
+  sub: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: spacing.md, borderRadius: 22, backgroundColor: '#EAF5FF', borderWidth: 1.5, borderColor: 'rgba(255,82,119,0.22)' },
 });

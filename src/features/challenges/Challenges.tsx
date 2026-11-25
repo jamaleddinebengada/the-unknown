@@ -13,7 +13,7 @@ import { haptic } from '@/utils/format';
 type IconName = keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
 
 const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/discover', like: '/discover' };
-const CARD_COLORS: [string, string][] = [['#FFD633', '#E8B400'], ['#FF806B', '#25324A'], ['#FFD633', '#FFC800'], ['#F472B6', '#DB2777'], ['#34D399', '#059669'], ['#FBBF24', '#D97706']];
+const CARD_COLORS: [string, string][] = [['#168AF7', '#E8B400'], ['#FF5277', '#172339'], ['#168AF7', '#0B6FD1'], ['#F472B6', '#DB2777'], ['#34D399', '#059669'], ['#FBBF24', '#D97706']];
 
 /** Small "Lv 3 · 240 XP" pill for headers. */
 export function XpBadge({ state }: { state: ChallengeState | null }) {
@@ -66,8 +66,8 @@ export function ChallengesPanel({ state }: { state: ChallengeState }) {
       <Star3D size={30} style={{ position: 'absolute', right: 18, top: 14 }} />
       <Sparkle size={14} delay={300} style={{ position: 'absolute', left: 16, top: 18 }} />
       <View style={{ alignItems: 'center', gap: 2 }}>
-        <GradientText text="EARN POINTS" size={Math.min(28, (width - 64) / 7.5)} width={width - 64} align="center" weight={fonts.display} colors={['#FFC800', '#FFD633', '#25324A']} />
-        <GradientText text="BY WINNING CHALLENGES!" size={Math.min(22, (width - 64) / 12)} width={width - 64} align="center" weight={fonts.display} colors={['#FFC800', '#25324A']} />
+        <GradientText text="EARN POINTS" size={Math.min(28, (width - 64) / 7.5)} width={width - 64} align="center" weight={fonts.display} colors={['#0B6FD1', '#168AF7', '#172339']} />
+        <GradientText text="BY WINNING CHALLENGES!" size={Math.min(22, (width - 64) / 12)} width={width - 64} align="center" weight={fonts.display} colors={['#0B6FD1', '#172339']} />
         <T v="caption" color={colors.textSecondary}>Complete them every day · {done}/{state.challenges.length} done today</T>
       </View>
 
@@ -110,15 +110,15 @@ export function ChallengesPanel({ state }: { state: ChallengeState }) {
 
 const styles = StyleSheet.create({
   xp: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
-  panel: { borderRadius: radius.xl, padding: spacing.lg, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,214,51,0.45)', gap: spacing.md },
+  panel: { borderRadius: radius.xl, padding: spacing.lg, overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(22,138,247,0.45)', gap: spacing.md },
   levelRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   levelBadge: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FBBF24', borderWidth: 3, borderColor: '#FDE68A' },
   bar: { height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
   barFill: { height: '100%', borderRadius: 5 },
   streak: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: 'rgba(251,113,133,0.18)', borderWidth: 1, borderColor: 'rgba(251,113,133,0.45)' },
-  node: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#2A2F6B', borderWidth: 2, borderColor: 'rgba(255,214,51,0.6)', marginTop: 16 },
+  node: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#2A2F6B', borderWidth: 2, borderColor: 'rgba(22,138,247,0.6)', marginTop: 16 },
   nodeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.violetSoft },
-  rail: { flex: 1, width: 3, marginVertical: 2, borderRadius: 2, backgroundColor: 'rgba(255,214,51,0.35)' },
+  rail: { flex: 1, width: 3, marginVertical: 2, borderRadius: 2, backgroundColor: 'rgba(22,138,247,0.35)' },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.22)', overflow: 'hidden' },
   gloss: { position: 'absolute', top: 0, left: 0, right: 0, height: '45%', backgroundColor: 'rgba(255,255,255,0.1)' },
   cardIcon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.2)' },

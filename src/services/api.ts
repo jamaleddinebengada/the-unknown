@@ -2,7 +2,7 @@ import * as Crypto from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import type {
   AppNotification, ChallengeState, Comment, ConversationDetail, ConversationSummary, FeedPost, InterestedUser, Message,
-  MatchFilters, MysteryMatch, Person, Plan, Profile, PublicProfile, PostType, Audience,
+  DiscoverFilters, MatchFilters, MysteryMatch, PersonCard, Person, Plan, Profile, PublicProfile, PostType, Audience,
 } from '@/types/models';
 
 async function rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T> {
@@ -23,7 +23,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
 export type ProfileUpdate = Partial<Pick<Profile,
   'username' | 'birth_date' | 'country_code' | 'gender' | 'languages' | 'interests' | 'conversation_prefs' |
   'discover_topics' | 'personality_tags' | 'tagline' | 'show_age' | 'show_country' | 'show_online' | 'who_can_message' |
-  'onboarding_complete' | 'photo_visibility' | 'profile_theme'>>;
+  'onboarding_complete' | 'photo_visibility' | 'profile_theme' | 'display_name' | 'bio' | 'looking_for' | 'interested_in' | 'hide_visits'>>;
 
 export async function updateMyProfile(patch: ProfileUpdate) {
   const { data: u } = await supabase.auth.getUser();
@@ -296,3 +296,16 @@ export async function setReaction(messageId: string, userId: string, emoji: stri
   const { error } = await supabase.from('message_reactions').upsert({ message_id: messageId, user_id: userId, emoji });
   if (error) throw error;
 }
+
+/* ---------------- nearby social discovery ---------------- */
+export type DiscoverScope = 'nearby' | 'world';
+export type DiscoverSort = 'distance' | 'active' | 'new' | 'trending' | 'suggested';
+export const discoverPeople = (scope: DiscoverScope, radiusKm: number, filters: DiscoverFilters = {}, sort: DiscoverSort = 'distance', excludeSwiped = false, offset = 0, limit = 30) =>
+  rpc<PersonCard[]>('discover_people', { p_scope: scope, p_radius_km: radiusKm, p_filters: filters, p_sort: sort, p_exclude_swiped: excludeSwiped, p_offset: offset, p_limit: limit });
+export const getPerson = (n: number) => rpc<PersonCard>('get_person', { p_number: n });
+export const swipe = (n: number, action: 'like' | 'skip' | 'super') => rpc<{ matched: boolean; conversation_id?: string }>('swipe', { p_number: n, p_action: action });
+export const toggleFavorite = (n: number) => rpc<boolean>('toggle_favorite', { p_number: n });
+export const getFavorites = () => rpc<PersonCard[]>('get_favorites');
+export const getMyLikes = () => rpc<{ count: number; locked: boolean; people: PersonCard[] }>('get_my_likes');
+export const getMyVisitors = () => rpc<{ count: number; locked: boolean; people: PersonCard[] }>('get_my_visitors');
+export const getMyNearby = () => rpc<{ enabled: boolean; city: string | null; country_code: string | null; updated_at: string | null; expired: boolean }>('get_my_nearby');

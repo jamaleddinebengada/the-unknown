@@ -1,104 +1,104 @@
 import { Platform } from 'react-native';
 
 /**
- * THE UNKNOWN — "Sunlight Social": bold yellow premium.
- * Warm ivory & soft cream, sunshine yellow, soft coral, deep slate text. No dark surfaces.
- * (Legacy key names such as `violet` are kept so every screen picks up the new palette.)
+ * THE UNKNOWN — Nearby social discovery.
+ * Clean white & cool grey surfaces, primary blue, VIP gold, online green, like coral.
+ * (Legacy key names such as `violet` are kept so every screen picks up the palette.)
  */
 export const colors = {
-  /** Warm ivory page, soft cream sections, pure white cards. */
-  bg: '#FFFEFA',
-  bgSecondary: '#FFF8E7',
+  bg: '#F8FAFC',
+  bgSecondary: '#F1F5F9',
   card: '#FFFFFF',
-  elevated: '#FFF8E7',
-  cream: '#FFF8E7',
-  blush: '#FFF6D6',
-  ivory: '#FFFEFA',
-  hairline: '#F0F1F5',
-  hairlineStrong: '#E8EAF0',
-  border: '#E8EAF0',
+  elevated: '#F1F5F9',
+  cream: '#F1F5F9',
+  blush: '#EAF5FF',
+  ivory: '#F8FAFC',
+  hairline: '#EEF2F6',
+  hairlineStrong: '#E2E8F0',
+  border: '#E2E8F0',
   white: '#FFFFFF',
-  surface: 'rgba(255,255,255,0.94)',
-  surfaceBorder: '#E8EAF0',
+  surface: 'rgba(255,255,255,0.96)',
+  surfaceBorder: '#E2E8F0',
 
-  /** Sunshine yellow (primary) — always with slate text on top. */
-  primary: '#FFD633',
-  primaryDeep: '#FFC800',
-  primarySoft: '#FFF1B8',
-  onPrimary: '#25324A',
-  /** Soft coral (secondary accent: icons, links, hearts). */
-  coral: '#FF806B',
-  coralSoft: '#FFD3C9',
-  sky: '#EAF6FF',
-  skyDeep: '#7FB8DD',
+  /** Primary blue — white text on top. */
+  primary: '#168AF7',
+  primaryDeep: '#0B6FD1',
+  primarySoft: '#EAF5FF',
+  onPrimary: '#FFFFFF',
+  /** Like / heart accent. */
+  coral: '#FF5277',
+  coralSoft: '#FFE1E8',
+  sky: '#EAF5FF',
+  skyDeep: '#7DBBF5',
+  /** VIP gold. */
+  vip: '#FFC83D',
+  online: '#22C55E',
 
-  /* legacy names, remapped so every screen follows the new identity */
-  violet: '#FF806B',
-  violetDeep: '#25324A',
-  violetSoft: '#FFB4A4',
-  plum: '#25324A',
-  rose: '#FF806B',
-  roseSoft: '#FFD3C9',
-  gold: '#E5A800',
-  goldSoft: '#FFF1B8',
+  /* legacy names */
+  violet: '#168AF7',
+  violetDeep: '#172339',
+  violetSoft: '#7DBBF5',
+  plum: '#172339',
+  rose: '#FF5277',
+  roseSoft: '#FFE1E8',
+  gold: '#E0A800',
+  goldSoft: '#FFF3CF',
 
-  blue: '#4A9CC9',
-  cyan: '#62C4D9',
+  blue: '#168AF7',
+  cyan: '#22B8CF',
 
-  text: '#25324A',
-  textSecondary: '#5E6A7E',
-  /** body secondary per spec */
-  textMuted: '#7C8799',
+  text: '#172339',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
 
-  success: '#34C98A',
-  warning: '#E59A1A',
-  danger: '#E5484D',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  danger: '#EF4444',
 
-  overlay: 'rgba(37,50,74,0.4)',
-  violetGlow: 'rgba(255,214,51,0.45)',
-  violetTint: 'rgba(255,214,51,0.18)',
-  blueTint: 'rgba(74,156,201,0.12)',
+  overlay: 'rgba(23,35,57,0.45)',
+  violetGlow: 'rgba(22,138,247,0.35)',
+  violetTint: 'rgba(22,138,247,0.10)',
+  blueTint: 'rgba(22,138,247,0.10)',
 } as const;
 
 export const gradients = {
-  primary: ['#FFE266', '#FFD633'] as const,
-  secondary: ['#FF9A85', '#FF806B'] as const,
-  /** page background wash */
-  mystery: ['#FFFEFA', '#FFFBEF', '#F7F4EA'] as const,
-  candy: ['#FFB547', '#FF806B', '#F05A40'] as const,
-  /** the main button: sunshine yellow (slate label) */
-  pill: ['#FFE466', '#FFD633', '#F7C92B'] as const,
-  rose: ['#FF9A85', '#FF806B', '#F05A40'] as const,
-  gold: ['#FFF1B8', '#FFD633', '#FFC800'] as const,
-  orange: ['#FF9A85', '#FF806B', '#F05A40'] as const,
-  blueBtn: ['#FFE466', '#FFD633', '#F7C92B'] as const,
-  green: ['#3DCB95', '#34C98A', '#17936A'] as const,
-  sky: ['#EAF6FF', '#CFE8F7'] as const,
-  cardSheen: ['rgba(255,214,51,0.10)', 'rgba(255,255,255,0)'] as const,
+  primary: ['#3BA0FF', '#168AF7'] as const,
+  secondary: ['#FF7A95', '#FF5277'] as const,
+  mystery: ['#F8FAFC', '#F8FAFC', '#F1F5F9'] as const,
+  candy: ['#3BA0FF', '#168AF7', '#0B6FD1'] as const,
+  /** main button: primary blue (white label) */
+  pill: ['#3BA0FF', '#168AF7', '#0B6FD1'] as const,
+  rose: ['#FF7A95', '#FF5277', '#F0365F'] as const,
+  gold: ['#FFE08A', '#FFC83D', '#F5B100'] as const,
+  orange: ['#FF7A95', '#FF5277', '#F0365F'] as const,
+  blueBtn: ['#3BA0FF', '#168AF7', '#0B6FD1'] as const,
+  green: ['#4ADE80', '#22C55E', '#16A34A'] as const,
+  sky: ['#F5FAFF', '#EAF5FF'] as const,
+  cardSheen: ['rgba(22,138,247,0.06)', 'rgba(255,255,255,0)'] as const,
 };
 
 /** Accent colour per post type. */
 export const typeAccent: Record<string, readonly [string, string]> = {
-  thought: ['#FFD633', '#FFB547'],
-  question: ['#4A9CC9', '#7FB8DD'],
-  secret: ['#25324A', '#5E6A7E'],
-  story: ['#FF806B', '#FF9A85'],
-  advice: ['#34C98A', '#62C4D9'],
-  debate: ['#E5484D', '#FF806B'],
-  dream: ['#7FB8DD', '#CFE8F7'],
-  challenge: ['#FFC800', '#FF806B'],
-  travel: ['#4A9CC9', '#62C4D9'],
-  business: ['#E5A800', '#25324A'],
+  thought: ['#168AF7', '#7DBBF5'],
+  question: ['#8B5CF6', '#C4B5FD'],
+  secret: ['#172339', '#64748B'],
+  story: ['#FF5277', '#FF9AB0'],
+  advice: ['#22C55E', '#86EFAC'],
+  debate: ['#EF4444', '#FCA5A5'],
+  dream: ['#22B8CF', '#A5F3FC'],
+  challenge: ['#F59E0B', '#FCD34D'],
+  travel: ['#0EA5E9', '#7DD3FC'],
+  business: ['#E0A800', '#FFC83D'],
 };
 
 export const glass = {
-  fill: ['rgba(255,255,255,0.98)', 'rgba(255,254,250,0.96)'] as const,
-  border: ['rgba(255,214,51,0.45)', 'rgba(255,128,107,0.15)', 'rgba(37,50,74,0.06)'] as const,
+  fill: ['#FFFFFF', '#FFFFFF'] as const,
+  border: ['#E2E8F0', '#E2E8F0', '#E2E8F0'] as const,
   highlight: 'rgba(255,255,255,0.9)',
 };
 
 export const spacing = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32, xxxl: 48 } as const;
-export const radius = { sm: 10, md: 14, lg: 20, xl: 26, pill: 999 } as const;
+export const radius = { sm: 8, md: 12, lg: 16, xl: 20, pill: 999 } as const;
 
 export const fonts = {
   regular: 'Inter_400Regular',

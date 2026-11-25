@@ -40,7 +40,7 @@ export function friendlyError(e: unknown): string {
   if (!isSupabaseConfigured) return 'The community is unreachable right now. Please try again in a moment.';
   if (msg.includes('rate_limited')) return 'You are going a little fast. Take a breath and try again soon.';
   if (msg.includes('daily_limit_reached')) return 'You have used today’s matches. New ones arrive tomorrow — or upgrade for more.';
-  if (msg.includes('plus_required')) return 'Saving favorites is part of UNKNOWN PLUS.';
+  if (msg.includes('plus_required')) return 'Saving favorites is part of UNKNOWN VIP.';
   if (msg.includes('vip_required')) return 'This is a VIP feature.';
   if (msg.includes('super_limit_reached')) return 'You have used today’s 3 Super Connects.';
   if (msg.includes('not_available')) return 'This person is not available right now.';
@@ -49,6 +49,10 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('ai_unavailable')) return 'The AI is not answering right now. Please try again.';
   if (msg.includes('ai_limit_reached')) return 'You reached today’s AI message allowance. Upgrade for more, or come back tomorrow.';
   if (msg.includes('nearby_disabled')) return 'Turn on Nearby first.';
+  if (msg.includes('nearby_expired')) return 'Your area is more than 14 days old. Refresh your location.';
+  if (msg.includes('like_limit_reached')) return 'You reached today’s likes. VIP gives you more.';
+  if (msg.includes('favorites_full')) return 'Your favorites list is full.';
+  if (msg.includes('invalid_location')) return 'This location looks invalid.';
   if (msg.includes('rate_limited')) return 'You searched a lot in a short time. Please wait a little.';
   if (msg.includes('location_update_limit')) return 'You changed your area too many times today. Try again tomorrow.';
   if (msg.includes('invalid_location')) return 'That location could not be used.';

@@ -18,7 +18,7 @@ export default function AiCharacterProfile() {
 
   return (
     <Screen edges={['top', 'bottom']}>
-      <StackHeader title="AI Character" />
+      <StackHeader title="Virtual Character" />
       {error ? <ErrorState message="Could not load this character." onRetry={reload} /> : !list ? <ActivityIndicator color={colors.primaryDeep} style={{ marginTop: 60 }} /> : !c ? <ErrorState message="This character is not available." /> : (
         <ScrollView contentContainerStyle={{ padding: spacing.md, gap: spacing.md, paddingBottom: 40 }}>
           <Animated.View entering={ZoomIn.springify().damping(14)} style={{ alignItems: 'center' }}>

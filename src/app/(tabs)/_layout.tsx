@@ -9,8 +9,9 @@ export default function TabsLayout() {
     <Tabs
       tabBar={(props) => <AnimatedTabBar {...props} badges={{ messages }} />}
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}>
+      <Tabs.Screen name="nearby" />
       <Tabs.Screen name="discover" />
-      <Tabs.Screen name="challenges" />
+      <Tabs.Screen name="matches" />
       <Tabs.Screen name="messages" />
       <Tabs.Screen name="profile" />
     </Tabs>

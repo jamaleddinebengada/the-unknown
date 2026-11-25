@@ -207,7 +207,7 @@ export default function Conversation() {
             <Ionicons name={conv.stage >= 4 ? 'lock-open' : 'lock-closed'} size={18} color={colors.onPrimary} />
             <View style={{ flex: 1 }}>
               <T style={{ fontFamily: fonts.bold, fontSize: 14 }} color={colors.onPrimary}>{conv.stage >= 4 ? 'Identities revealed' : 'You are both anonymous'}</T>
-              <T v="caption" color="rgba(37,50,74,0.75)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
+              <T v="caption" color="rgba(23,35,57,0.75)">{conv.stage >= 4 ? 'Tap to see what you both shared' : conv.other_reveal_consent && !conv.my_reveal_consent ? 'They want to reveal — tap to answer' : 'Reveal your identity anytime — only if you both agree'}</T>
             </View>
           </LinearGradient>
         </Pressable>
@@ -259,7 +259,7 @@ export default function Conversation() {
                   ) : item.kind === 'voice' && item.media_path && media.get(item.media_path) ? (
                     <VoicePlayer uri={media.get(item.media_path)!} seed={item.id} />
                   ) : <T color={colors.text}>{item.body}</T>}
-                  <T v="caption" color={mine ? 'rgba(37,50,74,0.6)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
+                  <T v="caption" color={mine ? 'rgba(23,35,57,0.6)' : colors.textMuted} style={{ fontSize: 10.5, alignSelf: 'flex-end' }}>
                     {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </T>
                 </Pressable>
@@ -355,9 +355,9 @@ const st = StyleSheet.create({
   stages: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingBottom: 8 },
   stage: { width: 22, height: 3, borderRadius: 2, backgroundColor: colors.elevated },
   bubble: { maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, gap: 2, overflow: 'hidden' },
-  mine: { borderBottomRightRadius: 6, shadowColor: '#E5A800', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
-  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
-  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: '#FFF8DC', borderWidth: 1.5, borderColor: colors.primary, shadowColor: '#E5A800', shadowOpacity: 0.2, shadowRadius: 14, elevation: 4 },
+  mine: { borderBottomRightRadius: 6, shadowColor: '#E0A800', shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  theirs: { backgroundColor: colors.white, borderBottomLeftRadius: 6, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#172339', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  prompt: { alignSelf: 'center', width: '88%', alignItems: 'center', gap: 8, padding: spacing.md, marginVertical: 8, borderRadius: radius.lg, backgroundColor: '#FFF8DC', borderWidth: 1.5, borderColor: colors.primary, shadowColor: '#E0A800', shadowOpacity: 0.2, shadowRadius: 14, elevation: 4 },
   assist: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline, minHeight: 34, justifyContent: 'center' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingHorizontal: spacing.md, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairlineStrong },
   input: { flex: 1, maxHeight: 130, minHeight: 44, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, borderRadius: 22, backgroundColor: colors.card, color: colors.text, fontFamily: fonts.regular, fontSize: 15 },

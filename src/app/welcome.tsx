@@ -1,78 +1,71 @@
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { Easing, FadeInDown, FadeInUp, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaskLogo } from '@/components/Brand';
-import { Float } from '@/components/Effects';
-import { Scenery } from '@/components/Scenery';
 import { GradientButton, T } from '@/components/ui';
-import { colors, fonts, gradients, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 import { haptic } from '@/utils/format';
 
-const FEATURES = [
-  { emoji: '🌍', label: 'Meet people worldwide' },
-  { emoji: '🎭', label: 'Stay anonymous' },
-  { emoji: '🔒', label: 'Reveal only if you both agree' },
+const POINTS: { icon: keyof typeof Ionicons.glyphMap; title: string; body: string }[] = [
+  { icon: 'location', title: 'People nearby', body: 'Discover real people around you — only approximate distance is ever shown.' },
+  { icon: 'heart', title: 'Match & chat', body: 'Like each other to match, or say hi and start a conversation.' },
+  { icon: 'shield-checkmark', title: 'Private by design', body: 'Stay anonymous as long as you want. Reveal yourself only when you both agree.' },
 ];
 
-/** Welcome — no sign-up: you enter instantly with an anonymous identity. */
+function Ring({ size, delay }: { size: number; delay: number }) {
+  const t = useSharedValue(0);
+  const reduce = useReducedMotion();
+  useEffect(() => { if (!reduce) t.set(withDelay(delay, withRepeat(withTiming(1, { duration: 3000, easing: Easing.out(Easing.quad) }), -1))); }, [t, delay, reduce]);
+  const a = useAnimatedStyle(() => ({ opacity: reduce ? 0.35 : 0.6 * (1 - t.value), transform: [{ scale: reduce ? 0.8 : 0.3 + t.value * 0.8 }] }));
+  return <Animated.View style={[{ position: 'absolute', width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: 'rgba(255,255,255,0.7)' }, a]} />;
+}
+
+/** Welcome: what the app is, then a short profile setup (18+). */
 export default function Welcome() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const heroH = Math.min(height * 0.5, 460);
+  const { width, height } = useWindowDimensions();
+  const heroH = Math.min(height * 0.42, 380);
+  const ring = Math.min(width * 0.9, 340);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
-      <Animated.View entering={FadeIn.duration(900)} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: heroH + 120 }}>
-        <Scenery width={width} height={heroH + 120} flowers="bottom" />
-        <LinearGradient colors={[colors.bg, 'rgba(255,254,250,0)']} style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 140 }} />
-      </Animated.View>
-      <Scenery width={width} height={Math.min(200, height * 0.2)} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.85 }} />
-
-      <View style={{ paddingTop: insets.top + Math.min(spacing.xxl, height * 0.03), alignItems: 'center', gap: 6, paddingHorizontal: spacing.xl }}>
-        <Animated.View entering={FadeInDown.springify().damping(14)}><MaskLogo size={96} /></Animated.View>
-        <Animated.View entering={FadeInDown.delay(120).springify().damping(16)} style={{ alignItems: 'center' }}>
-          <Text style={styles.the}>THE</Text>
-          <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.unknown, { fontSize: Math.min(48, width / 7.6), lineHeight: Math.min(56, width / 6.4) }]}>UNKNOWN</Text>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.delay(220)}>
-          <T style={styles.tag}>Meet the unknown.{'\n'}Discover the unexpected.</T>
-        </Animated.View>
-      </View>
-
-      {height >= 720 && <View style={[styles.cards, { top: Math.min(height * 0.42, 360) }]} pointerEvents="none">
-        {FEATURES.map((f, i) => (
-          <Animated.View key={f.label} entering={FadeInDown.delay(380 + i * 120).springify().damping(16)} style={{ alignSelf: i === 1 ? 'flex-end' : 'flex-start', marginLeft: i === 2 ? 36 : 0 }}>
-            <Float index={i} amplitude={5}>
-              <View style={[styles.card, { transform: [{ rotate: `${[-3, 3, -2][i]}deg` }] }]}>
-                <Text style={{ fontSize: 20 }}>{f.emoji}</Text>
-                <T style={{ fontFamily: fonts.bold, fontSize: 14 }}>{f.label}</T>
-              </View>
-            </Float>
+      <LinearGradient colors={['#3BA0FF', '#168AF7', '#0B6FD1']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[s.hero, { height: heroH + insets.top, paddingTop: insets.top }]}>
+        <View style={{ alignItems: 'center', justifyContent: 'center', width: ring, height: ring * 0.8 }}>
+          {[0, 1, 2].map((i) => <Ring key={i} size={ring} delay={i * 1000} />)}
+          <Animated.View entering={FadeInDown.springify().damping(14)} style={s.logo}><MaskLogo size={78} tone="white" /></Animated.View>
+        </View>
+        <Text style={s.brand}>THE UNKNOWN</Text>
+      </LinearGradient>
+      <View style={{ flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.md }}>
+        <Animated.Text entering={FadeInDown.delay(100)} style={s.title}>Meet new people near you</Animated.Text>
+        {POINTS.map((p, i) => (
+          <Animated.View key={p.title} entering={FadeInDown.delay(180 + i * 90).duration(350)} style={s.point}>
+            <View style={s.pointIcon}><Ionicons name={p.icon} size={18} color={colors.primary} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.pointTitle}>{p.title}</Text>
+              <T v="caption" color={colors.textMuted}>{p.body}</T>
+            </View>
           </Animated.View>
         ))}
-      </View>}
-
-      <Animated.View entering={FadeInUp.delay(300).springify().damping(18)} style={[styles.footer, { paddingBottom: insets.bottom + spacing.lg }]}>
-        <GradientButton label="Get Started" arrow onPress={() => { haptic.soft(); router.push('/vibe'); }} />
-        <View style={styles.note}>
-          <T v="caption" color={colors.textSecondary} style={{ textAlign: 'center' }}>
-            No account needed — you start with an anonymous identity.{'\n'}18+ only · By continuing you accept the Community Guidelines.
-          </T>
-        </View>
+      </View>
+      <Animated.View entering={FadeInUp.delay(400)} style={{ padding: spacing.lg, paddingBottom: insets.bottom + spacing.md, gap: 8 }}>
+        <GradientButton label="Get started" arrow onPress={() => { haptic.soft(); router.push('/setup'); }} />
+        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center' }}>For adults 18+ only. By continuing you accept the Community Guidelines.</T>
       </Animated.View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  the: { fontFamily: fonts.serif, fontSize: 24, lineHeight: 28, color: colors.text, letterSpacing: 3 },
-  unknown: { fontFamily: fonts.serif, fontSize: 48, lineHeight: 56, color: colors.text, letterSpacing: 1, backgroundColor: 'rgba(255,214,51,0.55)', paddingHorizontal: 8, borderRadius: 6, overflow: 'hidden' },
-  cards: { position: 'absolute', left: 24, right: 24, gap: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: '#FFFFFF', shadowColor: '#25324A', shadowOpacity: 0.12, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5 },
-  tag: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 25, color: colors.text, textAlign: 'center', marginTop: 6 },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, gap: spacing.sm },
-  note: { alignSelf: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.82)' },
+const s = StyleSheet.create({
+  hero: { alignItems: 'center', justifyContent: 'center', borderBottomLeftRadius: 32, borderBottomRightRadius: 32, paddingBottom: 20 },
+  logo: { width: 120, height: 120, borderRadius: 60, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)' },
+  brand: { fontFamily: fonts.extrabold, fontSize: 24, letterSpacing: 4, color: colors.white, marginTop: -10 },
+  title: { fontFamily: fonts.extrabold, fontSize: 26, letterSpacing: -0.6, color: colors.text },
+  point: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  pointIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
+  pointTitle: { fontFamily: fonts.bold, fontSize: 15.5, color: colors.text },
 });

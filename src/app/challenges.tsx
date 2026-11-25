@@ -7,8 +7,7 @@ import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValu
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Confetti, ProgressRing } from '@/components/Effects';
-import { Scenery } from '@/components/Scenery';
-import { ErrorState, T } from '@/components/ui';
+import { ErrorState, IconButton, T } from '@/components/ui';
 import { colors, fonts, gradients, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { getMyChallenges } from '@/services/api';
@@ -19,8 +18,8 @@ import { rankOf } from '@/features/challenges/ranks';
 type IconName = keyof typeof Ionicons.glyphMap;
 const ROUTE: Record<string, string> = { match: '/discover?view=match', chat: '/messages', post: '/create', interest: '/discover', reply: '/messages', like: '/discover' };
 const TINT: Record<string, [string, string]> = {
-  post: ['#FFF1D6', '#FF806B'], chat: ['#FFF6D6', '#FF806B'], like: ['#FFE8E2', '#E0466E'], match: ['#FFF1D6', '#E5A800'],
-  interest: ['#EAF6FF', '#FFC800'], reply: ['#EAF6FF', '#3F8FB5'],
+  post: ['#EAF5FF', '#FF5277'], chat: ['#EAF5FF', '#FF5277'], like: ['#FFF1F4', '#E0466E'], match: ['#EAF5FF', '#E0A800'],
+  interest: ['#EAF5FF', '#0B6FD1'], reply: ['#EAF5FF', '#3F8FB5'],
 };
 
 function resetIn() {
@@ -44,7 +43,7 @@ function Bar({ pct, delay }: { pct: number; delay: number }) {
 }
 
 function Row({ c, i, onPress }: { c: Challenge; i: number; onPress: () => void }) {
-  const t = TINT[c.key] ?? ['#FFF8E7', colors.violet];
+  const t = TINT[c.key] ?? ['#F1F5F9', colors.violet];
   return (
     <Animated.View entering={FadeInDown.delay(80 + i * 50).springify().damping(18)}>
       <Pressable accessibilityRole="button" accessibilityLabel={`${c.title}, ${c.xp} XP${c.done ? ', completed' : ''}`} disabled={c.done} onPress={onPress}
@@ -67,13 +66,6 @@ function Row({ c, i, onPress }: { c: Challenge; i: number; onPress: () => void }
   );
 }
 
-function Trophy() {
-  const f = useSharedValue(0);
-  const reduce = useReducedMotion();
-  useEffect(() => { if (!reduce) f.set(withRepeat(withSequence(withTiming(1, { duration: 1600 }), withTiming(0, { duration: 1600 })), -1)); }, [f, reduce]);
-  const a = useAnimatedStyle(() => ({ transform: [{ translateY: -6 * f.value }] }));
-  return <Animated.Text style={[{ fontSize: 96, textAlign: 'center' }, a]}>🏆</Animated.Text>;
-}
 
 /** Daily challenges — real progress from the server (resets at midnight UTC). */
 export default function Challenges() {
@@ -108,9 +100,12 @@ export default function Challenges() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
       <Confetti trigger={celebrate} width={width} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.md, paddingBottom: 0, gap: spacing.md }}
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingHorizontal: spacing.md, paddingBottom: insets.bottom + 40, gap: spacing.md }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={colors.violet} />}>
-        <T style={s.title}>Challenges</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <IconButton label="Back" name="chevron-back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/discover'))} />
+          <T style={s.title}>Challenges</T>
+        </View>
         {error ? <ErrorState message={error} onRetry={load} /> : !state ? <ActivityIndicator color={colors.violet} style={{ marginTop: 40 }} /> : (
           <>
             <Pressable accessibilityRole="button" onPress={() => router.push('/rewards')} style={s.level}>
@@ -153,10 +148,6 @@ export default function Challenges() {
             </View>
           </>
         )}
-        <View style={{ marginHorizontal: -spacing.md, marginTop: spacing.md, height: 260 }}>
-          <Scenery width={width} height={260} flowers="both" style={{ position: 'absolute', top: 0 }} />
-          <View style={{ position: 'absolute', left: 0, right: 0, top: 40 }}><Trophy /></View>
-        </View>
       </ScrollView>
     </View>
   );
@@ -174,9 +165,9 @@ const s = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   daily: { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.primary },
   dailyText: { fontFamily: fonts.bold, fontSize: 14, color: colors.onPrimary },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#172339', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
   icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  xp: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1D6' },
+  xp: { paddingHorizontal: 9, paddingVertical: 3, borderRadius: 999, backgroundColor: '#EAF5FF' },
   xpText: { fontFamily: fonts.bold, fontSize: 12, color: '#7A5600' },
-  bar: { height: 8, borderRadius: 999, backgroundColor: '#F1EEE2', overflow: 'hidden' },
+  bar: { height: 8, borderRadius: 999, backgroundColor: '#F1F5F9', overflow: 'hidden' },
 });

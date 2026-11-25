@@ -7,7 +7,6 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HeartBurst } from '@/components/Effects';
 import { useToast } from '@/components/Overlay';
-import { Scenery } from '@/components/Scenery';
 import { GradientButton, IconButton, T } from '@/components/ui';
 import { colors, fonts, gradients, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -21,9 +20,9 @@ import { haptic } from '@/utils/format';
 
 type TierKey = 'free' | PaidTier;
 const FEATURES: Record<TierKey, string[]> = {
-  free: ['Feed & posting', '1 Mystery Match a day', '20 AI messages a day', 'Nearby up to 25 km', 'All safety tools'],
-  plus: ['10 matches a day', 'Advanced filters', '100 AI messages a day', 'Nearby up to 100 km', 'Save favorites', 'Plus badge'],
-  vip: ['All Plus features', '25 matches a day', '300 AI messages a day', 'Priority in Discover', '3 Super Connects / day', 'Exclusive themes', 'VIP badge'],
+  free: ['Nearby up to 50 km', 'Basic filters', 'Messages & chat requests', '60 likes a day', '20 character messages a day', 'All safety tools'],
+  plus: ['Nearby up to 100 km', 'Advanced filters', 'See who likes you', 'Profile visitors', '300 likes a day', '1 Super Like a day', '100 character messages a day', 'VIP badge'],
+  vip: ['Everything in VIP', 'Priority discovery', '5 Super Likes a day', '1,000 likes a day', '300 character messages a day', 'Exclusive profile themes', 'Super VIP badge'],
 };
 const ORDER: TierKey[] = ['free', 'plus', 'vip'];
 
@@ -42,7 +41,7 @@ function TierCard({ tier, selected, current, price, period, onPress, live }: {
       {plus && <View style={s.popular}><LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.popularIn}><Text style={s.popularText}>Most Popular</Text></LinearGradient></View>}
       {vip && <View style={s.crownTop}><Text style={{ fontSize: 22 }}>👑</Text></View>}
       <LinearGradient
-        colors={vip ? ['#FFFBEA', '#FFF1B8'] : plus ? ['#FFFBEA', '#FFF6D6'] : ['#FFFFFF', '#FFFBF8']}
+        colors={vip ? ['#F5FAFF', '#EAF5FF'] : plus ? ['#F5FAFF', '#EAF5FF'] : ['#FFFFFF', '#FFFBF8']}
         style={[s.tier, selected && { borderColor: vip ? colors.gold : colors.violet, borderWidth: 2 }, selected && s.tierShadow]}>
         <Text style={[s.tierName, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{TIER_LABEL[tier]}</Text>
         <Text adjustsFontSizeToFit numberOfLines={1} style={[s.tierPrice, vip && { color: '#7A5600' }, plus && { color: colors.violetDeep }]}>{price}</Text>
@@ -100,7 +99,7 @@ export default function Premium() {
   useEffect(() => { if (currentTier !== 'free') setSelected('vip'); }, [currentTier]);
 
   const storePlan = (t: TierKey) => (t === 'free' ? undefined : store.find((p) => p.tier === t && p.billing === billing));
-  const priceOf = (t: TierKey) => (t === 'free' ? '0 DH' : storePlan(t)?.price ?? LIST_PRICES[t][billing]);
+  const priceOf = (t: TierKey) => (t === 'free' ? 'Free' : storePlan(t)?.price ?? LIST_PRICES[t][billing]);
   const chosen = storePlan(selected);
   const ready = subscriptionsAvailable && !loading && !!chosen;
 
@@ -147,10 +146,9 @@ export default function Premium() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <LinearGradient colors={gradients.mystery} style={StyleSheet.absoluteFill} />
-      <Scenery width={width} height={170} backdrop={false} flowers="both" style={{ position: 'absolute', top: 0, opacity: 0.7 }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 4, paddingHorizontal: spacing.md, paddingBottom: insets.bottom + 30, gap: spacing.md }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <IconButton label="Close" name="close" onPress={() => (router.canGoBack() ? router.back() : router.replace('/discover'))} />
+          <IconButton label="Close" name="close" onPress={() => (router.canGoBack() ? router.back() : router.replace('/nearby'))} />
           <View style={{ flex: 1 }} />
           {subscriptionsAvailable && <Pressable onPress={restore} disabled={!!busy} hitSlop={10}><T v="caption" color={colors.violetDeep} style={{ fontFamily: fonts.semibold }}>{busy === 'restore' ? 'Restoring…' : 'Restore purchases'}</T></Pressable>}
         </View>
@@ -219,7 +217,7 @@ export default function Premium() {
 
 const s = StyleSheet.create({
   tier: { flex: 1, borderRadius: 20, paddingHorizontal: 10, paddingTop: 22, paddingBottom: 14, borderWidth: 1, borderColor: colors.surfaceBorder, minHeight: 250 },
-  tierShadow: { shadowColor: '#25324A', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  tierShadow: { shadowColor: '#172339', shadowOpacity: 0.18, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
   tierName: { fontFamily: fonts.serif, fontSize: 21, color: colors.text, textAlign: 'center' },
   tierPrice: { fontFamily: fonts.bold, fontSize: 21, color: colors.text, textAlign: 'center', marginTop: 6 },
   tierPeriod: { fontFamily: fonts.medium, fontSize: 11, color: colors.textMuted, textAlign: 'center' },

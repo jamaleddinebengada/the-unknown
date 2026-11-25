@@ -23,7 +23,7 @@ export function StackHeader({ title, right, onBack }: { title?: string; right?: 
   const router = useRouter();
   return (
     <View style={styles.header}>
-      <IconButton label="Back" name="chevron-back" onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/discover')))} />
+      <IconButton label="Back" name="chevron-back" onPress={onBack ?? (() => (router.canGoBack() ? router.back() : router.replace('/nearby')))} />
       <T numberOfLines={1} style={{ flex: 1, textAlign: 'center', fontFamily: fonts.bold, fontSize: 22, letterSpacing: -0.4 }}>{title}</T>
       <View style={{ minWidth: 42, alignItems: 'flex-end' }}>{right}</View>
     </View>

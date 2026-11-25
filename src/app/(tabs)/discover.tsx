@@ -1,78 +1,55 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { Extrapolation, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AiPortrait } from '@/components/AiPortrait';
-import { MaskLogo } from '@/components/Brand';
-import { AnonymousAvatar } from '@/components/AnonymousAvatar';
 import { useAiCharacters } from '@/features/ai/useAiCharacters';
-import { Aurora } from '@/components/Effects';
 import { PostCard } from '@/components/PostCard';
 import { CategoryChip, EmptyState, ErrorState, IconButton, PostSkeleton, T } from '@/components/ui';
 import { FEED_CATEGORIES, type FeedCategory } from '@/constants/content';
-import { colors, fonts, gradients, spacing } from '@/constants/theme';
+import { colors, fonts, spacing } from '@/constants/theme';
 import { useBadges } from '@/hooks/useBadges';
 import { usePaged } from '@/hooks/usePaged';
-import { getActiveStrangers, getFeed } from '@/services/api';
-import { MatchesView } from '@/features/matches/MatchesView';
+import { discoverPeople, getFeed } from '@/services/api';
+import { countryName, flagOf } from '@/constants/countries';
+import { nameOf, PersonPhoto } from '@/features/people/PersonCards';
 import { haptic } from '@/utils/format';
-import type { FeedPost } from '@/types/models';
+import type { FeedPost, PersonCard } from '@/types/models';
 
 
-type View_ = 'feed' | 'match';
-
-/** Two-way switch at the top of Discover: the anonymous feed, or Mystery Match. */
-function ViewSwitch({ value, onChange }: { value: View_; onChange: (v: View_) => void }) {
-  const opts: { key: View_; label: string }[] = [{ key: 'feed', label: 'Feed' }, { key: 'match', label: 'Mystery Match' }];
+/** Horizontal row of real members (trending / new / suggested). */
+function PeopleRow({ title, sort }: { title: string; sort: 'trending' | 'new' | 'suggested' }) {
+  const router = useRouter();
+  const [people, setPeople] = useState<PersonCard[] | null>(null);
+  useFocusEffect(useCallback(() => { discoverPeople('world', 25, {}, sort, false, 0, 12).then(setPeople).catch(() => setPeople([])); }, [sort]));
+  if (!people?.length) return null;
   return (
-    <View style={styles.switch}>
-      {opts.map((o) => {
-        const on = value === o.key;
-        return (
-          <Pressable key={o.key} accessibilityRole="tab" accessibilityState={{ selected: on }} accessibilityLabel={o.label}
-            onPress={() => { if (!on) { haptic.tap(); onChange(o.key); } }} style={styles.switchItem}>
-            {on && <LinearGradient colors={gradients.pill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: 999 }]} />}
-            <T style={{ fontFamily: on ? fonts.bold : fonts.semibold, fontSize: 15 }} color={on ? colors.onPrimary : colors.textSecondary}>{o.label}</T>
+    <View style={{ gap: 10 }}>
+      <View style={styles.sectionHead}>
+        <T v="section">{title}</T>
+        <Pressable onPress={() => router.push('/nearby')} hitSlop={8}><T v="caption" color={colors.primary} style={{ fontFamily: fonts.bold }}>See all</T></Pressable>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: spacing.md }}>
+        {people.map((p) => (
+          <Pressable key={p.unknown_number} accessibilityRole="button" accessibilityLabel={nameOf(p)} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(p.unknown_number) } })} style={styles.personCard}>
+            <PersonPhoto p={p} width={116} height={146} radius={14} />
+            {p.online && <View style={styles.onlineDot} />}
+            <Text numberOfLines={1} style={styles.personName}>{nameOf(p)}{p.age ? `, ${p.age}` : ''}</Text>
+            <Text numberOfLines={1} style={styles.personPlace}>{p.country_code ? `${flagOf(p.country_code)} ${p.city ?? countryName(p.country_code)}` : 'Somewhere'}</Text>
           </Pressable>
-        );
-      })}
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
-/** Real members active recently (no fabricated profiles); "Your post" opens the composer. */
-function ActiveRow() {
-  const router = useRouter();
-  const [people, setPeople] = useState<{ unknown_number: number; avatar_seed: string; online: boolean }[]>([]);
-  useFocusEffect(useCallback(() => { getActiveStrangers(12).then(setPeople).catch(() => {}); }, []));
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingHorizontal: spacing.md }}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Write a post" onPress={() => router.push('/create')} style={styles.story}>
-        <View style={styles.storyAdd}><Ionicons name="add" size={26} color={colors.violet} /></View>
-        <T v="caption" color={colors.textSecondary}>Your post</T>
-      </Pressable>
-      {people.map((p) => (
-        <Pressable key={p.unknown_number} accessibilityRole="button" accessibilityLabel={`UNKNOWN #${p.unknown_number}`}
-          onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(p.unknown_number) } })} style={styles.story}>
-          <View style={styles.storyRing}><AnonymousAvatar seed={p.avatar_seed} number={p.unknown_number} size={54} online={p.online} /></View>
-          <T v="caption" color={colors.textSecondary}>#{p.unknown_number}</T>
-        </Pressable>
-      ))}
-      <Pressable accessibilityRole="button" accessibilityLabel="See real people" onPress={() => router.push('/people')} style={styles.story}>
-        <View style={styles.storyAdd}><Ionicons name="people" size={22} color={colors.violet} /></View>
-        <T v="caption" color={colors.textSecondary}>People</T>
-      </Pressable>
-    </ScrollView>
-  );
-}
-
-const HUB: { key: string; label: string; sub: string; icon: keyof typeof Ionicons.glyphMap; href: '/ai' | '/nearby' | '/people'; tint: string }[] = [
-  { key: 'ai', label: 'AI Characters', sub: 'Fictional', icon: 'sparkles', href: '/ai', tint: '#FFF4C2' },
-  { key: 'near', label: 'Nearby', sub: 'Opt-in', icon: 'location', href: '/nearby', tint: '#FFE8E2' },
-  { key: 'world', label: 'World', sub: 'Map', icon: 'earth', href: '/people', tint: '#EAF6FF' },
+const HUB: { key: string; label: string; sub: string; icon: keyof typeof Ionicons.glyphMap; href: '/ai' | '/mystery' | '/challenges' | '/people'; tint: string; color: string }[] = [
+  { key: 'mystery', label: 'Mystery', sub: 'Anonymous', icon: 'sparkles', href: '/mystery', tint: '#EAF5FF', color: '#168AF7' },
+  { key: 'ai', label: 'Characters', sub: 'Virtual · AI', icon: 'happy-outline', href: '/ai', tint: '#F3EDFF', color: '#7C3AED' },
+  { key: 'challenges', label: 'Challenges', sub: 'Daily XP', icon: 'trophy-outline', href: '/challenges', tint: '#FFF6DB', color: '#D49A00' },
+  { key: 'world', label: 'World', sub: 'Map', icon: 'earth', href: '/people', tint: '#E9F9EF', color: '#16A34A' },
 ];
 
 /** Entry points to the discovery features. */
@@ -82,9 +59,8 @@ function DiscoverHub() {
     <View style={styles.hub}>
       {HUB.map((h) => (
         <Pressable key={h.key} accessibilityRole="button" accessibilityLabel={h.label} onPress={() => { haptic.tap(); router.push(h.href); }} style={styles.hubTile}>
-          <View style={[styles.hubIcon, { backgroundColor: h.tint }]}><Ionicons name={h.icon} size={20} color={colors.text} /></View>
-          <T style={{ fontFamily: fonts.bold, fontSize: 13.5 }} numberOfLines={1}>{h.label}</T>
-          <T v="caption" color={colors.textMuted}>{h.sub}</T>
+          <View style={[styles.hubIcon, { backgroundColor: h.tint }]}><Ionicons name={h.icon} size={20} color={h.color} /></View>
+          <T style={{ fontFamily: fonts.semibold, fontSize: 12.5 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{h.label}</T>
         </Pressable>
       ))}
     </View>
@@ -99,13 +75,13 @@ function AiRow() {
   return (
     <View style={{ gap: 10 }}>
       <View style={styles.sectionHead}>
-        <T v="section">AI Characters</T>
+        <View><T v="section">Virtual Characters</T><T v="caption" color={colors.textMuted}>Fictional AI-powered personalities — not real people</T></View>
         <Pressable onPress={() => router.push('/ai')} hitSlop={8}><T v="caption" color={colors.coral} style={{ fontFamily: fonts.bold }}>See all</T></Pressable>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: spacing.md }}>
         {list.slice(0, 8).map((c) => (
-          <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={`${c.name}, AI ${c.role}`} onPress={() => router.push({ pathname: '/ai/[id]', params: { id: c.id } })} style={styles.aiCard}>
-            <AiPortrait seed={c.avatar_seed} accent={c.accent} size={104} rounded="card" />
+          <Pressable key={c.id} accessibilityRole="button" accessibilityLabel={`${c.name}, fictional AI character, ${c.role}`} onPress={() => router.push({ pathname: '/ai/[id]', params: { id: c.id } })} style={styles.aiCard}>
+            <AiPortrait seed={c.avatar_seed} accent={c.accent} size={104} rounded="card" badge={false} />
             <T style={{ fontFamily: fonts.bold }}>{c.name}</T>
             <T v="caption" color={colors.textMuted} numberOfLines={1}>{c.role}</T>
           </Pressable>
@@ -119,9 +95,6 @@ export default function Discover() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { notifications } = useBadges();
-  const params = useLocalSearchParams<{ view?: string }>();
-  const [view, setView] = useState<View_>(params.view === 'match' ? 'match' : 'feed');
-  useEffect(() => { if (params.view === 'match' || params.view === 'feed') setView(params.view); }, [params.view]);
   const [category, setCategory] = useState<FeedCategory>('for_you');
   const feed = usePaged<FeedPost>((offset) => getFeed(category, offset), category);
 
@@ -136,14 +109,12 @@ export default function Discover() {
     <View style={{ gap: spacing.md, paddingTop: insets.top + spacing.sm }}>
       <View style={styles.top}>
         <View style={{ flex: 1 }}>
-          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={styles.brand}>THE <Text style={styles.brandHi}>UNKNOWN</Text></Text>
-          <T v="caption" color={colors.textSecondary} numberOfLines={1}>Discover something unexpected.</T>
+          <Text numberOfLines={1} style={styles.title}>Discover</Text>
         </View>
         <IconButton label="Premium" name="diamond-outline" color={colors.gold} onPress={() => router.push('/premium')} />
         <IconButton label="Search" name="search" onPress={() => router.push('/search')} />
         <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
       </View>
-      <ViewSwitch value={view} onChange={(v) => { setView(v); router.setParams({ view: v }); }} />
     </View>
   );
 
@@ -151,8 +122,15 @@ export default function Discover() {
     <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
       {topBar}
       <DiscoverHub />
+      <PeopleRow title="Trending" sort="trending" />
+      <PeopleRow title="New members" sort="new" />
       <AiRow />
-      <ActiveRow />
+      <View style={styles.sectionHead}>
+        <T v="section">Moments</T>
+        <Pressable onPress={() => router.push('/create')} hitSlop={8} style={styles.newMoment} accessibilityRole="button" accessibilityLabel="Create a moment">
+          <Ionicons name="add" size={16} color={colors.white} /><Text style={{ fontFamily: fonts.semibold, color: colors.white, fontSize: 13 }}>Post</Text>
+        </Pressable>
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: spacing.md }}>
         {FEED_CATEGORIES.map((c) => (
           <CategoryChip key={c.key} label={c.label} selected={category === c.key} onPress={() => setCategory(c.key)} />
@@ -163,8 +141,6 @@ export default function Discover() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Aurora variant={view === 'match' ? 'warm' : undefined} />
-      {view === 'match' ? <MatchesView top={topBar} /> : (<>
       <Animated.FlatList
         data={feed.items}
         keyExtractor={(p) => p.id}
@@ -202,7 +178,6 @@ export default function Discover() {
         <View style={[StyleSheet.absoluteFill, styles.compactBg]} pointerEvents="none" />
         <View style={[styles.top, { paddingBottom: 10 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-            <MaskLogo size={34} />
             <T style={{ fontFamily: fonts.extrabold, fontSize: 13, letterSpacing: 3 }}>
               {FEED_CATEGORIES.find((c) => c.key === category)?.label.toUpperCase()}
             </T>
@@ -211,7 +186,6 @@ export default function Discover() {
           <IconButton label="Notifications" name="notifications-outline" badge={notifications} onPress={() => router.push('/notifications')} />
         </View>
       </Animated.View>
-      </>)}
     </View>
   );
 }
@@ -219,13 +193,18 @@ export default function Discover() {
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: spacing.md },
   compact: { position: 'absolute', left: 0, right: 0, top: 0 },
-  compactBg: { backgroundColor: colors.bg, borderBottomWidth: 1, borderBottomColor: colors.border, shadowColor: '#25324A', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
-  title: { fontFamily: fonts.bold, fontSize: 30, letterSpacing: -0.8, color: colors.text },
+  compactBg: { backgroundColor: colors.bg, borderBottomWidth: 1, borderBottomColor: colors.border, shadowColor: '#172339', shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
+  title: { fontFamily: fonts.extrabold, fontSize: 28, letterSpacing: -0.6, color: colors.text },
+  personCard: { width: 116, gap: 3 },
+  personName: { fontFamily: fonts.bold, fontSize: 13.5, color: colors.text, marginTop: 4 },
+  personPlace: { fontFamily: fonts.medium, fontSize: 12, color: colors.textMuted },
+  onlineDot: { position: 'absolute', top: 8, right: 8, width: 12, height: 12, borderRadius: 6, backgroundColor: colors.online, borderWidth: 2, borderColor: colors.white },
+  newMoment: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 12, height: 30, borderRadius: 15, backgroundColor: colors.primary },
   brand: { fontFamily: fonts.extrabold, fontSize: 26, letterSpacing: -0.8, color: colors.text },
   brandHi: { backgroundColor: colors.primary },
   hub: { flexDirection: 'row', gap: 10, paddingHorizontal: spacing.md },
-  hubTile: { flex: 1, gap: 4, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, shadowColor: '#25324A', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  hubIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  hubTile: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 12, paddingHorizontal: 4, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, shadowColor: '#172339', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  hubIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md },
   aiCard: { width: 124, gap: 4, padding: 10, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   story: { alignItems: 'center', gap: 5, width: 62 },

@@ -74,7 +74,7 @@ export default function AiChat() {
           <AiPortrait seed={c.avatar_seed} accent={c.accent} size={42} badge={false} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Text style={s.name}>{c.name}</Text><AiBadge small /></View>
-            <T v="caption" color={colors.textMuted}>{sending ? 'typing…' : `${c.role} · fictional AI`}</T>
+            <T v="caption" color={colors.textMuted}>{sending ? "typing…" : `Fictional AI character · ${c.role}`}</T>
           </View>
         </Pressable>}
         <IconButton label="Delete conversation" name="trash-outline" onPress={remove} />
@@ -145,7 +145,7 @@ const s = StyleSheet.create({
   typing: { flexDirection: 'row', gap: 5, paddingVertical: 14 },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.textMuted },
   starter: { padding: 12, borderRadius: 16, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
-  error: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 16, backgroundColor: '#FFF1EE', borderWidth: 1, borderColor: '#FFD3C9' },
+  error: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 16, backgroundColor: '#FFF1F4', borderWidth: 1, borderColor: '#FFE1E8' },
   retry: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: colors.primary },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: spacing.md, paddingTop: 22, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bg },
   input: { flex: 1, minHeight: 44, maxHeight: 120, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, fontFamily: fonts.regular, fontSize: 15, color: colors.text },

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useToast } from '@/components/Overlay';
-import { Scenery } from '@/components/Scenery';
 import { Screen, StackHeader } from '@/components/Screen';
 import { Choice, Group, Row, Toggle } from '@/components/SettingsUI';
 import { GradientButton, T, TextField } from '@/components/ui';
@@ -111,7 +110,6 @@ export default function Privacy() {
         <Group>
           <Row icon="ban-outline" label="Block & Report" sub="Always free. Open a profile or message to report." onPress={() => router.push('/settings')} last />
         </Group>
-        <Scenery width={width} height={180} flowers="bottom" style={{ marginHorizontal: -spacing.md }} />
       </ScrollView>
     </Screen>
   );

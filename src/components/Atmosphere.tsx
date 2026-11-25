@@ -32,6 +32,6 @@ export function Atmosphere({ stars = 40, intensity = 1 }: { stars?: number; inte
 }
 
 const styles = StyleSheet.create({
-  glow: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(255,214,51,0.28)' },
-  glowBlue: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(255,214,51,0.16)' },
+  glow: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(22,138,247,0.28)' },
+  glowBlue: { position: 'absolute', borderRadius: 9999, backgroundColor: 'rgba(22,138,247,0.16)' },
 });

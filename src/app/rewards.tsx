@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming, ZoomIn } from 'react-native-reanimated';
 import { ShieldEmblem } from '@/components/Emblem';
-import { Scenery } from '@/components/Scenery';
 import { Screen, StackHeader } from '@/components/Screen';
 import { ErrorState, GradientButton, T } from '@/components/ui';
 import { colors, fonts, gradients, spacing } from '@/constants/theme';
@@ -92,7 +91,6 @@ export default function Rewards() {
             </View>
           </View>
           <View style={s.note}><Ionicons name="information-circle-outline" size={16} color={colors.textMuted} /><T v="caption" color={colors.textMuted} style={{ flex: 1 }}>Points come from daily challenges: posting, starting conversations, matches and kind replies.</T></View>
-          <Scenery width={width} height={170} flowers="bottom" style={{ marginHorizontal: -spacing.md }} />
         </ScrollView>
       )}
     </Screen>
@@ -102,7 +100,7 @@ export default function Rewards() {
 const s = StyleSheet.create({
   level: { fontFamily: fonts.serif, fontSize: 36, lineHeight: 44, color: colors.plum, marginTop: 4 },
   rank: { fontFamily: fonts.semibold, fontSize: 17, color: colors.textSecondary },
-  bar: { height: 14, borderRadius: 999, backgroundColor: '#F1EEE2', overflow: 'hidden' },
+  bar: { height: 14, borderRadius: 999, backgroundColor: '#F1F5F9', overflow: 'hidden' },
   stats: { flexDirection: 'row', gap: 10 },
   stat: { flex: 1, alignItems: 'center', gap: 2, paddingVertical: 14, borderRadius: 22, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   statValue: { fontFamily: fonts.bold, fontSize: 20, color: colors.text },

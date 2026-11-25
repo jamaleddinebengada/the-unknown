@@ -7,7 +7,7 @@ function rng(seed: number) {
   return () => { t += 0x6d2b79f5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
 }
 const uid = (s: string) => s.replace(/[^a-zA-Z0-9]/g, '');
-const PINKS = ['#FF806B', '#FF9A85', '#FFD633', '#FFB547', '#FFC2B4', '#F05A40'];
+const PINKS = ['#FF5277', '#FF7A95', '#168AF7', '#3BA0FF', '#FFC2B4', '#F0365F'];
 
 /** A cluster of bougainvillea blossoms with a few leaves. */
 function Blossoms({ cx, cy, r, n, seed }: { cx: number; cy: number; r: number; n: number; seed: number }) {
@@ -51,7 +51,7 @@ function Village({ w, h, base }: { w: number; h: number; base: number }) {
       {houses.map((p, i) => (
         <G key={i}>
           <Rect x={p.x} y={p.y} width={p.ww} height={p.hh} rx={2} fill="#FFFDFB" />
-          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#FFF8E7" />
+          <Rect x={p.x} y={p.y + p.hh * 0.75} width={p.ww} height={p.hh * 0.25} fill="#F1F5F9" />
           {p.win && <Rect x={p.x + p.ww * 0.35} y={p.y + p.hh * 0.35} width={p.ww * 0.22} height={p.hh * 0.3} rx={1} fill="#5C86C6" opacity={0.75} />}
           {p.dome && (
             <G>
@@ -99,17 +99,17 @@ export const Scenery = memo(function Scenery({ width, height, village = true, fl
             <Stop offset="1" stopColor="#3B7FB0" />
           </SvgLinear>
           <RadialGradient id={`${id}sun`} cx="50%" cy="50%" r="50%">
-            <Stop offset="0" stopColor="#FFF8D6" stopOpacity="1" />
-            <Stop offset="0.35" stopColor="#FFE466" stopOpacity="0.85" />
-            <Stop offset="1" stopColor="#FFD633" stopOpacity="0" />
+            <Stop offset="0" stopColor="#F5FAFF" stopOpacity="1" />
+            <Stop offset="0.35" stopColor="#3BA0FF" stopOpacity="0.85" />
+            <Stop offset="1" stopColor="#168AF7" stopOpacity="0" />
           </RadialGradient>
         </Defs>
         {backdrop && <Rect x={0} y={0} width={w} height={horizon} fill={`url(#${id}sky)`} />}
         {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.02} r={h * 0.28} fill={`url(#${id}sun)`} />}
-        {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.01} r={h * 0.055} fill="#FFE466" />}
+        {backdrop && sun && <Circle cx={w * 0.38} cy={horizon - h * 0.01} r={h * 0.055} fill="#3BA0FF" />}
         {backdrop && <Rect x={0} y={horizon} width={w} height={h - horizon} fill={`url(#${id}sea)`} />}
         {backdrop && sun && [0, 1, 2, 3, 4].map((i) => (
-          <Rect key={i} x={w * 0.38 - (w * 0.12) / (i + 1)} y={horizon + 6 + i * h * 0.04} width={(w * 0.24) / (i + 1)} height={2.5} rx={1.2} fill="#FFF8D6" opacity={0.8 - i * 0.12} />
+          <Rect key={i} x={w * 0.38 - (w * 0.12) / (i + 1)} y={horizon + 6 + i * h * 0.04} width={(w * 0.24) / (i + 1)} height={2.5} rx={1.2} fill="#F5FAFF" opacity={0.8 - i * 0.12} />
         ))}
         {backdrop && village && <Village w={w} h={h} base={horizon + h * 0.08} />}
         {clusters.map((c, i) => <Blossoms key={i} {...c} />)}

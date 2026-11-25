@@ -24,7 +24,7 @@ export default function Saved() {
           onEndReached={posts.loadMore}
           refreshControl={<RefreshControl refreshing={posts.refreshing} onRefresh={posts.refresh} tintColor={colors.violet} />}
           ListEmptyComponent={posts.loading ? <ActivityIndicator color={colors.violet} /> : plan?.tier === 'free' ? (
-            <EmptyState icon="bookmark-outline" title="Keep the posts you love" body="Saving favorites is part of UNKNOWN PLUS. Tap the bookmark on any post." action="See Premium" onAction={() => router.push('/premium')} />
+            <EmptyState icon="bookmark-outline" title="Keep the posts you love" body="Saving favorites is part of UNKNOWN VIP. Tap the bookmark on any post." action="See Premium" onAction={() => router.push('/premium')} />
           ) : (
             <EmptyState icon="bookmark-outline" title="Nothing saved yet" body="Tap the bookmark on any post to keep it here." />
           )} />

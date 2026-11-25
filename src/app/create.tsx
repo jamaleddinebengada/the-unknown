@@ -166,7 +166,7 @@ export default function CreatePost() {
                     <Pressy key={p.key} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={p.action} onPress={() => { haptic.tap(); setType(p.key as PostType); }}
                       style={[s.type, on && s.typeOn]}>
                       <View style={[s.typeIcon, { backgroundColor: on ? colors.white : `${c1}22` }]}>
-                        <Ionicons name={p.icon} size={19} color={on ? colors.text : c1 === '#FFD633' ? '#C79200' : c1} />
+                        <Ionicons name={p.icon} size={19} color={on ? colors.text : c1 === '#168AF7' ? '#C79200' : c1} />
                       </View>
                       <T v="caption" numberOfLines={1} color={colors.text} style={{ fontFamily: on ? fonts.bold : fonts.semibold }}>{p.label}</T>
                     </Pressy>
@@ -281,8 +281,8 @@ export default function CreatePost() {
 const s = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.sm },
-  type: { width: '31%', flexGrow: 1, height: 86, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, justifyContent: 'space-between', shadowColor: '#25324A', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
-  typeOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep, shadowColor: '#E5A800', shadowOpacity: 0.35, shadowRadius: 12, elevation: 5 },
+  type: { width: '31%', flexGrow: 1, height: 86, padding: 12, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder, justifyContent: 'space-between', shadowColor: '#172339', shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  typeOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep, shadowColor: '#E0A800', shadowOpacity: 0.35, shadowRadius: 12, elevation: 5 },
   typeIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   input: { minHeight: 150, color: colors.text, fontFamily: fonts.regular, fontSize: 17, lineHeight: 25, textAlignVertical: 'top', outlineStyle: 'none' } as object,
   preview: { width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md },

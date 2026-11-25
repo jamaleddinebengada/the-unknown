@@ -20,4 +20,5 @@ export function usePlan() {
   return plan;
 }
 
-export const TIER_LABEL = { free: 'Free', plus: 'Plus', vip: 'VIP' } as const;
+/** Database tiers → product names: plus = UNKNOWN VIP, vip = UNKNOWN SUPER VIP. */
+export const TIER_LABEL = { free: 'Free', plus: 'VIP', vip: 'Super VIP' } as const;

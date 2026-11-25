@@ -83,7 +83,7 @@ export default function MyProfile() {
       </View>
       <ProfileHeader number={n} seed={profile.avatar_seed} country={profile.country_code}
         age={profile.birth_date ? String(ageFromDate(profile.birth_date)) : null} interests={profile.interests} tags={profile.personality_tags}
-        tagline={profile.tagline} theme={profile.profile_theme} scrollY={scrollY}
+        tagline={profile.tagline} theme={profile.profile_theme} scrollY={scrollY} displayName={profile.display_name}
         photoUrlOverride={photos ? photos.photoUrl : undefined}
         galleryOverride={photos ? photos.gallery.map((p, i) => ({ path: p, url: photos.galleryUrls[i] })).filter((g) => g.url) : []}
         onPhotoPress={() => setPhotoMenu(true)} onAddGalleryPhoto={addToGallery} onGalleryPress={(p) => galleryOptions(p)}
@@ -100,9 +100,9 @@ export default function MyProfile() {
         <T v="caption" color={colors.violetDeep} style={{ fontFamily: fonts.semibold }}>Change</T>
       </Pressable>
       <View style={s.shortcuts}>
-        <Shortcut icon="trophy-outline" label="Rewards" onPress={() => router.push('/rewards')} />
-        <Shortcut icon="bookmark-outline" label="Saved" onPress={() => router.push('/saved')} />
-        <Shortcut icon="people-outline" label="People" onPress={() => router.push('/people')} />
+        <Shortcut icon="eye-outline" label="Visitors" onPress={() => router.push('/visitors')} />
+        <Shortcut icon="star-outline" label="Favorites" onPress={() => router.push('/favorites')} />
+        <Shortcut icon="trophy-outline" label="Challenges" onPress={() => router.push('/challenges')} />
         <Shortcut icon="diamond-outline" label={plan && plan.tier !== 'free' ? TIER_LABEL[plan.tier] : 'Premium'} gold onPress={() => router.push('/premium')} />
       </View>
       <T v="section" style={{ marginTop: spacing.sm }}>Your posts</T>

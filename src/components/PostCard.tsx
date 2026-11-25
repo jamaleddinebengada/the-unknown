@@ -130,7 +130,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
       const on = await toggleSaved(post.id);
       toast(on ? 'Saved to your favorites' : 'Removed from favorites', 'success');
     } catch (e) {
-      if (String((e as Error)?.message).includes('plus_required')) { toast('Saving favorites is part of UNKNOWN PLUS'); router.push('/premium'); }
+      if (String((e as Error)?.message).includes('plus_required')) { toast('Saving favorites is part of UNKNOWN VIP'); router.push('/premium'); }
       else toast(friendlyError(e), 'error');
     }
   };
@@ -145,7 +145,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
     <Animated.View entering={FadeInDown.delay(Math.min(index, 6) * 60).springify().damping(18)}>
       <Pressy scaleTo={detailed ? 1 : 0.985} onPress={onCardPress} accessibilityRole={detailed ? undefined : 'button'} accessibilityHint="Double tap to like">
         <GlassCard accent={editorial ? undefined : accent} padding={spacing.md} radius={radius.xl} glow={!!post.my_interest || post.is_mine}
-          fill={editorial ? (post.type === 'secret' ? ['#F2F9FF', '#EAF6FF'] : ['#FFFBEF', '#FFF4D2']) : undefined}>
+          fill={editorial ? (post.type === 'secret' ? ['#F2F9FF', '#EAF5FF'] : ['#F8FAFC', '#FFF4D2']) : undefined}>
           <View style={{ gap: spacing.sm }}>
             <View style={s.head}>
               <Pressy scaleTo={0.92} onPress={() => router.push({ pathname: '/user/[number]', params: { number: String(post.author_number) } })} accessibilityLabel={`Open ${unknownName(post.author_number)}`}>
@@ -206,7 +206,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
               </Pressy>
               <View style={{ flex: 1 }} />
               <Pressy accessibilityLabel={interestLabelText} onPress={onInterested} scaleTo={0.94}
-                style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: '#E5A800', shadowOpacity: 0.4, shadowRadius: 10, elevation: 4 }]}>
+                style={[s.interestedWrap, !(post.my_interest || post.is_mine) && { shadowColor: '#E0A800', shadowOpacity: 0.4, shadowRadius: 10, elevation: 4 }]}>
                 {post.my_interest || post.is_mine ? (
                   <View style={[s.interested, s.interestedOn]}>
                     <Ionicons name={post.is_mine ? 'people' : post.my_interest === 'accepted' ? 'chatbubbles' : 'checkmark-circle'} size={15} color={colors.violetDeep} />
@@ -267,8 +267,8 @@ const s = StyleSheet.create({
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.hairlineStrong, marginTop: 4 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 7, paddingHorizontal: 9, borderRadius: radius.pill, backgroundColor: colors.bg },
-  actionOn: { backgroundColor: 'rgba(255,128,107,0.14)' },
+  actionOn: { backgroundColor: 'rgba(255,82,119,0.14)' },
   interestedWrap: { borderRadius: radius.pill },
   interested: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 9, paddingHorizontal: 13, borderRadius: radius.pill },
-  interestedOn: { backgroundColor: 'rgba(255,128,107,0.16)', borderWidth: 1, borderColor: 'rgba(255,214,51,0.45)' },
+  interestedOn: { backgroundColor: 'rgba(255,82,119,0.16)', borderWidth: 1, borderColor: 'rgba(22,138,247,0.45)' },
 });

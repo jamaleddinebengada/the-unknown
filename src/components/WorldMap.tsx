@@ -50,8 +50,8 @@ export function WorldMap({ width, pins, selected, onSelect }: { width: number; p
 }
 
 const s = StyleSheet.create({
-  ripple: { position: 'absolute', backgroundColor: 'rgba(255,214,51,0.55)', borderWidth: 1, borderColor: '#FFC800' },
-  dot: { position: 'absolute', backgroundColor: '#FFD633', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E5A800', shadowOpacity: 0.5, shadowRadius: 6, elevation: 4 },
+  ripple: { position: 'absolute', backgroundColor: 'rgba(22,138,247,0.55)', borderWidth: 1, borderColor: '#0B6FD1' },
+  dot: { position: 'absolute', backgroundColor: '#168AF7', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E0A800', shadowOpacity: 0.5, shadowRadius: 6, elevation: 4 },
   dotOn: { backgroundColor: colors.coral },
   count: { fontFamily: fonts.bold, fontSize: 9.5, color: colors.text },
 });

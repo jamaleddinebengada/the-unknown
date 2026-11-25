@@ -4,7 +4,9 @@ import Purchases, { PACKAGE_TYPE, type CustomerInfo, type PurchasesPackage } fro
 /**
  * THE UNKNOWN memberships via RevenueCat (Google Play Billing / App Store In-App Purchase).
  *
- *   FREE 0 MAD · PLUS 49 MAD / month · VIP 99 MAD / month (yearly plans save ~40%)
+ *   FREE · UNKNOWN VIP (entitlement "plus") · UNKNOWN SUPER VIP (entitlement "vip"), monthly + annual.
+ *   Suggested store prices: VIP $9.99/mo, $59.99/yr · SUPER VIP $19.99/mo, $119.99/yr — set them in Google Play;
+ *   the app only ever shows the localized price returned by the billing SDK.
  *
  * Store setup (see README): products plus_monthly, plus_yearly, vip_monthly, vip_yearly;
  * RevenueCat entitlements "plus" (PLUS + VIP products) and "vip" (VIP products); one offering
@@ -16,12 +18,12 @@ import Purchases, { PACKAGE_TYPE, type CustomerInfo, type PurchasesPackage } fro
 export type PaidTier = 'plus' | 'vip';
 export type Billing = 'monthly' | 'yearly';
 
-/** List prices shown before the store is connected (the store's localized price wins when available). */
+/** Shown before the store is connected: no invented prices — the real price comes from Google Play. */
 export const LIST_PRICES: Record<PaidTier, Record<Billing, string>> = {
-  plus: { monthly: '49 DH', yearly: '349 DH' },
-  vip: { monthly: '99 DH', yearly: '699 DH' },
+  plus: { monthly: 'In store', yearly: 'In store' },
+  vip: { monthly: 'In store', yearly: 'In store' },
 };
-export const YEARLY_SAVING = '40%';
+export const YEARLY_SAVING = '50%';
 
 const KEY = Platform.select({
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,

@@ -25,7 +25,7 @@ function Tile({ slug, on, size, onPress }: { slug: string; on: boolean; size: nu
   return (
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} accessibilityLabel={label} onPress={onPress}>
       <Animated.View style={[{ width: size, height: size }, a]}>
-        <LinearGradient colors={on ? ['#FFE466', '#FFD633'] : art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tile, on && styles.tileOn]}>
+        <LinearGradient colors={on ? ['#3BA0FF', '#168AF7'] : art.colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tile, on && styles.tileOn]}>
           <Text style={{ fontSize: size * 0.4 }}>{art.emoji}</Text>
           <Text style={[styles.label, on && { color: colors.onPrimary, fontFamily: fonts.bold }]}>{label}</Text>
         </LinearGradient>
@@ -58,7 +58,7 @@ export default function Vibe() {
       if (picked.length) { await updateMyProfile({ interests: picked }); await refreshProfile(); }
       haptic.success();
       await enter();
-      router.replace('/discover');
+      router.replace('/nearby');
     } catch (e) { toast(friendlyError(e), 'error'); } finally { setBusy(false); }
   };
 
@@ -103,5 +103,5 @@ const styles = StyleSheet.create({
   label: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   check: { position: 'absolute', top: -5, right: -5, width: 24, height: 24, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white },
   more: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, paddingTop: 12, backgroundColor: 'rgba(255,254,250,0.94)' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.xl, paddingTop: 12, backgroundColor: 'rgba(248,250,252,0.94)' },
 });

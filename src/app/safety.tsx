@@ -56,5 +56,5 @@ export default function Safety() {
 const s = StyleSheet.create({
   tip: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: 20, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   icon: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
-  urgent: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 18, backgroundColor: '#FFF1EE', borderWidth: 1, borderColor: '#FFD3C9' },
+  urgent: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 18, backgroundColor: '#FFF1F4', borderWidth: 1, borderColor: '#FFE1E8' },
 });

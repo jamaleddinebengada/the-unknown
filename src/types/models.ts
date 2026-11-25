@@ -23,6 +23,12 @@ export interface Profile {
   onboarding_complete: boolean;
   is_premium: boolean;
   tier: 'free' | 'plus' | 'vip';
+  display_name: string | null;
+  bio: string | null;
+  looking_for: 'friendship' | 'conversation' | 'relationship' | null;
+  interested_in: string[];
+  is_verified: boolean;
+  hide_visits: boolean;
   photo_visibility: 'public' | 'revealed' | 'hidden';
   profile_theme: 'rose' | 'plum' | 'gold' | 'ocean' | 'sunset';
   status: 'active' | 'suspended' | 'banned';
@@ -175,3 +181,13 @@ export interface ChallengeState {
 export interface Plan { tier: 'free' | 'plus' | 'vip'; matches_today: number; match_limit: number; supers_today: number; super_limit: number; renews_at: string | null; sub_status: string | null }
 export interface Person { unknown_number: number; avatar_seed: string; country_code: string | null; age: number | null; interests: string[]; tagline: string | null; tier: 'free' | 'plus' | 'vip'; online: boolean; has_photo: boolean }
 export interface MatchFilters { country?: string | null; minAge?: number | null; maxAge?: number | null }
+
+/** A member as returned by discover_people / get_person (never ids or coordinates). */
+export interface PersonCard {
+  unknown_number: number; display_name: string | null; avatar_seed: string; age: number | null; gender: string | null;
+  bio: string | null; looking_for: string | null; languages: string[]; interests: string[]; shared_interests: string[];
+  country_code: string | null; city: string | null; distance_band: string | null; online: boolean; recently_active: boolean;
+  is_new: boolean; is_verified: boolean; tier: 'free' | 'plus' | 'vip'; has_photo: boolean; is_favorite: boolean; i_liked: boolean;
+  post_count?: number; member_since?: string; personality_tags?: string[]; is_me?: boolean; super?: boolean; visited_at?: string;
+}
+export interface DiscoverFilters { min_age?: number | null; max_age?: number | null; genders?: string[]; online?: boolean; recent?: boolean; new?: boolean; interests?: string[]; language?: string | null; country?: string | null; city?: string | null }

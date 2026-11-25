@@ -28,31 +28,35 @@ PY
 }
 
 sleep 15; shot 01-launch; echo "after launch: $(alive)"
-# Welcome → "Get Started", then Choose Your Vibe → pick one interest → "Continue"
+# Welcome → "Get started" → profile setup (date of birth is required, 18+) → interests → Nearby
 SIZE=$(adb shell wm size | tail -1 | awk '{print $NF}'); W=${SIZE%x*}; H=${SIZE#*x}
 echo "screen ${W}x${H}"
-tapText "Get Started"; sleep 4; shot 02-vibe; echo "vibe: $(alive)"
+tapText "Get started"; sleep 4; shot 02-setup; echo "setup: $(alive)"
+tapText "Day"; adb shell input text 15; tapText "Month"; adb shell input text 06; tapText "Year"; adb shell input text 1994
+adb shell input keyevent 111; sleep 1
+tapText "Woman"; sleep 1
+tapText "Continue"; sleep 6; shot 02-vibe; echo "vibe: $(alive)"
 tapText "Travel"; sleep 1
-tapText "Continue" ; sleep 8; shot 02-after-enter; echo "after enter: $(alive)"
-sleep 10; shot 03-home; echo "at home: $(alive)"
+tapText "Continue"; sleep 8; shot 03-nearby-home; echo "nearby home: $(alive)"
+# Nearby without location permission: use the manual city picker
+tapText "Choose a city instead"; sleep 3; tapText "Casablanca"; sleep 8; shot 03a-nearby-city; echo "nearby city: $(alive)"
 TY=$((H*96/100))
 tab() { adb shell input tap $((W*$1/100)) $TY; sleep 6; shot "$2"; echo "$2: $(alive)"; }
-tapText "Mystery Match" "$((W*72/100)) $((H*17/100))"; sleep 6; shot 03b-mystery-match; echo "mystery match: $(alive)"
-# deep links into the new screens (no Back key: it could leave the app)
+# deep links into stack screens (no Back key: it could leave the app)
 link() { adb shell am start -W -a android.intent.action.VIEW -d "theunknown://$1" "$PKG" >/dev/null 2>&1; sleep 7; shot "$2"; echo "$2: $(alive)"; }
-link ai 03c-ai-characters
+link mystery 03b-mystery-match
+link ai 03c-virtual-characters
 link ai/luna 03e-ai-profile
-link ai/chat/luna 03f-ai-chat
-link nearby 03d-nearby
 link safety 03g-safety
 link premium 03h-premium
 link challenges 03i-challenges
-tab 30 04-challenges
-tab 70 05-messages
-tab 90 06-profile
-adb shell input tap $((W/2)) $((H*89/100)); sleep 6; shot 07-create; echo "07-create: $(alive)"
-adb shell input keyevent 4; sleep 4
-tab 10 08-discover
+link favorites 03j-favorites
+link visitors 03k-visitors
+tab 30 04-discover
+tab 50 05-matches
+tab 70 06-messages
+tab 90 07-profile
+tab 10 08-nearby
 
 adb logcat -d > smoke/logcat-full.txt
 grep -E "ReactNativeJS|AndroidRuntime|FATAL|ReactNative|unknown|Supabase|SoLoader|libc " smoke/logcat-full.txt > smoke/logcat-app.txt || true

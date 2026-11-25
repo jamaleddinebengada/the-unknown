@@ -48,7 +48,7 @@ function MatchCardFace({ m, width, isSuper }: { m: MysteryMatch | null; width: n
       {photo ? (
         <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} accessibilityLabel="Profile photo" />
       ) : (
-        <LinearGradient colors={['#FFF6D6', '#FFE466', '#FFD633']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+        <LinearGradient colors={['#EAF5FF', '#3BA0FF', '#168AF7']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
           <View style={s.faceGlow} />
           <View style={{ marginTop: m ? -70 : 0 }}><MaskLogo size={width * 0.55} tone="ink" /></View>
           {!m && <T style={{ fontFamily: fonts.serifItalic, fontSize: 18, marginTop: 14 }} color={colors.text}>Who will you meet today?</T>}
@@ -191,7 +191,7 @@ export function MatchesView({ top }: { top?: ReactNode }) {
             <DiscoveryRings size={cardW * 1.9} style={{ top: cardW * 0.61 - cardW * 0.95 }} />
             {/* stacked cards behind */}
             <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '-7deg' }, { translateX: -14 }] }]} />
-            <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '6deg' }, { translateX: 14 }], backgroundColor: '#FFF6D6' }]} />
+            <View style={[s.behind, { width: cardW, height: cardW * 1.22, transform: [{ rotate: '6deg' }, { translateX: 14 }], backgroundColor: '#EAF5FF' }]} />
             <GestureDetector gesture={pan}>
               <Animated.View entering={ZoomIn.springify().damping(15)} key={featured?.match_id ?? 'empty'} style={[s.cardShadow, cardStyle]}>
                 <MatchCardFace m={featured} width={cardW} isSuper={!!featured && supers.has(featured.match_id)} />
@@ -212,7 +212,7 @@ export function MatchesView({ top }: { top?: ReactNode }) {
               </View>
             )}
             <View style={s.actions}>
-              <RoundAction label="Pass" icon="close" colors={['#FFFFFF', '#FFFEFA']} iconColor={colors.violetDeep} onPress={() => act('pass')} disabled={busy} />
+              <RoundAction label="Pass" icon="close" colors={['#FFFFFF', '#F8FAFC']} iconColor={colors.violetDeep} onPress={() => act('pass')} disabled={busy} />
               <RoundAction label="Super Connect (VIP)" icon="star" size={56} colors={gradients.gold} iconColor="#5A4100" onPress={() => act('super')} disabled={busy} />
               <RoundAction label="Join" icon="heart" colors={gradients.rose} onPress={() => act('join')} disabled={busy} />
             </View>
@@ -312,20 +312,20 @@ const s = StyleSheet.create({
   faceInfo: { position: 'absolute', left: 12, right: 12, bottom: 12, paddingHorizontal: 16, paddingVertical: 12, gap: 3, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.93)' },
   faceName: { fontFamily: fonts.display, fontSize: 20, color: colors.text },
   faceMeta: { fontFamily: fonts.medium, fontSize: 13, color: colors.textSecondary },
-  superTag: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: '#FFF1B8' },
+  superTag: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: '#EAF5FF' },
   superText: { fontFamily: fonts.bold, fontSize: 10.5, color: '#5A4100', letterSpacing: 0.6 },
-  qBadge: { position: 'absolute', width: 68, height: 68, borderRadius: 34, padding: 4, backgroundColor: '#FFFFFF', shadowColor: '#25324A', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
+  qBadge: { position: 'absolute', width: 68, height: 68, borderRadius: 34, padding: 4, backgroundColor: '#FFFFFF', shadowColor: '#172339', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 5 },
   qInner: { flex: 1, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
   qText: { fontFamily: fonts.serif, fontSize: 34, lineHeight: 40, color: colors.onPrimary },
-  behind: { position: 'absolute', top: 6, borderRadius: 30, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#25324A', shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
-  cardShadow: { shadowColor: '#25324A', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 14 }, elevation: 12, borderRadius: 30 },
+  behind: { position: 'absolute', top: 6, borderRadius: 30, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: colors.surfaceBorder, shadowColor: '#172339', shadowOpacity: 0.08, shadowRadius: 12, elevation: 3 },
+  cardShadow: { shadowColor: '#172339', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 14 }, elevation: 12, borderRadius: 30 },
   hint: { position: 'absolute', top: 22, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 10, borderWidth: 3, backgroundColor: 'rgba(255,255,255,0.85)' },
   hintText: { fontFamily: fonts.extrabold, fontSize: 20, letterSpacing: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   chipText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.violetDeep },
   actions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 26 },
-  round: { alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', shadowColor: '#25324A', shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
+  round: { alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.9)', shadowColor: '#172339', shadowOpacity: 0.22, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
   mode: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 38, paddingHorizontal: 14, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.surfaceBorder },
   modeOn: { backgroundColor: colors.primary, borderColor: colors.primaryDeep },
   modeText: { fontFamily: fonts.semibold, fontSize: 14, color: colors.textSecondary },

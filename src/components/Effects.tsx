@@ -49,12 +49,12 @@ const Spark = memo(function Spark({ x, y, s, delay, dur }: { x: number; y: numbe
     o.value = withDelay(delay, withRepeat(withSequence(withTiming(1, { duration: dur }), withTiming(0.1, { duration: dur })), -1));
   }, [o, delay, dur]);
   const a = useAnimatedStyle(() => ({ opacity: o.value, transform: [{ translateY: -6 * o.value }] }));
-  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#FFD633' : '#FFEFB0' }, a]} />;
+  return <Animated.View style={[{ position: 'absolute', left: x, top: y, width: s, height: s, borderRadius: s, backgroundColor: s > 2.4 ? '#168AF7' : '#EAF5FF' }, a]} />;
 });
 
 export function Aurora({ variant = 'default', stars = 26, style }: { variant?: 'default' | 'warm' | 'calm'; stars?: number; style?: StyleProp<ViewStyle> }) {
   const { width, height } = useWindowDimensions();
-  const palette = variant === 'warm' ? ['#FFE89A', '#FFF1B8', '#FFD3C9'] : variant === 'calm' ? ['#EAF6FF', '#FFF6D6', '#FFF8E7'] : ['#FFF1B8', '#EAF6FF', '#FFE2D6'];
+  const palette = variant === 'warm' ? ['#D6EBFF', '#EAF5FF', '#FFE1E8'] : variant === 'calm' ? ['#EAF5FF', '#EAF5FF', '#F1F5F9'] : ['#EAF5FF', '#EAF5FF', '#FFE1E8'];
   const sparks = useMemo(() => {
     const r = seeded(`aurora-${variant}`);
     return Array.from({ length: stars }, () => ({ x: r() * width, y: r() * height, s: r() > 0.8 ? 3 : 1.6, delay: r() * 3000, dur: 1800 + r() * 2600 }));
@@ -65,7 +65,7 @@ export function Aurora({ variant = 'default', stars = 26, style }: { variant?: '
       <Blob color={palette[0]} size={width * 1.3} x={width * 0.15} y={height * 0.05} dx={width * 0.25} dy={height * 0.06} dur={9000} delay={0} opacity={0.55} />
       <Blob color={palette[1]} size={width * 1.0} x={width * 0.95} y={height * 0.35} dx={-width * 0.3} dy={height * 0.08} dur={11000} delay={600} opacity={0.32} />
       <Blob color={palette[2]} size={width * 1.1} x={width * 0.2} y={height * 0.85} dx={width * 0.3} dy={-height * 0.1} dur={13000} delay={1200} opacity={0.3} />
-      <LinearGradient colors={['rgba(255,254,250,0)', 'rgba(255,254,250,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
+      <LinearGradient colors={['rgba(248,250,252,0)', 'rgba(248,250,252,0.6)']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 1 }} />
       {sparks.map((p, i) => <Spark key={i} {...p} />)}
     </View>
   );
@@ -96,7 +96,7 @@ export function GlassCard({ children, style, accent, padding = 16, radius: r = r
 /* =====================================================================
  * GradientText — headline text filled with a gradient (SVG, no native deps).
  * ===================================================================== */
-export function GradientText({ text, size = 30, colors: g = ['#FF806B', '#FF8C73', '#25324A'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
+export function GradientText({ text, size = 30, colors: g = ['#FF5277', '#FF8C73', '#172339'], weight = fonts.display, letterSpacing = 0.2, width, align = 'left' }: {
   text: string; size?: number; colors?: readonly string[]; weight?: string; letterSpacing?: number; width?: number; align?: 'left' | 'center';
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -169,7 +169,7 @@ export function HeartBurst({ trigger, size = 90 }: { trigger: number; size?: num
 /* =====================================================================
  * GlowRing — rotating gradient ring (portal motif) around content.
  * ===================================================================== */
-export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#FF806B', '#FF806B', '#FFD633'] }: {
+export function GlowRing({ size, children, speed = 6000, thickness = 2.5, colors: g = ['#FF5277', '#FF5277', '#168AF7'] }: {
   size: number; children?: ReactNode; speed?: number; thickness?: number; colors?: readonly string[];
 }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
@@ -210,9 +210,9 @@ export function PulseDot({ color = colors.success, size = 10 }: { color?: string
 }
 
 const styles = StyleSheet.create({
-  float: { shadowColor: '#25324A', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  float: { shadowColor: '#172339', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
   sheen: { position: 'absolute', left: 0, right: 0, top: 0, height: 1, backgroundColor: glass.highlight },
-  glow: { shadowColor: '#E5A800', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  glow: { shadowColor: '#E0A800', shadowOpacity: 0.18, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
 });
 
 /* =====================================================================
@@ -241,7 +241,7 @@ export function ScreenTitle({ overline, title, subtitle, right }: { overline?: s
 }
 
 /** Concentric yellow discovery rings that expand and fade (static when Reduce Motion is on). */
-export function DiscoveryRings({ size, count = 3, color = '#FFD633', style }: { size: number; count?: number; color?: string; style?: object }) {
+export function DiscoveryRings({ size, count = 3, color = '#168AF7', style }: { size: number; count?: number; color?: string; style?: object }) {
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, alignItems: 'center', justifyContent: 'center' }, style]}>
       {Array.from({ length: count }, (_, i) => <Ring key={i} size={size} delay={(i * 2600) / count} color={color} />)}
@@ -268,7 +268,7 @@ export function Float({ children, index = 0, amplitude = 4, style }: { children:
 }
 
 /** Animated progress ring (yellow on cream). */
-export function ProgressRing({ size = 64, stroke = 7, progress, children, color = '#FFC800', track = '#F4EEDB' }: {
+export function ProgressRing({ size = 64, stroke = 7, progress, children, color = '#0B6FD1', track = '#F4EEDB' }: {
   size?: number; stroke?: number; progress: number; children?: ReactNode; color?: string; track?: string;
 }) {
   const r = (size - stroke) / 2;
@@ -303,7 +303,7 @@ function Piece({ i, width }: { i: number; width: number }) {
   const t = useSharedValue(0);
   const x0 = ((i * 53) % 100) / 100 * width;
   const drift = ((i * 37) % 60) - 30;
-  const color = ['#FFD633', '#FF806B', '#7FB8DD', '#FFC800'][i % 4];
+  const color = ['#168AF7', '#FF5277', '#7FB8DD', '#0B6FD1'][i % 4];
   useEffect(() => { t.set(withDelay((i % 6) * 60, withTiming(1, { duration: 1400 + (i % 5) * 120, easing: Easing.out(Easing.quad) }))); }, [t, i]);
   const a = useAnimatedStyle(() => ({ opacity: 1 - t.value * t.value, transform: [{ translateX: x0 + drift * t.value }, { translateY: -20 + t.value * 260 }, { rotate: `${t.value * (i % 2 ? 260 : -260)}deg` }] }));
   return <Animated.View style={[{ position: 'absolute', top: 0, left: 0, width: 8, height: i % 3 ? 12 : 8, borderRadius: i % 3 ? 2 : 4, backgroundColor: color }, a]} />;

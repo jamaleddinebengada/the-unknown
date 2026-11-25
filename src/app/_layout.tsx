@@ -25,6 +25,7 @@ function RootNavigator() {
       <Stack.Screen name="index" options={{ animation: 'fade' }} />
       <Stack.Protected guard={!entered} redirectTo="/">
         <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
+        <Stack.Screen name="setup" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="vibe" options={{ animation: 'slide_from_right' }} />
       </Stack.Protected>
       <Stack.Protected guard={entered} redirectTo="/">
@@ -38,13 +39,15 @@ function RootNavigator() {
         <Stack.Screen name="search" />
         <Stack.Screen name="settings" />
         <Stack.Screen name="edit-profile" />
-        <Stack.Screen name="matches" options={{ animation: 'none' }} />
+        <Stack.Screen name="challenges" />
+        <Stack.Screen name="mystery" />
+        <Stack.Screen name="favorites" />
+        <Stack.Screen name="visitors" />
         <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="people" />
         <Stack.Screen name="ai/index" />
         <Stack.Screen name="ai/[id]" />
         <Stack.Screen name="ai/chat/[id]" />
-        <Stack.Screen name="nearby" />
         <Stack.Screen name="safety" />
         <Stack.Screen name="help" />
         <Stack.Screen name="saved" />

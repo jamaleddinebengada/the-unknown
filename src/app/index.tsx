@@ -14,7 +14,7 @@ export default function Splash() {
   useEffect(() => { const t = setTimeout(() => setMinDelay(true), 1100); return () => clearTimeout(t); }, []);
 
   if (ready && minDelay) {
-    return <Redirect href={entered ? '/discover' : '/welcome'} />;
+    return <Redirect href={entered ? '/nearby' : '/welcome'} />;
   }
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', gap: 28 }}>
