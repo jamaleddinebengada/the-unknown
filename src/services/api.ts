@@ -355,3 +355,14 @@ export async function verificationSelfieUrl(path: string) {
   const { data } = await supabase.storage.from('verifications').createSignedUrl(path, 600);
   return data?.signedUrl ?? null;
 }
+
+/** Moderators: upload a realistic portrait for a fictional AI character (public bucket, admin-only writes). */
+export async function adminUploadCharacterPortrait(id: string, localUri: string, mime: string) {
+  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const path = `${id}-${Date.now()}.${ext}`;
+  const body = await (await fetch(localUri)).arrayBuffer();
+  const { error } = await supabase.storage.from('ai-portraits').upload(path, body, { contentType: mime, upsert: false });
+  if (error) throw error;
+  return rpc<string>('admin_set_character_portrait', { p_id: id, p_path: path });
+}
+export const adminClearCharacterPortrait = (id: string) => rpc<null>('admin_set_character_portrait', { p_id: id, p_path: null });

@@ -8,13 +8,14 @@ let pending: Promise<AiCharacter[]> | null = null;
 export function useAiCharacters() {
   const [list, setList] = useState<AiCharacter[] | null>(cache);
   const [error, setError] = useState<string | null>(null);
-  const load = () => {
+  const load = (fresh = false) => {
     setError(null);
+    if (fresh) cache = null;
     pending = pending ?? getAiCharacters().finally(() => { pending = null; });
     pending.then((l) => { cache = l; setList(l); }).catch((e) => setError(String(e?.message ?? e)));
   };
   useEffect(() => { if (!cache) load(); }, []);
-  return { list, error, reload: load };
+  return { list, error, reload: () => load(), refresh: () => load(true) };
 }
 export const LANG_LABEL: Record<string, string> = { en: 'English', fr: 'Français', ar: 'العربية', es: 'Español' };
 

@@ -1,5 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { AiPortrait } from '@/components/AiPortrait';
+import { useAiCharacters } from '@/features/ai/useAiCharacters';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,11 +13,11 @@ import { GradientButton, PremiumButton, T, TextField } from '@/components/ui';
 import { colors, fonts, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import {
-  adminLookupUser, adminOverview, adminReports, adminResolveReport, adminReviewVerification, adminSetUserStatus, adminVerifications,
+  adminClearCharacterPortrait, adminLookupUser, adminOverview, adminUploadCharacterPortrait, adminReports, adminResolveReport, adminReviewVerification, adminSetUserStatus, adminVerifications,
   verificationSelfieUrl, type AdminOverview, type AdminReport, type AdminVerification,
 } from '@/services/api';
 
-type Tab = 'reports' | 'verify' | 'users';
+type Tab = 'reports' | 'verify' | 'users' | 'characters';
 
 /** Moderation dashboard. Every action is re-checked on the server (profiles.is_admin) and logged. */
 export default function Admin() {
@@ -70,11 +73,11 @@ export default function Admin() {
             ))}
           </View>
         )}
-        <View style={s.tabs}>
-          {([['reports', `Reports · ${reports.length}`], ['verify', `Verify · ${verifs.length}`], ['users', 'Members']] as const).map(([k, l]) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.tabs}>
+          {([['reports', `Reports · ${reports.length}`], ['verify', `Verify · ${verifs.length}`], ['users', 'Members'], ['characters', 'AI']] as const).map(([k, l]) => (
             <Pressable key={k} onPress={() => setTab(k)} style={[s.tab, tab === k && s.tabOn]}><Text style={[s.tabText, tab === k && { color: colors.onPrimary }]}>{l}</Text></Pressable>
           ))}
-        </View>
+        </ScrollView>
 
         {tab === 'reports' && (reports.length === 0 ? <T color={colors.textMuted} style={{ textAlign: 'center', padding: 20 }}>No open reports. 🎉</T> : reports.map((r) => (
           <View key={r.id} style={s.card}>
@@ -123,6 +126,7 @@ export default function Admin() {
             )}
           </View>
         )}
+        {tab === 'characters' && <CharacterPortraits />}
         <PremiumButton label="Refresh" tone="ghost" onPress={() => load()} />
       </ScrollView>
     </Screen>
@@ -143,7 +147,7 @@ const s = StyleSheet.create({
   stat: { width: '23%', flexGrow: 1, padding: 10, borderRadius: 14, backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
   statV: { fontFamily: fonts.bold, fontSize: 20, color: colors.text },
   tabs: { flexDirection: 'row', gap: 8 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 20, alignItems: 'center', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  tab: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, alignItems: 'center', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   tabOn: { backgroundColor: colors.primary, borderColor: colors.primary },
   tabText: { fontFamily: fonts.semibold, fontSize: 13, color: colors.text },
   card: { gap: 8, padding: 14, borderRadius: 16, backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border },
@@ -154,3 +158,35 @@ const s = StyleSheet.create({
   btnText: { fontFamily: fonts.semibold, fontSize: 13, textTransform: 'capitalize' },
   selfie: { width: '100%', aspectRatio: 3 / 4, borderRadius: 12 },
 });
+
+/** Give each fictional AI character a realistic portrait (e.g. generated with an image AI). Shown to everyone at once. */
+function CharacterPortraits() {
+  const toast = useToast();
+  const { list, refresh } = useAiCharacters();
+  const [busy, setBusy] = useState<string | null>(null);
+  const upload = async (id: string) => {
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 5], quality: 0.85 });
+    if (r.canceled || !r.assets[0]) return;
+    const a = r.assets[0];
+    setBusy(id);
+    try { await adminUploadCharacterPortrait(id, a.uri, a.mimeType ?? 'image/jpeg'); toast('Portrait updated', 'success'); refresh(); }
+    catch (e) { toast(friendlyError(e), 'error'); } finally { setBusy(null); }
+  };
+  if (!list) return <ActivityIndicator color={colors.primary} />;
+  return (
+    <View style={{ gap: 8 }}>
+      <T v="caption" color={colors.textMuted}>Use portraits of fictional people only (for example made with an image AI). Never use photos of real people. The app keeps the “Fictional AI character” labels.</T>
+      {list.map((c) => (
+        <View key={c.id} style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+          <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={56} rounded="card" />
+          <View style={{ flex: 1 }}>
+            <Text style={s.cardTitle}>{c.name}</Text>
+            <T v="caption" color={colors.textMuted}>{c.role} · {c.portrait_url ? 'photo' : 'illustration'}</T>
+          </View>
+          <Btn label={c.portrait_url ? 'Change' : 'Upload'} busy={busy === c.id} onPress={() => upload(c.id)} />
+          {!!c.portrait_url && <Btn label="Reset" danger onPress={async () => { await adminClearCharacterPortrait(c.id).catch(() => {}); refresh(); }} />}
+        </View>
+      ))}
+    </View>
+  );
+}
