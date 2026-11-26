@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session } from '@supabase/supabase-js';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useRef, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { fetchMyProfile, touchPresence } from '@/services/api';
@@ -40,10 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [entered, setEntered] = useState(false);
+  const profileRef = useRef<Profile | null>(null);
 
   const refreshProfile = useCallback(async () => {
     try {
       const p = await fetchMyProfile();
+      profileRef.current = p;
       setProfile(p);
       return p;
     } catch {
@@ -65,7 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
     Promise.all([AsyncStorage.getItem(ENTERED_KEY).catch(() => null), boot()]).then(([flag]) => {
       if (!mounted) return;
-      setEntered(flag === '1');
+      // members from older versions who never confirmed their date of birth go through the 18+ profile step first
+      const p = profileRef.current;
+      setEntered(flag === '1' && !(p && !p.birth_date));
       setReady(true);
     });
     if (!isSupabaseConfigured) return () => { mounted = false; };

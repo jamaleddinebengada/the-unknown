@@ -305,12 +305,12 @@ export default function Nearby() {
       <BottomSheet visible={sheet === 'city'} onClose={() => setSheet(null)} title="Your area">
         <ScrollView style={{ maxHeight: 480 }} contentContainerStyle={{ gap: 2 }}>
           <Pressable onPress={() => { setSheet(null); locate(); }} style={s.cityRow}><Ionicons name="locate" size={18} color={colors.primary} /><Text style={[s.cityText, { color: colors.primary }]}>Use my current location</Text></Pressable>
+          {nearbyOn && <Pressable onPress={() => { setSheet(null); turnOff(); }} style={s.cityRow}><Ionicons name="power" size={18} color={colors.danger} /><Text style={[s.cityText, { color: colors.danger }]}>Turn off Nearby & erase my area</Text></Pressable>}
           {CITIES.map((c) => (
             <Pressable key={`${c.name}${c.country}`} onPress={() => chooseCity(c)} style={s.cityRow}>
               <Text style={{ fontSize: 16 }}>{flagOf(c.country)}</Text><Text style={s.cityText}>{c.name}</Text>
             </Pressable>
           ))}
-          {nearbyOn && <Pressable onPress={() => { setSheet(null); turnOff(); }} style={s.cityRow}><Ionicons name="power" size={18} color={colors.danger} /><Text style={[s.cityText, { color: colors.danger }]}>Turn off Nearby & erase my area</Text></Pressable>}
         </ScrollView>
       </BottomSheet>
     </View>

@@ -75,6 +75,8 @@ if [ -n "$PICK" ]; then adb shell input tap $PICK; else adb shell input tap $((W
 sleep 5; shot 24-photo-crop
 tapText "Crop" || tapText "CROP" || tapText "Done" || adb shell input tap $((W*92/100)) $((H*6/100))
 sleep 12; shot 25-photos-after-upload; echo "photo upload screen: $(alive)"
+# clean up the test account so it never shows up for real members: delete its photo, turn Nearby off
+tapText "Main photo" "$((W/2)) $((H*30/100))"; sleep 2; tapText "Delete photo"; sleep 5; shot 26-photo-deleted
 link mystery 09-mystery-match
 link ai 10-virtual-characters
 link ai/karim 11-ai-profile-karim
@@ -87,6 +89,9 @@ link favorites 17-favorites
 link visitors 18-visitors
 link safety 19-safety
 link admin 20-admin-locked
+tab 10 27-nearby-before-off
+adb shell input tap $((W*22/100)) $((H*9/100)); sleep 3; shot 28-area-sheet
+tapText "Turn off Nearby & erase my area"; sleep 2; tapText "TURN OFF" || tapText "Turn off"; sleep 5; shot 29-nearby-off; echo "nearby off: $(alive)"
 
 adb logcat -d > smoke/logcat-full.txt
 grep -E "ReactNativeJS|AndroidRuntime|FATAL|ReactNative|unknown|Supabase|SoLoader|libc " smoke/logcat-full.txt > smoke/logcat-app.txt || true
