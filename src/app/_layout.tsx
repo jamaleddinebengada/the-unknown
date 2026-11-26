@@ -59,6 +59,7 @@ function RootNavigator() {
         <Stack.Screen name="rewards" />
         <Stack.Screen name="privacy" />
         <Stack.Screen name="wallet" />
+        <Stack.Screen name="photos" />
         <Stack.Screen name="verify" />
         <Stack.Screen name="admin" />
       </Stack.Protected>

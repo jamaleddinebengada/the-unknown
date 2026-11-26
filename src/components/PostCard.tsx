@@ -1,3 +1,4 @@
+import { PersonName } from '@/hooks/usePersonMeta';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -154,7 +155,7 @@ export const PostCard = memo(function PostCard({ post, index = 0, onChange, onRe
                 </View>
               </Pressy>
               <View style={{ flex: 1 }}>
-                <T v="bodyStrong" numberOfLines={1} style={{ fontFamily: fonts.bold, letterSpacing: 0.4, fontSize: narrow ? 13 : 14 }}>{narrow ? `#${post.author_number}` : unknownName(post.author_number)}{post.is_mine ? ' · You' : ''}</T>
+                <T v="bodyStrong" numberOfLines={1} style={{ fontFamily: fonts.bold, letterSpacing: 0.4, fontSize: narrow ? 13 : 14 }}><PersonName number={post.author_number} />{post.is_mine ? ' · You' : ''}</T>
                 <T v="caption" color={colors.textMuted} numberOfLines={1}>
                   {flagOf(post.author_country)} {post.author_country ? countryName(post.author_country) : 'Hidden'}
                   {post.author_age ? ` · ${post.author_age}` : ''} · {timeAgo(post.created_at)}

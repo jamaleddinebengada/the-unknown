@@ -1,3 +1,4 @@
+import { PersonName } from '@/hooks/usePersonMeta';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -14,7 +15,7 @@ import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { getMyConversations, getMyMatches, getMyPendingInterests, setArchived } from '@/services/api';
 import type { ConversationSummary, MysteryMatch } from '@/types/models';
-import { timeAgo, unknownName } from '@/utils/format';
+import { timeAgo } from '@/utils/format';
 
 const TABS = ['All', 'Active', 'Requests', 'Connections', 'Archived'] as const;
 type Tab = (typeof TABS)[number];
@@ -72,7 +73,7 @@ export default function Messages() {
         <View style={{ flex: 1, gap: 3 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <T v="bodyStrong" style={{ fontFamily: fonts.semibold, flex: 1 }} numberOfLines={1}>
-              {item.kind === 'group' ? `Post circle · ${item.member_count}` : `${unknownName(item.other_number)} ${flagOf(item.other_country)}`}
+              {item.kind === 'group' ? `Post circle · ${item.member_count}` : <><PersonName number={item.other_number} /> {flagOf(item.other_country)}</>}
             </T>
             <T v="caption" color={item.unread ? colors.violetSoft : colors.textMuted}>{timeAgo(item.last_message_at)}</T>
           </View>
@@ -107,7 +108,7 @@ export default function Messages() {
                 <AnonymousAvatar seed={m.other_avatar_seed} number={m.other_number} size={44} />
                 <View style={{ flex: 1 }}>
                   <T v="bodyStrong">Someone discovered you</T>
-                  <T v="caption" color={colors.textSecondary}>{unknownName(m.other_number)} {flagOf(m.other_country)} · {m.compatibility}% compatible</T>
+                  <T v="caption" color={colors.textSecondary}><PersonName number={m.other_number} /> {flagOf(m.other_country)} · {m.compatibility}% compatible</T>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
               </Pressable>

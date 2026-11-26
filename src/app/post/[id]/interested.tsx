@@ -1,3 +1,4 @@
+import { PersonName } from '@/hooks/usePersonMeta';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, View } from 'react-native';
@@ -12,7 +13,7 @@ import { colors, fonts, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { getPostInterests, respondInterest } from '@/services/api';
 import type { InterestedUser } from '@/types/models';
-import { haptic, timeAgo, unknownName } from '@/utils/format';
+import { haptic, timeAgo } from '@/utils/format';
 
 export default function InterestedUsers() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -68,7 +69,7 @@ export default function InterestedUsers() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <AnonymousAvatar seed={item.avatar_seed} number={item.unknown_number} size={48} />
                   <View style={{ flex: 1 }}>
-                    <T v="bodyStrong" style={{ fontFamily: fonts.semibold }}>{unknownName(item.unknown_number)}</T>
+                    <T v="bodyStrong" style={{ fontFamily: fonts.semibold }}><PersonName number={item.unknown_number} /></T>
                     <T v="caption" color={colors.textMuted}>
                       {flagOf(item.country_code)} {item.country_code ? countryName(item.country_code) : 'Hidden'}{item.age_range ? ` · ${item.age_range}` : ''} · {timeAgo(item.created_at)}
                     </T>

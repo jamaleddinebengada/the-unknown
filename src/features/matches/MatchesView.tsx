@@ -1,3 +1,4 @@
+import { PersonName } from '@/hooks/usePersonMeta';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,7 +24,7 @@ import { usePersonMeta } from '@/hooks/usePersonMeta';
 import { friendlyError } from '@/lib/supabase';
 import { findMysteryMatch, getMyMatches, getMySuperMatchIds, respondMatch, superConnect } from '@/services/api';
 import type { MatchFilters, MysteryMatch } from '@/types/models';
-import { haptic, unknownName } from '@/utils/format';
+import { haptic } from '@/utils/format';
 
 const FILTER_COUNTRIES = ['MA', 'FR', 'ES', 'US', 'GB', 'DE', 'IT', 'AE', 'SA', 'EG', 'TR', 'CA', 'BE', 'NL', 'BR', 'JP'];
 const AGE_RANGES: { label: string; min: number | null; max: number | null }[] = [
@@ -59,7 +60,7 @@ function MatchCardFace({ m, width, isSuper }: { m: MysteryMatch | null; width: n
         <View style={s.faceInfo}>
           {isSuper && <View style={s.superTag}><Ionicons name="star" size={12} color="#5A4100" /><Text style={s.superText}>SUPER CONNECT</Text></View>}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={s.faceName}>{unknownName(m.other_number)}</Text>
+            <Text style={s.faceName}><PersonName number={m.other_number} /></Text>
             {meta && meta.tier !== 'free' && <PremiumBadge label={TIER_LABEL[meta.tier].toUpperCase()} />}
           </View>
           <Text style={s.faceMeta}>
@@ -259,7 +260,7 @@ export function MatchesView({ top }: { top?: ReactNode }) {
                 <Pressable onPress={() => m.conversation_id && router.push({ pathname: '/conversation/[id]', params: { id: m.conversation_id } })} style={s.mini}>
                   <AnonymousAvatar seed={m.other_avatar_seed} number={m.other_number} size={44} />
                   <View style={{ flex: 1 }}>
-                    <T style={{ fontFamily: fonts.semibold }}>{unknownName(m.other_number)} {flagOf(m.other_country)}</T>
+                    <T style={{ fontFamily: fonts.semibold }}><PersonName number={m.other_number} /> {flagOf(m.other_country)}</T>
                     <T v="caption" color={colors.textMuted}>
                       {m.conversation_id ? 'Chat open — tap to talk' : m.i_accepted === false ? 'Passed' : m.i_accepted ? 'Waiting for them' : 'New'}
                       {supers.has(m.match_id) ? ' · ⭐ Super' : ''}

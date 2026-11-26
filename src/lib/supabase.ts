@@ -54,7 +54,8 @@ export function friendlyError(e: unknown): string {
   if (msg.includes('vip_required')) return 'This is a VIP feature.';
   if (msg.includes('super_limit_reached')) return 'You have used today’s 3 Super Connects.';
   if (msg.includes('not_available')) return 'This person is not available right now.';
-  if (msg.includes('gallery_full')) return 'Your gallery can hold 6 photos.';
+  if (msg.includes('camera_denied')) return 'Allow camera access in your phone settings to take a photo.';
+  if (msg.includes('gallery_full')) return 'You can have up to 6 photos. Delete one to add another.';
   if (msg.includes('ai_not_configured')) return 'AI conversations are not switched on yet. Please try again later.';
   if (msg.includes('ai_unavailable')) return 'The AI is not answering right now. Please try again.';
   if (msg.includes('ai_limit_reached')) return 'You reached today’s AI message allowance. Upgrade for more, or come back tomorrow.';

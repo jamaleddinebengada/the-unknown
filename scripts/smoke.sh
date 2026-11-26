@@ -24,7 +24,7 @@ for m in re.finditer(r'<node [^>]*>', x):
 PY
 )
   if [ -z "$XY" ] && [ -n "${2:-}" ]; then XY="$2"; fi
-  if [ -n "$XY" ]; then adb shell input tap $XY; echo "tapped '$1' at $XY"; else echo "not found: '$1'"; fi
+  if [ -n "$XY" ]; then adb shell input tap $XY; echo "tapped '$1' at $XY"; else echo "not found: '$1'"; return 1; fi
 }
 
 sleep 15; shot 01-launch; echo "after launch: $(alive)"
@@ -32,6 +32,7 @@ sleep 15; shot 01-launch; echo "after launch: $(alive)"
 SIZE=$(adb shell wm size | tail -1 | awk '{print $NF}'); W=${SIZE%x*}; H=${SIZE#*x}
 echo "screen ${W}x${H}"
 tapText "Get started"; sleep 4; shot 02-setup; echo "setup: $(alive)"
+tapText "Name" "$((W/2)) $((H*85/100))"; adb shell input text Sara; adb shell input keyevent 66; sleep 1
 adb shell input swipe $((W/2)) $((H*70/100)) $((W/2)) $((H*35/100)) 400; sleep 2; shot 02b-setup-scrolled
 tapText "Day" "$((W*20/100)) $((H*45/100))"; adb shell input text 15; tapText "Month"; adb shell input text 06; tapText "Year"; adb shell input text 1994
 sleep 2; shot 02c-setup-filled; adb shell input keyevent 111; sleep 1
@@ -51,6 +52,29 @@ tab 50 05-matches
 tab 70 06-messages
 tab 90 07-profile
 tab 10 08-nearby
+# photo upload: put a test picture in the gallery, then add it from My photos (gallery → crop → upload)
+adb push scripts/test-photo.jpg /sdcard/Pictures/test-photo.jpg >/dev/null 2>&1
+adb shell content call --method scan_volume --uri content://media --arg external_primary >/dev/null 2>&1 || true
+adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/test-photo.jpg >/dev/null 2>&1 || true
+sleep 3
+link photos 21-photos-empty
+tapText "Add a photo" "$((W/2)) $((H*35/100))"; sleep 3; shot 22-photo-source
+tapText "Choose from gallery" "$((W/2)) $((H*88/100))"; sleep 6; shot 23-photo-picker
+PICK=$(adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml /tmp/ui.xml >/dev/null 2>&1; python3 - <<'PY'
+import re
+x = open('/tmp/ui.xml', encoding='utf-8').read()
+for m in re.finditer(r'<node [^>]*>', x):
+    n = m.group(0)
+    if re.search(r'content-desc="(Photo taken|Photo|Image)[^"]*"', n) or 'test-photo' in n:
+        a, b, c, d = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        print((a + c) // 2, (b + d) // 2); break
+PY
+)
+echo "picker item: ${PICK:-fallback}"
+if [ -n "$PICK" ]; then adb shell input tap $PICK; else adb shell input tap $((W*17/100)) $((H*25/100)); fi
+sleep 5; shot 24-photo-crop
+tapText "Crop" || tapText "CROP" || tapText "Done" || adb shell input tap $((W*92/100)) $((H*6/100))
+sleep 12; shot 25-photos-after-upload; echo "photo upload screen: $(alive)"
 link mystery 09-mystery-match
 link ai 10-virtual-characters
 link ai/karim 11-ai-profile-karim

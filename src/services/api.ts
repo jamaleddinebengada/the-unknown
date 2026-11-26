@@ -1,4 +1,5 @@
 import * as Crypto from 'expo-crypto';
+import { uploadBytes } from '@/lib/media';
 import { supabase } from '@/lib/supabase';
 import type {
   AppNotification, ChallengeState, Comment, ConversationDetail, ConversationSummary, FeedPost, InterestedUser, Message,
@@ -134,10 +135,12 @@ export async function sendMessage(conversationId: string, body: string, kind: 't
   if (error) throw error;
 }
 /** Private chat media (only the two participants can read it). */
-export async function uploadChatMedia(conversationId: string, localUri: string, kind: 'image' | 'voice' | 'video', mime: string) {
+export async function uploadChatMedia(conversationId: string, localUri: string, kind: 'image' | 'voice' | 'video', mimeIn: string) {
+  const up = await uploadBytes(localUri, mimeIn);
+  const mime = up.mime;
   const ext = kind === 'voice' ? 'm4a' : kind === 'video' ? (mime.includes('quicktime') ? 'mov' : mime.includes('3gp') ? '3gp' : 'mp4') : mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
   const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const body = await (await fetch(localUri)).arrayBuffer();
+  const body = up.body;
   const { error } = await supabase.storage.from('chat-media').upload(path, body, { contentType: mime, upsert: false });
   if (error) throw error;
   return path;
@@ -214,12 +217,14 @@ export async function markAllNotificationsRead() {
 }
 
 /* ---------------- storage ---------------- */
-export async function uploadPostMedia(localUri: string, kind: 'image' | 'voice', mime: string) {
+export async function uploadPostMedia(localUri: string, kind: 'image' | 'voice', mimeIn: string) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error('not_authenticated');
+  const up = await uploadBytes(localUri, mimeIn);
+  const mime = up.mime;
   const ext = kind === 'image' ? (mime.includes('png') ? 'png' : 'jpg') : 'm4a';
   const path = `${u.user.id}/${Crypto.randomUUID()}.${ext}`;
-  const body = await (await fetch(localUri)).arrayBuffer();
+  const body = up.body;
   const { error } = await supabase.storage.from('post-media').upload(path, body, { contentType: mime, upsert: false });
   if (error) throw error;
   return path;
@@ -248,10 +253,11 @@ export interface AiCharacter {
   interests: string[]; languages: string[]; starters: string[]; avatar_seed: string; accent: string; sort: number;
   /** optional realistic portrait (https, set by admins in Supabase) — falls back to the bundled illustration */
   portrait_url?: string | null;
+  gender?: 'female' | 'male' | null; country?: string | null; active?: boolean;
 }
 export interface AiMessage { id: string; role: 'user' | 'assistant'; content: string; created_at: string }
 export async function getAiCharacters(): Promise<AiCharacter[]> {
-  const { data, error } = await supabase.from('ai_characters').select('*').order('sort');
+  const { data, error } = await supabase.from('ai_characters').select('*').order('portrait_url', { ascending: true, nullsFirst: false }).order('sort');
   if (error) throw error;
   return data as AiCharacter[];
 }
@@ -333,9 +339,9 @@ export const getMyVerification = () => rpc<VerificationState>('get_my_verificati
 export async function submitVerification(localUri: string, mime: string, gesture: string) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error('not_authenticated');
-  const path = `${u.user.id}/${Date.now()}.${mime.includes('png') ? 'png' : 'jpg'}`;
-  const body = await (await fetch(localUri)).arrayBuffer();
-  const { error } = await supabase.storage.from('verifications').upload(path, body, { contentType: mime, upsert: false });
+  const up = await uploadBytes(localUri, mime);
+  const path = `${u.user.id}/${Date.now()}.${up.mime.includes('png') ? 'png' : 'jpg'}`;
+  const { error } = await supabase.storage.from('verifications').upload(path, up.body, { contentType: up.mime, upsert: false });
   if (error) throw error;
   return rpc<{ status: string }>('submit_verification', { p_path: path, p_gesture: gesture });
 }
@@ -358,11 +364,13 @@ export async function verificationSelfieUrl(path: string) {
 
 /** Moderators: upload a realistic portrait for a fictional AI character (public bucket, admin-only writes). */
 export async function adminUploadCharacterPortrait(id: string, localUri: string, mime: string) {
-  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const up = await uploadBytes(localUri, mime);
+  const ext = up.mime.includes('png') ? 'png' : up.mime.includes('webp') ? 'webp' : 'jpg';
   const path = `${id}-${Date.now()}.${ext}`;
-  const body = await (await fetch(localUri)).arrayBuffer();
-  const { error } = await supabase.storage.from('ai-portraits').upload(path, body, { contentType: mime, upsert: false });
+  const { error } = await supabase.storage.from('ai-portraits').upload(path, up.body, { contentType: up.mime, upsert: false });
   if (error) throw error;
   return rpc<string>('admin_set_character_portrait', { p_id: id, p_path: path });
 }
 export const adminClearCharacterPortrait = (id: string) => rpc<null>('admin_set_character_portrait', { p_id: id, p_path: null });
+export const adminCharacters = () => rpc<AiCharacter[]>('admin_characters');
+export const adminRemoveMemberPhotos = (number: number) => rpc<void>('admin_remove_member_photos', { p_number: number });

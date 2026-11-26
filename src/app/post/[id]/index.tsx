@@ -1,3 +1,4 @@
+import { PersonName } from '@/hooks/usePersonMeta';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -14,7 +15,7 @@ import { colors, fonts, radius, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import { addComment, deleteComment, getComments, getPost } from '@/services/api';
 import type { Comment, FeedPost } from '@/types/models';
-import { haptic, timeAgo, unknownName } from '@/utils/format';
+import { haptic, timeAgo } from '@/utils/format';
 
 export default function PostDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -84,7 +85,7 @@ export default function PostDetails() {
                 <AnonymousAvatar seed={item.author_avatar_seed} number={item.author_number} size={32} />
                 <View style={{ flex: 1, gap: 4 }}>
                   <T v="caption" color={colors.textSecondary} style={{ fontFamily: fonts.semibold }}>
-                    {unknownName(item.author_number)} {flagOf(item.author_country)} · {timeAgo(item.created_at)}{item.is_mine ? ' · You' : ''}
+                    <PersonName number={item.author_number} /> {flagOf(item.author_country)} · {timeAgo(item.created_at)}{item.is_mine ? ' · You' : ''}
                   </T>
                   <T>{item.content}</T>
                 </View>

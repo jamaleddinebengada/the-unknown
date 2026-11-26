@@ -1,3 +1,4 @@
+import { usePersonName } from '@/hooks/usePersonMeta';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
@@ -48,6 +49,7 @@ export default function Conversation() {
   const toast = useToast();
   const { session } = useAuth();
   const [conv, setConv] = useState<ConversationDetail | null>(null);
+  const otherName = usePersonName(conv?.other_number);
   const [messages, setMessages] = useState<Message[]>([]);
   const [giftOpen, setGiftOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -187,7 +189,7 @@ export default function Conversation() {
   if (error || !conv) return <Screen><ErrorState message={error ?? 'Conversation not found.'} onRetry={() => router.back()} /></Screen>;
 
   const isGroup = conv.kind === 'group';
-  const title = isGroup ? 'Post circle' : unknownName(conv.other_number);
+  const title = isGroup ? 'Post circle' : otherName;
   return (
     <Screen edges={['top', 'bottom']}>
       <View style={st.header}>

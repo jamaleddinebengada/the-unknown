@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
+import { PhotoSourceSheet } from '@/features/profile/PhotoSourceSheet';
+import { pickPhoto, type PhotoSource } from '@/lib/media';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from '@/components/Overlay';
 import { CategoryChip, GradientButton, IconButton, T, TextField } from '@/components/ui';
@@ -32,17 +33,20 @@ export default function Setup() {
   const [looking, setLooking] = useState<string | null>(profile?.looking_for ?? null);
   const [photo, setPhoto] = useState<{ uri: string; mime: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [source, setSource] = useState(false);
+  const [showPhoto, setShowPhoto] = useState(true);
 
-  const pick = async () => {
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.82, allowsEditing: true, aspect: [4, 5] });
-    if (!r.canceled && r.assets[0]) setPhoto({ uri: r.assets[0].uri, mime: r.assets[0].mimeType ?? 'image/jpeg' });
+  const pick = async (src: PhotoSource) => {
+    try { const img = await pickPhoto(src); if (img) setPhoto(img); } catch (e) { toast(friendlyError(e), 'error'); }
   };
   const next = async () => {
     const birth = parseBirthDate(dob.d, dob.m, dob.y);
+    if (name.trim().length < 2) { toast('Choose a name or nickname (2+ letters).', 'error'); return; }
     if (!birth.value) { toast(birth.error ?? 'Enter your date of birth — THE UNKNOWN is for adults 18+.', 'error'); return; }
     setBusy(true);
     try {
-      await updateMyProfile({ display_name: name.trim() || null, birth_date: birth.value, gender, interested_in: seeking, looking_for: looking as 'friendship' | 'conversation' | 'relationship' | null, show_age: true });
+      await updateMyProfile({ display_name: name.trim(), birth_date: birth.value, gender, interested_in: seeking, looking_for: looking as 'friendship' | 'conversation' | 'relationship' | null, show_age: true,
+        ...(photo ? { photo_visibility: showPhoto ? 'public' as const : 'revealed' as const } : {}) });
       if (photo) await setProfilePhoto(photo.uri, photo.mime).catch((e) => toast(`Photo not saved: ${friendlyError(e)}`, 'error'));
       await refreshProfile();
       haptic.success();
@@ -59,15 +63,25 @@ export default function Setup() {
           <T v="caption" color={colors.textMuted}>Step 1 of 2</T>
         </View>
         <Text style={s.title}>Create your profile</Text>
-        <Pressable onPress={pick} accessibilityRole="button" accessibilityLabel="Add a profile photo" style={s.photo}>
+        <Pressable onPress={() => setSource(true)} accessibilityRole="button" accessibilityLabel="Add a profile photo" style={s.photo}>
           {photo ? <Image source={{ uri: photo.uri }} style={StyleSheet.absoluteFill} contentFit="cover" /> : (
             <View style={{ alignItems: 'center', gap: 6 }}><Ionicons name="camera" size={30} color={colors.primary} /><T v="caption" color={colors.primary} style={{ fontFamily: fonts.semibold }}>Add photo</T></View>
           )}
         </Pressable>
-        <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', marginTop: -8 }}>Optional. By default your photo is shown only after a mutual reveal — change it in Privacy.</T>
+        {photo ? (
+          <View style={s.toggle}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.toggleTitle}>Show my photo in Nearby</Text>
+              <T v="caption" color={colors.textMuted}>{showPhoto ? 'Recommended — people see your photo on your card.' : 'Anonymous mode: shown only after a mutual reveal.'}</T>
+            </View>
+            <Switch value={showPhoto} onValueChange={setShowPhoto} trackColor={{ true: colors.primary, false: colors.border }} thumbColor="#fff" />
+          </View>
+        ) : (
+          <T v="caption" color={colors.textMuted} style={{ textAlign: 'center', marginTop: -8 }}>Add a real photo of yourself — profiles with a photo get many more replies. You can add up to 6 later.</T>
+        )}
 
-        <Field label="Name or nickname" hint="Optional — leave empty to appear as UNKNOWN #number.">
-          <TextField value={name} onChangeText={setName} maxLength={30} placeholder="e.g. Sara" />
+        <Field label="Name or nickname" hint="Shown on your profile instead of a number.">
+          <TextField value={name} onChangeText={setName} maxLength={30} placeholder="e.g. Sara" accessibilityLabel="Name" />
         </Field>
         <Field label="Date of birth" hint="Required. You must be 18 or older. Only your age is shown.">
           <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -86,6 +100,7 @@ export default function Setup() {
           <View style={s.wrap}>{LOOKING_FOR.map((l) => <CategoryChip key={l.key} label={l.label} selected={looking === l.key} onPress={() => setLooking(looking === l.key ? null : l.key)} />)}</View>
         </Field>
       </ScrollView>
+      <PhotoSourceSheet visible={source} onClose={() => setSource(false)} onPick={pick} title="Profile photo" />
       <View style={[s.footer, { paddingBottom: insets.bottom + spacing.md }]}>
         <GradientButton label="Continue" arrow loading={busy} onPress={next} />
       </View>
@@ -106,6 +121,8 @@ const s = StyleSheet.create({
   title: { fontFamily: fonts.extrabold, fontSize: 28, letterSpacing: -0.6, color: colors.text },
   photo: { alignSelf: 'center', width: 132, height: 165, borderRadius: 20, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.primary },
   label: { fontFamily: fonts.bold, fontSize: 16, color: colors.text },
+  toggle: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, backgroundColor: colors.white, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, marginTop: -6 },
+  toggleTitle: { fontFamily: fonts.semibold, fontSize: 14, color: colors.text },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: spacing.lg, paddingTop: 12, backgroundColor: 'rgba(248,250,252,0.96)', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
 });

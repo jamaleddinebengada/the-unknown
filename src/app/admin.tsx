@@ -3,8 +3,9 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { AiPortrait } from '@/components/AiPortrait';
 import { useAiCharacters } from '@/features/ai/useAiCharacters';
+import type { AiCharacter } from '@/services/api';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToast } from '@/components/Overlay';
@@ -13,7 +14,7 @@ import { GradientButton, PremiumButton, T, TextField } from '@/components/ui';
 import { colors, fonts, spacing } from '@/constants/theme';
 import { friendlyError } from '@/lib/supabase';
 import {
-  adminClearCharacterPortrait, adminLookupUser, adminOverview, adminUploadCharacterPortrait, adminReports, adminResolveReport, adminReviewVerification, adminSetUserStatus, adminVerifications,
+  adminCharacters, adminClearCharacterPortrait, adminLookupUser, adminRemoveMemberPhotos, adminOverview, adminUploadCharacterPortrait, adminReports, adminResolveReport, adminReviewVerification, adminSetUserStatus, adminVerifications,
   verificationSelfieUrl, type AdminOverview, type AdminReport, type AdminVerification,
 } from '@/services/api';
 
@@ -116,6 +117,7 @@ export default function Admin() {
             {user === null ? null : (
               <View style={{ gap: 6 }}>
                 {Object.entries(user).map(([k, v]) => <T key={k} v="caption"><Text style={{ fontFamily: fonts.semibold }}>{k}: </Text>{String(v)}</T>)}
+                <Btn label="Remove all photos" danger busy={busy === 'photos'} onPress={() => act('photos', () => adminRemoveMemberPhotos(Number(lookup)), 'Photos removed')} />
                 <View style={s.row}>
                   {(['active', 'suspended', 'banned'] as const).map((st) => (
                     <Btn key={st} label={st} danger={st === 'banned'} warn={st === 'suspended'} ok={st === 'active'} busy={busy === st}
@@ -162,26 +164,34 @@ const s = StyleSheet.create({
 /** Give each fictional AI character a realistic portrait (e.g. generated with an image AI). Shown to everyone at once. */
 function CharacterPortraits() {
   const toast = useToast();
-  const { list, refresh } = useAiCharacters();
+  const { refresh: refreshPublic } = useAiCharacters();
+  const [list, setList] = useState<AiCharacter[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'female' | 'male' | 'todo'>('todo');
+  const reload = useCallback(() => { adminCharacters().then(setList).catch((e) => toast(friendlyError(e), 'error')); }, [toast]);
+  const refresh = () => { reload(); refreshPublic(); };
+  useEffect(() => { reload(); }, [reload]);
   const upload = async (id: string) => {
-    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 5], quality: 0.85 });
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 5], quality: 1 });
     if (r.canceled || !r.assets[0]) return;
     const a = r.assets[0];
     setBusy(id);
-    try { await adminUploadCharacterPortrait(id, a.uri, a.mimeType ?? 'image/jpeg'); toast('Portrait updated', 'success'); refresh(); }
+    try { await adminUploadCharacterPortrait(id, a.uri, a.mimeType ?? 'image/jpeg'); toast('Portrait updated — character published', 'success'); refresh(); }
     catch (e) { toast(friendlyError(e), 'error'); } finally { setBusy(null); }
   };
+  const shown = (list ?? []).filter((c) => filter === 'all' ? true : filter === 'todo' ? !c.portrait_url : c.gender === filter);
   if (!list) return <ActivityIndicator color={colors.primary} />;
   return (
     <View style={{ gap: 8 }}>
+      <T v="caption" color={colors.text}>{(list ?? []).filter((c) => c.portrait_url).length} / {list?.length ?? 0} characters have a photo. Characters without a photo stay hidden, except the first 20 (illustrations).</T>
+      <View style={s.row}>{(['todo', 'female', 'male', 'all'] as const).map((f) => <Btn key={f} label={f === 'todo' ? 'Need photo' : f} ok={filter === f} onPress={() => setFilter(f)} />)}</View>
       <T v="caption" color={colors.textMuted}>Use portraits of fictional people only (for example made with an image AI). Never use photos of real people. The app keeps the “Fictional AI character” labels.</T>
-      {list.map((c) => (
+      {shown.map((c) => (
         <View key={c.id} style={[s.card, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
           <AiPortrait seed={c.avatar_seed} portrait={c.portrait_url} accent={c.accent} size={56} rounded="card" />
           <View style={{ flex: 1 }}>
             <Text style={s.cardTitle}>{c.name}</Text>
-            <T v="caption" color={colors.textMuted}>{c.role} · {c.portrait_url ? 'photo' : 'illustration'}</T>
+            <T v="caption" color={colors.textMuted}>{c.gender === 'female' ? '♀' : c.gender === 'male' ? '♂' : ''} {c.role}{c.country ? ` · ${c.country}` : ''} · {c.portrait_url ? 'photo' : c.active ? 'illustration' : 'hidden'}</T>
           </View>
           <Btn label={c.portrait_url ? 'Change' : 'Upload'} busy={busy === c.id} onPress={() => upload(c.id)} />
           {!!c.portrait_url && <Btn label="Reset" danger onPress={async () => { await adminClearCharacterPortrait(c.id).catch(() => {}); refresh(); }} />}

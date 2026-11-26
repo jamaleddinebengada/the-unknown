@@ -1,3 +1,4 @@
+import { uploadBytes } from '@/lib/media';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -9,7 +10,7 @@ import { supabase } from '@/lib/supabase';
  */
 export type PhotoVisibility = 'public' | 'revealed' | 'hidden';
 export type Tier = 'free' | 'plus' | 'vip';
-export interface PersonMeta { photoUrl: string | null; gallery: string[]; tier: Tier; theme: string }
+export interface PersonMeta { photoUrl: string | null; gallery: string[]; tier: Tier; theme: string; name: string | null; verified: boolean }
 
 const cache = new Map<number, { meta: PersonMeta; at: number }>();
 const listeners = new Set<() => void>();
@@ -31,9 +32,9 @@ async function flush() {
   const nums = [...queue];
   queue = new Set();
   if (!nums.length) return;
-  const { data, error } = await supabase.rpc('get_people_meta', { p_numbers: nums });
+  const { data, error } = await supabase.rpc('get_people_cards', { p_numbers: nums });
   if (error) return;
-  const rows = (data ?? []) as { unknown_number: number; photo_path: string | null; gallery: string[]; tier: Tier; profile_theme: string }[];
+  const rows = (data ?? []) as { unknown_number: number; display_name: string | null; photo_path: string | null; gallery: string[]; tier: Tier; profile_theme: string; is_verified: boolean }[];
   const urls = await signed(rows.flatMap((r) => [r.photo_path ?? '', ...(r.gallery ?? [])]));
   const now = Date.now();
   for (const n of nums) {
@@ -41,8 +42,8 @@ async function flush() {
     cache.set(n, {
       at: now,
       meta: r
-        ? { photoUrl: r.photo_path ? urls.get(r.photo_path) ?? null : null, gallery: (r.gallery ?? []).map((p) => urls.get(p)).filter(Boolean) as string[], tier: r.tier, theme: r.profile_theme }
-        : { photoUrl: null, gallery: [], tier: 'free', theme: 'rose' },
+        ? { photoUrl: r.photo_path ? urls.get(r.photo_path) ?? null : null, gallery: (r.gallery ?? []).map((p) => urls.get(p)).filter(Boolean) as string[], tier: r.tier, theme: r.profile_theme, name: r.display_name, verified: r.is_verified }
+        : { photoUrl: null, gallery: [], tier: 'free', theme: 'rose', name: null, verified: false },
     });
   }
   listeners.forEach((l) => l());
@@ -70,10 +71,10 @@ async function uid() {
 
 async function upload(localUri: string, mime = 'image/jpeg') {
   const id = await uid();
-  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+  const up = await uploadBytes(localUri, mime);
+  const ext = up.mime.includes('png') ? 'png' : up.mime.includes('webp') ? 'webp' : 'jpg';
   const path = `${id}/${Date.now()}.${ext}`;
-  const body = await (await fetch(localUri)).arrayBuffer();
-  const { error } = await supabase.storage.from('avatars').upload(path, body, { contentType: mime, upsert: false });
+  const { error } = await supabase.storage.from('avatars').upload(path, up.body, { contentType: up.mime, upsert: false });
   if (error) throw error;
   return { id, path };
 }
@@ -118,5 +119,39 @@ export async function removeGalleryPhoto(path: string) {
   const id = await uid();
   const { error } = await supabase.from('profile_private').upsert({ id, gallery: mine.gallery.filter((p) => p !== path), updated_at: new Date().toISOString() });
   if (error) throw error;
+  await supabase.storage.from('avatars').remove([path]).catch(() => {});  // delete the file too
+  invalidateMeta();
+}
+
+/** Up to 6 photos in total: the main photo + 5 more. */
+export const MAX_PHOTOS = 6;
+
+/** Swap a gallery photo with the main one. */
+export async function makeMainPhoto(path: string) {
+  const mine = await getMyPhotos();
+  const id = await uid();
+  if (!mine.gallery.includes(path)) return;
+  const gallery = mine.gallery.map((p) => (p === path ? mine.photo_path : p)).filter((p): p is string => !!p);
+  const { error } = await supabase.from('profile_private').upsert({ id, photo_path: path, gallery, updated_at: new Date().toISOString() });
+  if (error) throw error;
+  invalidateMeta();
+}
+
+/** Adds a photo: becomes the main photo when there is none yet. */
+export async function addPhoto(localUri: string, mime?: string) {
+  const mine = await getMyPhotos();
+  if ((mine.photo_path ? 1 : 0) + mine.gallery.length >= MAX_PHOTOS) throw new Error('gallery_full');
+  if (!mine.photo_path) return setProfilePhoto(localUri, mime);
+  return addGalleryPhoto(localUri, mime);
+}
+
+/** Deletes the main photo; the first gallery photo (if any) becomes the new main one. */
+export async function deleteMainPhoto() {
+  const mine = await getMyPhotos();
+  const id = await uid();
+  const [next, ...rest] = mine.gallery;
+  const { error } = await supabase.from('profile_private').upsert({ id, photo_path: next ?? null, gallery: rest, updated_at: new Date().toISOString() });
+  if (error) throw error;
+  if (mine.photo_path) await supabase.storage.from('avatars').remove([mine.photo_path]).catch(() => {});
   invalidateMeta();
 }
