@@ -56,6 +56,9 @@ function RootNavigator() {
         <Stack.Screen name="safety" />
         <Stack.Screen name="premium" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="admin" />
+        <Stack.Screen name="companions" />
+        <Stack.Screen name="companion/[id]" />
+        <Stack.Screen name="companion-chat/[id]" />
       </Stack.Protected>
     </Stack>
   );

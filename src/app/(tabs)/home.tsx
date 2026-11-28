@@ -13,6 +13,8 @@ import { discover, listActivities, stopFree } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { friendlyError } from '@/lib/supabase';
 import type { Activity, Person } from '@/lib/types';
+import { listCompanions, type CompanionCard } from '@/features/companions/api';
+import { CompanionTile } from '@/features/companions/ui';
 import { useCategories } from '@/lib/useCategories';
 
 /** Home: greeting, I'M FREE NOW, who is free, live activities, categories, tonight. */
@@ -26,10 +28,12 @@ export default function Home() {
   const [free, setFree] = useState<Person[] | null>(null);
   const [acts, setActs] = useState<Activity[] | null>(null);
   const [tonight, setTonight] = useState<Person[]>([]);
+  const [ai, setAi] = useState<CompanionCard[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const hasZone = !!boot?.zone?.enabled;
 
   const load = useCallback(async () => {
+    listCompanions({ limit: 12 }).then(setAi).catch(() => setAi([]));
     if (!hasZone) { setFree([]); setActs([]); return; }
     const [f, a, n] = await Promise.allSettled([discover('free_now', { radiusKm: 25, limit: 12 }), listActivities('nearby', { radiusKm: 25 }), discover('tonight', { radiusKm: 25, limit: 12 })]);
     setFree(f.status === 'fulfilled' ? f.value : []);
@@ -80,6 +84,18 @@ export default function Home() {
           ) : (
             <FlatList horizontal data={free} keyExtractor={(p) => p.id} showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
               renderItem={({ item }) => <PersonCard p={item} width={cardW} cats={map} onPress={() => router.push({ pathname: '/person/[id]', params: { id: item.id } })} />} />
+          )}
+        </>
+      )}
+
+      {(ai === null || ai.length > 0) && (
+        <>
+          <View style={s.pad}><SectionHeader title={t('ai.section')} action={t('common.seeAll')} onAction={() => router.push('/companions')} /></View>
+          {ai === null ? (
+            <View style={[s.pad, { flexDirection: 'row', gap: 12 }]}>{[0, 1, 2].map((i) => <Skeleton key={i} w={cardW} h={cardW * 1.5} r={20} />)}</View>
+          ) : (
+            <FlatList horizontal data={ai} keyExtractor={(c) => c.id} showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+              renderItem={({ item }) => <CompanionTile c={item} width={cardW} onPress={() => router.push({ pathname: '/companion/[id]', params: { id: item.id } })} />} />
           )}
         </>
       )}
