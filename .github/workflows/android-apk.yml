@@ -1,8 +1,8 @@
-name: Build Android APK
+name: Build WhoIsFree APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, whoisfree]
   workflow_dispatch:
 
 permissions:
@@ -46,6 +46,8 @@ jobs:
       - name: Publish as a GitHub release for easy phone download
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ github.run_number }}
+          tag_name: wif-build-${{ github.run_number }}
+          make_latest: false
+          prerelease: true
           name: WhoIsFree test build ${{ github.run_number }}
           files: whoisfree.apk
