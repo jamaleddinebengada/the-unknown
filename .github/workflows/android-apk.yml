@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Publishable values (safe to ship in the app; data is protected by RLS). Repo secrets override them.
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL || 'https://summcadnxnckemvpzojh.supabase.co' }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_Vojut9MapFQJWxA9Q0DV-A_3pCxbwV8' }}
+      EXPO_PUBLIC_REVENUECAT_ANDROID_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || vars.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: zulu, java-version: 17 }
+      - name: Use the runner's preinstalled Android SDK
+        run: echo "sdk.dir=$ANDROID_HOME" && ls $ANDROID_HOME
+      - run: npm ci
+      - name: Type-check and lint
+        run: npx tsc --noEmit && npx eslint src --quiet
+      - name: Firebase config for push notifications (only when the GOOGLE_SERVICES_JSON secret exists)
+        env: { GOOGLE_SERVICES_JSON: '${{ secrets.GOOGLE_SERVICES_JSON }}' }
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json
+            node -e "const f='app.json',j=require('./'+f);j.expo.android.googleServicesFile='./google-services.json';require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+            echo "push: Firebase config added"
+          else echo "push: no GOOGLE_SERVICES_JSON secret — building without FCM"; fi
+      - run: npx expo prebuild --platform android --no-install
+      - name: Assemble release APK (signed with the debug key, for testing)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+      - run: cp android/app/build/outputs/apk/release/app-release.apk whoisfree.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: whoisfree-apk, path: whoisfree.apk }
+      - name: Publish as a GitHub release for easy phone download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: WhoIsFree test build ${{ github.run_number }}
+          files: whoisfree.apk

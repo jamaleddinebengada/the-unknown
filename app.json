@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "WhoIsFree",
+    "slug": "whoisfree",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.whoisfree.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "WhoIsFree lets you add photos to your profile, activities and chats.",
+        "NSCameraUsageDescription": "WhoIsFree uses the camera for photos you choose to share."
+      }
+    },
+    "android": {
+      "package": "com.whoisfree.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#FFD600",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA"],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      ["expo-splash-screen", { "backgroundColor": "#FFD600", "image": "./assets/splash-icon.png", "imageWidth": 170 }],
+      "expo-image",
+      "expo-localization",
+      ["expo-image-picker", {
+        "photosPermission": "WhoIsFree lets you add photos to your profile, activities and chats.",
+        "cameraPermission": "WhoIsFree uses the camera for photos you choose to share."
+      }],
+      ["expo-location", {
+        "locationWhenInUsePermission": "WhoIsFree uses your approximate area (about 2 km) to show who is free near you. Your exact position is never stored or shown.",
+        "isAndroidBackgroundLocationEnabled": false,
+        "isIosBackgroundLocationEnabled": false
+      }],
+      "expo-web-browser"
+    ],
+    "scheme": "whoisfree",
+    "backgroundColor": "#FFFFFF",
+    "experiments": { "typedRoutes": false }
+  }
+}
